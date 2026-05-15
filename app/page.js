@@ -37,7 +37,15 @@ const DEFAULT_REVIEWS = [
 function InstagramIcon({ className = "h-5 w-5" }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="2" />
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
       <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
       <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
     </svg>
@@ -49,6 +57,8 @@ export default function FeliixWxfPhotography() {
   const beforeRef = useRef(null);
   const lineRef = useRef(null);
   const handleRef = useRef(null);
+  const sliderFrameRef = useRef(null);
+  const sliderPercentRef = useRef(50);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [theme, setTheme] = useState("dark");
@@ -105,25 +115,33 @@ export default function FeliixWxfPhotography() {
     };
   }, [showAllReviews, selectedReview, showImpressum, showDatenschutz]);
 
+  useEffect(() => {
+    return () => {
+      if (sliderFrameRef.current) {
+        cancelAnimationFrame(sliderFrameRef.current);
+      }
+    };
+  }, []);
+
   const dark = theme === "dark";
 
   const navItems = ["Startseite", "Info", "Portfolio", "Bewertung", "Kontakt"];
 
   const pageStyle = dark
-    ? "bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(120,120,120,0.18),transparent_30%),linear-gradient(135deg,#080808,#18181b,#2d2d30)] text-white"
-    : "bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.08),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.08),transparent_30%),linear-gradient(135deg,#f4f4f5,#d6d3d1,#fafafa)] text-neutral-950";
+    ? "bg-[linear-gradient(135deg,#080808,#151515,#242427)] text-white"
+    : "bg-[linear-gradient(135deg,#f4f4f5,#e7e5e4,#fafafa)] text-neutral-950";
 
   const glass = dark
-    ? "border-white/15 bg-white/10 text-white backdrop-blur-2xl"
-    : "border-white/70 bg-white/65 text-neutral-950 backdrop-blur-2xl shadow-xl";
+    ? "border-white/12 bg-white/[0.08] text-white backdrop-blur-md"
+    : "border-white/70 bg-white/80 text-neutral-950 backdrop-blur-md shadow-lg";
 
   const muted = dark ? "text-neutral-300" : "text-neutral-700";
 
   const hoverLift =
-    "transition duration-300 hover:-translate-y-3 hover:scale-[1.03] hover:shadow-[0_0_45px_rgba(255,255,255,0.25)]";
+    "transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.01]";
 
   const buttonHover =
-    "transition duration-300 hover:-translate-y-1 hover:scale-[1.04] hover:shadow-[0_0_35px_rgba(255,255,255,0.22)]";
+    "transition-transform duration-200 hover:-translate-y-0.5 hover:scale-[1.02]";
 
   const scrollToSection = (id) => {
     setActiveGallery(null);
@@ -142,17 +160,25 @@ export default function FeliixWxfPhotography() {
     if (!sliderRef.current) return;
 
     const rect = sliderRef.current.getBoundingClientRect();
-    const percent = Math.min(
+
+    sliderPercentRef.current = Math.min(
       100,
       Math.max(0, ((clientX - rect.left) / rect.width) * 100)
     );
 
-    requestAnimationFrame(() => {
+    if (sliderFrameRef.current) return;
+
+    sliderFrameRef.current = requestAnimationFrame(() => {
+      const percent = sliderPercentRef.current;
+
       if (beforeRef.current) {
         beforeRef.current.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
       }
+
       if (lineRef.current) lineRef.current.style.left = `${percent}%`;
       if (handleRef.current) handleRef.current.style.left = `${percent}%`;
+
+      sliderFrameRef.current = null;
     });
   };
 
@@ -270,11 +296,11 @@ export default function FeliixWxfPhotography() {
   const Section = ({ id, children, className = "" }) => (
     <motion.section
       id={id}
-      initial={{ opacity: 0, y: 60 }}
+      initial={{ opacity: 0, y: 32 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.18 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className={className}
+      viewport={{ once: true, amount: 0.16 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className={`relative z-0 scroll-mt-28 ${className}`}
     >
       {children}
     </motion.section>
@@ -284,7 +310,7 @@ export default function FeliixWxfPhotography() {
     <button
       onClick={() => setTheme(dark ? "light" : "dark")}
       className={`relative flex h-10 w-[92px] items-center justify-between rounded-full border px-3 ${buttonHover} ${
-        dark ? "border-white/30 bg-white/15" : "border-black/20 bg-white/75"
+        dark ? "border-white/25 bg-white/10" : "border-black/20 bg-white/80"
       }`}
       aria-label="Dark Light Mode wechseln"
     >
@@ -293,7 +319,7 @@ export default function FeliixWxfPhotography() {
       <motion.div
         layout
         transition={{ type: "spring", stiffness: 450, damping: 30 }}
-        className="absolute top-1 h-8 w-8 rounded-full bg-white shadow-xl"
+        className="absolute top-1 h-8 w-8 rounded-full bg-white shadow-lg"
         style={{ left: dark ? "52px" : "4px" }}
       />
     </button>
@@ -325,15 +351,17 @@ export default function FeliixWxfPhotography() {
             {galleryImages[activeGallery].map((image, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 35 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.04 }}
-                className="group overflow-hidden rounded-[2rem] border border-white/15 bg-white/10 p-2 shadow-2xl backdrop-blur-xl"
+                transition={{ delay: index * 0.025, duration: 0.35 }}
+                className="group overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.06] p-2 shadow-lg"
               >
                 <img
                   src={image}
                   alt=""
-                  className="aspect-[3/4] h-full w-full rounded-[1.5rem] object-cover transition duration-700 group-hover:scale-105"
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[3/4] h-full w-full rounded-[1.5rem] object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               </motion.div>
             ))}
@@ -344,8 +372,14 @@ export default function FeliixWxfPhotography() {
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${pageStyle}`}>
-      <header className="fixed top-0 z-50 w-full border-b border-white/15 bg-white/10 backdrop-blur-2xl">
+    <div className={`min-h-screen transition-colors duration-300 ${pageStyle}`}>
+      <header
+        className={`fixed top-0 z-[200] w-full border-b backdrop-blur-xl ${
+          dark
+            ? "border-white/10 bg-neutral-950/95"
+            : "border-black/10 bg-white/95"
+        }`}
+      >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
           <button
             onClick={() => scrollToSection("startseite")}
@@ -360,7 +394,11 @@ export default function FeliixWxfPhotography() {
               <button
                 key={item}
                 onClick={() => scrollToSection(item)}
-                className={`rounded-full border border-white/30 bg-white/15 px-4 py-2 text-sm font-semibold shadow-lg backdrop-blur-xl hover:bg-white/30 ${buttonHover}`}
+                className={`rounded-full border px-4 py-2 text-sm font-semibold ${
+                  dark
+                    ? "border-white/20 bg-white/10 hover:bg-white/15"
+                    : "border-black/10 bg-white/75 hover:bg-white"
+                } ${buttonHover}`}
               >
                 {item}
               </button>
@@ -372,7 +410,7 @@ export default function FeliixWxfPhotography() {
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-xl transition duration-300 hover:scale-105 md:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 transition-transform duration-200 hover:scale-105 md:hidden"
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -381,10 +419,14 @@ export default function FeliixWxfPhotography() {
 
         {menuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -15 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className="border-t border-white/10 bg-black/75 px-5 py-5 backdrop-blur-2xl md:hidden"
+            transition={{ duration: 0.2 }}
+            className={`border-t px-5 py-5 md:hidden ${
+              dark
+                ? "border-white/10 bg-neutral-950"
+                : "border-black/10 bg-white"
+            }`}
           >
             <div className="flex flex-col gap-4">
               {["Startseite", "Portfolio", "Bewertung", "Kontakt"].map((item) => (
@@ -394,7 +436,11 @@ export default function FeliixWxfPhotography() {
                     scrollToSection(item);
                     setMenuOpen(false);
                   }}
-                  className="rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-left text-base font-semibold transition duration-300 hover:bg-white/20"
+                  className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition-colors duration-200 ${
+                    dark
+                      ? "border-white/10 bg-white/10 hover:bg-white/15"
+                      : "border-black/10 bg-black/5 hover:bg-black/10"
+                  }`}
                 >
                   {item}
                 </button>
@@ -427,7 +473,7 @@ export default function FeliixWxfPhotography() {
               </p>
             </div>
 
-            <div className={`rounded-[2rem] border p-4 shadow-2xl ${glass}`}>
+            <div className={`rounded-[2rem] border p-4 shadow-lg ${glass}`}>
               <div
                 ref={sliderRef}
                 onPointerDown={(e) => {
@@ -461,22 +507,22 @@ export default function FeliixWxfPhotography() {
 
                 <div
                   ref={lineRef}
-                  className="absolute top-0 h-full w-1 bg-white shadow-[0_0_30px_rgba(255,255,255,0.95)]"
+                  className="absolute top-0 h-full w-1 bg-white shadow-lg"
                   style={{ left: "50%" }}
                 />
 
                 <div
                   ref={handleRef}
-                  className={`absolute top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-white/70 bg-black/35 text-2xl text-white shadow-2xl backdrop-blur-xl ${buttonHover}`}
+                  className={`absolute top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-white/70 bg-black/45 text-2xl text-white shadow-lg ${buttonHover}`}
                   style={{ left: "50%" }}
                 >
                   ↔
                 </div>
 
-                <div className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1 text-sm text-white backdrop-blur-xl">
+                <div className="absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
                   Vorher
                 </div>
-                <div className="absolute right-4 top-4 rounded-full bg-black/45 px-3 py-1 text-sm text-white backdrop-blur-xl">
+                <div className="absolute right-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
                   Nachher
                 </div>
               </div>
@@ -513,13 +559,15 @@ export default function FeliixWxfPhotography() {
                 <Card
                   key={item.key}
                   onClick={() => setActiveGallery(item.key)}
-                  className={`cursor-pointer overflow-hidden rounded-[2rem] border transition duration-300 hover:-translate-y-2 hover:shadow-2xl ${glass}`}
+                  className={`cursor-pointer overflow-hidden rounded-[2rem] border ${glass} ${hoverLift}`}
                 >
                   <div className="aspect-[3/4] overflow-hidden">
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="h-full w-full object-cover transition duration-700 hover:scale-110"
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.04]"
                     />
                   </div>
                   <CardContent className="p-5">
@@ -545,7 +593,11 @@ export default function FeliixWxfPhotography() {
 
               <button
                 onClick={() => setShowAllReviews(true)}
-                className={`w-fit rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold backdrop-blur-xl hover:bg-white/20 ${buttonHover}`}
+                className={`w-fit rounded-full border px-5 py-3 text-sm font-semibold ${
+                  dark
+                    ? "border-white/15 bg-white/10 hover:bg-white/15"
+                    : "border-black/10 bg-white/75 hover:bg-white"
+                } ${buttonHover}`}
               >
                 Alle Bewertungen ansehen
               </button>
@@ -574,9 +626,6 @@ export default function FeliixWxfPhotography() {
             >
               <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
                 <div className="relative overflow-hidden border-b border-white/10 p-8 lg:border-b-0 lg:border-r">
-                  <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-yellow-400/20 blur-3xl" />
-                  <div className="absolute -bottom-20 -left-20 h-52 w-52 rounded-full bg-white/10 blur-3xl" />
-
                   <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
                     Deine Meinung
                   </p>
@@ -586,11 +635,11 @@ export default function FeliixWxfPhotography() {
                   </h3>
 
                   <p className={`relative mt-5 leading-8 ${muted}`}>
-                    Hinterlasse eine kurze Bewertung. Deine Rückmeldung hilft anderen,
-                    einen echten Eindruck von meiner Arbeit zu bekommen.
+                    Hinterlasse eine kurze Bewertung. Deine Rückmeldung hilft
+                    anderen, einen echten Eindruck von meiner Arbeit zu bekommen.
                   </p>
 
-                  <div className="relative mt-8 rounded-[1.5rem] border border-white/10 bg-white/10 p-5 backdrop-blur-xl">
+                  <div className="relative mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-5">
                     <p className="text-sm font-semibold">Aktuelle Auswahl</p>
                     <div className="mt-3 flex items-center gap-3">
                       <div className="flex gap-1">
@@ -609,10 +658,10 @@ export default function FeliixWxfPhotography() {
                       name="name"
                       required
                       placeholder="Dein Name"
-                      className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition focus:scale-[1.01] focus:border-yellow-400"
+                      className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400"
                     />
 
-                    <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4">
                       <p className={`mb-3 text-sm ${muted}`}>Sternebewertung</p>
                       <div className="flex flex-wrap gap-2">
                         {[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map((num) => (
@@ -637,7 +686,7 @@ export default function FeliixWxfPhotography() {
                       required
                       rows="5"
                       placeholder="Schreib kurz, wie dein Shooting war..."
-                      className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition focus:scale-[1.01] focus:border-yellow-400 md:col-span-2"
+                      className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400 md:col-span-2"
                     />
 
                     <Button
@@ -669,7 +718,7 @@ export default function FeliixWxfPhotography() {
               </p>
 
               <div className={`mt-8 space-y-5 ${muted}`}>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-xl">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
                     <Mail className="h-5 w-5" />
                   </div>
@@ -685,7 +734,7 @@ export default function FeliixWxfPhotography() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-xl">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
                     <Phone className="h-5 w-5" />
                   </div>
@@ -705,9 +754,9 @@ export default function FeliixWxfPhotography() {
                   href="https://www.instagram.com/feliix.wxf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-pink-400/40 hover:bg-pink-500/10 hover:shadow-[0_0_35px_rgba(236,72,153,0.35)]"
+                  className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4 transition-transform duration-200 hover:-translate-y-0.5"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-orange-400 text-white shadow-lg">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 via-purple-500 to-orange-400 text-white shadow-md">
                     <InstagramIcon className="h-5 w-5" />
                   </div>
 
@@ -727,7 +776,7 @@ export default function FeliixWxfPhotography() {
             <form
               action="https://formspree.io/f/xqennvyy"
               method="POST"
-              className="rounded-[2rem] border border-white/20 bg-white/20 p-6 shadow-2xl backdrop-blur-xl"
+              className="rounded-[2rem] border border-white/15 bg-white/[0.08] p-6 shadow-lg"
             >
               <div className="grid gap-5 md:grid-cols-2">
                 <input
@@ -759,7 +808,8 @@ export default function FeliixWxfPhotography() {
                 />
 
                 <p className={`text-xs leading-6 ${muted} md:col-span-2`}>
-                  Mit dem Absenden erklärst du dich einverstanden, dass deine Angaben zur Bearbeitung deiner Anfrage verarbeitet werden.
+                  Mit dem Absenden erklärst du dich einverstanden, dass deine
+                  Angaben zur Bearbeitung deiner Anfrage verarbeitet werden.
                   Weitere Informationen findest du im Datenschutz.
                 </p>
 
@@ -776,16 +826,17 @@ export default function FeliixWxfPhotography() {
       </main>
 
       {showAllReviews && (
-        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/70 p-5 backdrop-blur-md">
-          <div className="mx-auto my-8 max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-2xl">
-            <div className="sticky top-0 z-10 mb-8 flex items-start justify-between border-b border-white/10 bg-neutral-950/95 pb-5 backdrop-blur-xl">
+        <div className="fixed inset-0 z-[300] overflow-y-auto bg-black/70 p-5 backdrop-blur-sm">
+          <div className="mx-auto my-8 max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
+            <div className="sticky top-0 z-10 mb-8 flex items-start justify-between border-b border-white/10 bg-neutral-950/95 pb-5">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
                   Übersicht
                 </p>
                 <h2 className="mt-3 text-4xl font-black">Alle Bewertungen</h2>
                 <p className="mt-3 text-sm text-neutral-400">
-                  Insgesamt {reviews.length} Bewertung{reviews.length === 1 ? "" : "en"}
+                  Insgesamt {reviews.length} Bewertung
+                  {reviews.length === 1 ? "" : "en"}
                 </p>
               </div>
 
@@ -831,19 +882,21 @@ export default function FeliixWxfPhotography() {
       )}
 
       {selectedReview && (
-        <div className="fixed inset-0 z-[120] overflow-y-auto bg-black/80 p-5 backdrop-blur-lg">
+        <div className="fixed inset-0 z-[320] overflow-y-auto bg-black/80 p-5 backdrop-blur-sm">
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 25 }}
+            initial={{ opacity: 0, scale: 0.94, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className="mx-auto my-10 w-full max-w-2xl rounded-[2.5rem] border border-white/20 bg-neutral-950 p-8 text-white shadow-[0_30px_120px_rgba(0,0,0,0.8)]"
+            transition={{ duration: 0.22 }}
+            className="mx-auto my-10 w-full max-w-2xl rounded-[2.5rem] border border-white/20 bg-neutral-950 p-8 text-white shadow-xl"
           >
             <div className="flex items-start justify-between gap-6">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
                   Bewertung
                 </p>
-                <h2 className="mt-3 text-4xl font-black">{selectedReview.name}</h2>
+                <h2 className="mt-3 text-4xl font-black">
+                  {selectedReview.name}
+                </h2>
               </div>
 
               <button
@@ -855,7 +908,9 @@ export default function FeliixWxfPhotography() {
             </div>
 
             <div className="mt-8 flex items-center gap-4">
-              <div className="flex gap-1">{renderStars(selectedReview.stars, "h-8 w-8")}</div>
+              <div className="flex gap-1">
+                {renderStars(selectedReview.stars, "h-8 w-8")}
+              </div>
               <span className="rounded-full bg-yellow-400 px-4 py-1 text-sm font-black text-black">
                 {selectedReview.stars}/5
               </span>
@@ -872,12 +927,12 @@ export default function FeliixWxfPhotography() {
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.35 }}
-          className="fixed bottom-6 right-6 z-50 max-w-sm rounded-[1.7rem] border border-white/40 bg-white/25 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+          transition={{ duration: 0.28 }}
+          className="fixed bottom-6 right-6 z-[250] max-w-sm rounded-[1.7rem] border border-white/30 bg-neutral-950/90 p-5 text-white shadow-xl backdrop-blur-md"
         >
           <button
             onClick={() => setPopupClosed(true)}
-            className={`absolute right-3 top-3 rounded-full bg-black/25 p-1 text-white ${buttonHover}`}
+            className={`absolute right-3 top-3 rounded-full bg-white/10 p-1 text-white ${buttonHover}`}
           >
             <X className="h-4 w-4" />
           </button>
@@ -887,7 +942,7 @@ export default function FeliixWxfPhotography() {
             className={`pr-6 text-left ${buttonHover}`}
           >
             <p className="text-lg font-black">Benötigen Sie ein Shooting?</p>
-            <p className={`mt-2 text-sm ${muted}`}>
+            <p className="mt-2 text-sm text-neutral-300">
               Dann direkt hier klicken und eine Anfrage senden.
             </p>
           </button>
@@ -895,8 +950,8 @@ export default function FeliixWxfPhotography() {
       )}
 
       {showImpressum && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-5 backdrop-blur-md">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-2xl">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
             <div className="flex items-start justify-between">
               <h2 className="text-4xl font-black">Impressum</h2>
               <button
@@ -943,8 +998,8 @@ export default function FeliixWxfPhotography() {
       )}
 
       {showDatenschutz && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-5 backdrop-blur-md">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-2xl">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
             <div className="flex items-start justify-between">
               <h2 className="text-4xl font-black">Datenschutz</h2>
               <button
