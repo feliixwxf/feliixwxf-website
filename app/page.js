@@ -57,6 +57,7 @@ export default function FeliixWxfPhotography() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupClosed, setPopupClosed] = useState(false);
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const [showImpressum, setShowImpressum] = useState(false);
   const [showDatenschutz, setShowDatenschutz] = useState(false);
 
@@ -230,13 +231,6 @@ export default function FeliixWxfPhotography() {
     setReviews([newReview, ...reviews]);
     setRating(0);
     e.currentTarget.reset();
-
-    setTimeout(() => {
-      document.getElementById("alle-bewertungen")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 100);
   };
 
   const renderStars = (value, size = "h-5 w-5") => {
@@ -537,12 +531,7 @@ export default function FeliixWxfPhotography() {
               </h2>
 
               <button
-                onClick={() => {
-                  document.getElementById("alle-bewertungen")?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }}
+                onClick={() => setShowAllReviews(true)}
                 className={`w-fit rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold backdrop-blur-xl hover:bg-white/20 ${buttonHover}`}
               >
                 Alle Bewertungen ansehen
@@ -648,42 +637,6 @@ export default function FeliixWxfPhotography() {
                 </div>
               </div>
             </form>
-
-            <div id="alle-bewertungen" className="mt-20 scroll-mt-28">
-              <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
-                    Übersicht
-                  </p>
-                  <h3 className="mt-3 text-3xl font-black md:text-4xl">
-                    Alle Bewertungen
-                  </h3>
-                </div>
-
-                <p className={`text-sm ${muted}`}>
-                  Insgesamt {reviews.length} Bewertung{reviews.length === 1 ? "" : "en"}
-                </p>
-              </div>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                {reviews.map((review, i) => (
-                  <Card
-                    key={`all-${i}`}
-                    className={`rounded-[2rem] border ${hoverLift} ${glass}`}
-                  >
-                    <CardContent className="p-7">
-                      <div className="mb-5 flex gap-1">
-                        {renderStars(review.stars)}
-                      </div>
-
-                      <p className={`leading-7 ${muted}`}>“{review.text}”</p>
-
-                      <p className="mt-6 text-lg font-bold">{review.name}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
           </div>
         </Section>
 
@@ -808,6 +761,52 @@ export default function FeliixWxfPhotography() {
           </div>
         </Section>
       </main>
+
+      {showAllReviews && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-5 backdrop-blur-md">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-2xl">
+            <div className="mb-8 flex items-start justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
+                  Übersicht
+                </p>
+                <h2 className="mt-3 text-4xl font-black">Alle Bewertungen</h2>
+                <p className="mt-3 text-sm text-neutral-400">
+                  Insgesamt {reviews.length} Bewertung{reviews.length === 1 ? "" : "en"}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowAllReviews(false)}
+                className="rounded-full bg-white/10 p-2 transition hover:bg-white/20"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              {reviews.map((review, i) => (
+                <Card
+                  key={`all-${i}`}
+                  className={`rounded-[2rem] border border-white/15 bg-white/10 text-white ${hoverLift}`}
+                >
+                  <CardContent className="p-7">
+                    <div className="mb-5 flex gap-1">
+                      {renderStars(review.stars)}
+                    </div>
+
+                    <p className="leading-7 text-neutral-300">
+                      “{review.text}”
+                    </p>
+
+                    <p className="mt-6 text-lg font-bold">{review.name}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {showPopup && !popupClosed && (
         <motion.div
