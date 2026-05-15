@@ -187,7 +187,7 @@ export default function FeliixWxfPhotography() {
       title: "Car",
       key: "car",
       image:
-        "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1200&q=80",
+        "/images/hyundaititel.jpg",
     },
     {
       title: "Portrait",
@@ -205,7 +205,7 @@ export default function FeliixWxfPhotography() {
       title: "Event",
       key: "event",
       image:
-        "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80",
+        "/images/abititel.jpg",
     },
   ];
 
