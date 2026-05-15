@@ -93,6 +93,18 @@ export default function FeliixWxfPhotography() {
     if (activeGallery) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [activeGallery]);
 
+  useEffect(() => {
+    if (showAllReviews || selectedReview || showImpressum || showDatenschutz) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showAllReviews, selectedReview, showImpressum, showDatenschutz]);
+
   const dark = theme === "dark";
 
   const navItems = ["Startseite", "Info", "Portfolio", "Bewertung", "Kontakt"];
@@ -764,8 +776,8 @@ export default function FeliixWxfPhotography() {
       </main>
 
       {showAllReviews && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-5 backdrop-blur-md">
-          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-2xl">
+        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/70 p-5 backdrop-blur-md">
+          <div className="mx-auto my-8 max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-2xl">
             <div className="sticky top-0 z-10 mb-8 flex items-start justify-between border-b border-white/10 bg-neutral-950/95 pb-5 backdrop-blur-xl">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
@@ -819,12 +831,12 @@ export default function FeliixWxfPhotography() {
       )}
 
       {selectedReview && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-5 backdrop-blur-lg">
+        <div className="fixed inset-0 z-[120] overflow-y-auto bg-black/80 p-5 backdrop-blur-lg">
           <motion.div
             initial={{ opacity: 0, scale: 0.92, y: 25 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="w-full max-w-2xl rounded-[2.5rem] border border-white/20 bg-neutral-950 p-8 text-white shadow-[0_30px_120px_rgba(0,0,0,0.8)]"
+            className="mx-auto my-10 w-full max-w-2xl rounded-[2.5rem] border border-white/20 bg-neutral-950 p-8 text-white shadow-[0_30px_120px_rgba(0,0,0,0.8)]"
           >
             <div className="flex items-start justify-between gap-6">
               <div>
