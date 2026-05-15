@@ -331,42 +331,76 @@ export default function FeliixWxfPhotography() {
 
   return (
     <div className={`min-h-screen transition-colors duration-500 ${pageStyle}`}>
-      <header className="fixed top-0 z-50 w-full border-b border-white/15 bg-white/10 backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
+     <header className="fixed top-0 z-50 w-full border-b border-white/15 bg-white/10 backdrop-blur-2xl">
+  <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
+    <button
+      onClick={() => scrollToSection("startseite")}
+      className={`flex items-center gap-2 rounded-full px-3 py-2 ${buttonHover}`}
+    >
+      <Camera className="h-6 w-6" />
+      <span className="text-xl font-black tracking-wide">
+        feliix.wxf
+      </span>
+    </button>
+
+    <nav className="hidden items-center gap-3 md:flex">
+      {navItems.map((item) => (
+        <button
+          key={item}
+          onClick={() => scrollToSection(item)}
+          className={`rounded-full border border-white/30 bg-white/15 px-4 py-2 text-sm font-semibold shadow-lg backdrop-blur-xl hover:bg-white/30 ${buttonHover}`}
+        >
+          {item}
+        </button>
+      ))}
+    </nav>
+
+    <div className="flex items-center gap-3">
+      <ThemeToggle />
+
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className={`flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-xl transition duration-300 hover:scale-105 md:hidden`}
+      >
+        {menuOpen ? (
+          <X className="h-5 w-5" />
+        ) : (
+          <Menu className="h-5 w-5" />
+        )}
+      </button>
+    </div>
+  </div>
+
+  {menuOpen && (
+    <motion.div
+      initial={{ opacity: 0, y: -15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -15 }}
+      transition={{ duration: 0.25 }}
+      className="border-t border-white/10 bg-black/75 px-5 py-5 backdrop-blur-2xl md:hidden"
+    >
+      <div className="flex flex-col gap-4">
+        {[
+          "Startseite",
+          "Portfolio",
+          "Bewertung",
+          "Kontakt",
+        ].map((item) => (
           <button
-            onClick={() => scrollToSection("startseite")}
-            className={`flex items-center gap-2 rounded-full px-3 py-2 ${buttonHover}`}
+            key={item}
+            onClick={() => {
+              scrollToSection(item);
+              setMenuOpen(false);
+            }}
+            className="rounded-2xl border border-white/10 bg-white/10 px-5 py-4 text-left text-base font-semibold transition duration-300 hover:bg-white/20"
           >
-            <Camera className="h-6 w-6" />
-            <span className="text-xl font-black tracking-wide">feliix.wxf</span>
+            {item}
           </button>
-
-          <nav className="hidden items-center gap-3 md:flex">
-            {navItems.map((item) => (
-              <button
-                key={item}
-                onClick={() => scrollToSection(item)}
-                className={`rounded-full border border-white/30 bg-white/15 px-4 py-2 text-sm font-semibold shadow-lg backdrop-blur-xl hover:bg-white/30 ${buttonHover}`}
-              >
-                {item}
-              </button>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`md:hidden ${buttonHover}`}
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              {menuOpen ? <X /> : <Menu />}
-            </Button>
-          </div>
-        </div>
-      </header>
+        ))}
+      </div>
+    </motion.div>
+  )}
+</header>
 
       <main>
         <Section
