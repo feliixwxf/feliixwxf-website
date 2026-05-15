@@ -58,6 +58,7 @@ export default function FeliixWxfPhotography() {
   const [popupClosed, setPopupClosed] = useState(false);
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
   const [showImpressum, setShowImpressum] = useState(false);
   const [showDatenschutz, setShowDatenschutz] = useState(false);
 
@@ -765,7 +766,7 @@ export default function FeliixWxfPhotography() {
       {showAllReviews && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-5 backdrop-blur-md">
           <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-2xl">
-            <div className="mb-8 flex items-start justify-between">
+            <div className="sticky top-0 z-10 mb-8 flex items-start justify-between border-b border-white/10 bg-neutral-950/95 pb-5 backdrop-blur-xl">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
                   Übersicht
@@ -786,25 +787,72 @@ export default function FeliixWxfPhotography() {
 
             <div className="grid gap-6 md:grid-cols-2">
               {reviews.map((review, i) => (
-                <Card
+                <button
                   key={`all-${i}`}
-                  className={`rounded-[2rem] border border-white/15 bg-white/10 text-white ${hoverLift}`}
+                  type="button"
+                  onClick={() => setSelectedReview(review)}
+                  className="text-left"
                 >
-                  <CardContent className="p-7">
-                    <div className="mb-5 flex gap-1">
-                      {renderStars(review.stars)}
-                    </div>
+                  <Card
+                    className={`rounded-[2rem] border border-white/15 bg-white/10 text-white ${hoverLift}`}
+                  >
+                    <CardContent className="p-7">
+                      <div className="mb-5 flex gap-1">
+                        {renderStars(review.stars)}
+                      </div>
 
-                    <p className="leading-7 text-neutral-300">
-                      “{review.text}”
-                    </p>
+                      <p className="line-clamp-4 leading-7 text-neutral-300">
+                        “{review.text}”
+                      </p>
 
-                    <p className="mt-6 text-lg font-bold">{review.name}</p>
-                  </CardContent>
-                </Card>
+                      <p className="mt-6 text-lg font-bold">{review.name}</p>
+                      <p className="mt-2 text-xs uppercase tracking-[0.25em] text-neutral-500">
+                        Anklicken zum Vergrößern
+                      </p>
+                    </CardContent>
+                  </Card>
+                </button>
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {selectedReview && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-5 backdrop-blur-lg">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 25 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="w-full max-w-2xl rounded-[2.5rem] border border-white/20 bg-neutral-950 p-8 text-white shadow-[0_30px_120px_rgba(0,0,0,0.8)]"
+          >
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
+                  Bewertung
+                </p>
+                <h2 className="mt-3 text-4xl font-black">{selectedReview.name}</h2>
+              </div>
+
+              <button
+                onClick={() => setSelectedReview(null)}
+                className="rounded-full bg-white/10 p-3 transition hover:bg-white/20"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-8 flex items-center gap-4">
+              <div className="flex gap-1">{renderStars(selectedReview.stars, "h-8 w-8")}</div>
+              <span className="rounded-full bg-yellow-400 px-4 py-1 text-sm font-black text-black">
+                {selectedReview.stars}/5
+              </span>
+            </div>
+
+            <p className="mt-8 text-xl leading-10 text-neutral-200">
+              “{selectedReview.text}”
+            </p>
+          </motion.div>
         </div>
       )}
 
