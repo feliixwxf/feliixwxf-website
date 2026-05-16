@@ -211,13 +211,13 @@ export default function FeliixWxfPhotography() {
 
   const galleryImages = {
     car: [
-      "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1494905998402-395d579af36f?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1400&q=80",
+      "/images/fw.jpg",
+      "/images/ju.jpg",
+      "/images/bus.jpg",
+      "/images/porsche.jpg",
+      "/images/bw.jpg",
+      "/images/audi.jpg",
+      "/images/goldcar.jpg",
       "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1400&q=80",
       "https://images.unsplash.com/photo-1541443131876-44b03de101c5?auto=format&fit=crop&w=1400&q=80",
     ],
@@ -244,9 +244,9 @@ export default function FeliixWxfPhotography() {
       "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1400&q=80",
     ],
     event: [
-      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1505236858219-8359eb29e329?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=1400&q=80",
+      "/images/zeugnis.jpg",
+      "/images/ski.jpg",
+      "/images/startpoint.jpg",
       "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1400&q=80",
       "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1400&q=80",
       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80",
@@ -486,10 +486,10 @@ export default function FeliixWxfPhotography() {
                 className="relative aspect-[4/5] touch-none select-none overflow-hidden rounded-[1.5rem]"
               >
                 <img
-                  src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1200&q=80&sat=25"
+                  src="/images/nacher.jpg"
                   alt="Nachher"
                   draggable="false"
-                  className="absolute inset-0 h-full w-full object-cover contrast-125 saturate-150"
+                  className="className="absolute inset-0 h-full w-full object-cover
                 />
 
                 <div
@@ -498,10 +498,10 @@ export default function FeliixWxfPhotography() {
                   style={{ clipPath: "inset(0 50% 0 0)" }}
                 >
                   <img
-                    src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1200&q=80"
+                    src="/images/vorher.jpg"
                     alt="Vorher"
                     draggable="false"
-                    className="h-full w-full object-cover grayscale"
+                    className="className="h-full w-full object-cover
                   />
                 </div>
 
