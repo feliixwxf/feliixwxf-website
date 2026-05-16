@@ -6,6 +6,13 @@ const SUPABASE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_KEY_SOURCE = process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? "SUPABASE_SERVICE_ROLE_KEY"
+  : process.env.SUPABASE_ANON_KEY
+    ? "SUPABASE_ANON_KEY"
+    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      ? "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      : "missing";
 
 const headers = {
   apikey: SUPABASE_KEY || "",
@@ -30,8 +37,30 @@ function cleanReview(review) {
   };
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
+    if (new URL(request.url).searchParams.get("debug") === "1") {
+      let urlHost = "";
+      let urlValid = false;
+
+      try {
+        urlHost = new URL(supabaseRestUrl).host;
+        urlValid = true;
+      } catch {
+        urlValid = false;
+      }
+
+      return NextResponse.json({
+        configured: isConfigured,
+        hasUrl: Boolean(SUPABASE_URL),
+        hasKey: Boolean(SUPABASE_KEY),
+        keySource: SUPABASE_KEY_SOURCE,
+        keyPrefix: SUPABASE_KEY?.slice(0, 3) || "",
+        urlValid,
+        urlHost,
+      });
+    }
+
     if (!isConfigured) {
       return NextResponse.json({ reviews: [] });
     }
@@ -100,7 +129,10 @@ export async function POST(request) {
   } catch (error) {
     console.error("Review POST failed:", error);
     return NextResponse.json(
-      { error: "Bewertung konnte nicht verarbeitet werden." },
+      {
+        error: "Bewertung konnte nicht verarbeitet werden.",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
