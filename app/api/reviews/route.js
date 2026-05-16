@@ -14,6 +14,9 @@ const headers = {
 };
 
 const isConfigured = Boolean(SUPABASE_URL && SUPABASE_KEY);
+const supabaseRestUrl = SUPABASE_URL
+  ? SUPABASE_URL.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "")
+  : "";
 
 function cleanReview(review) {
   const name = String(review?.name || "").trim().slice(0, 60);
@@ -28,64 +31,77 @@ function cleanReview(review) {
 }
 
 export async function GET() {
-  if (!isConfigured) {
-    return NextResponse.json({ reviews: [] });
-  }
-
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/reviews?select=name,text,stars,created_at&order=created_at.desc&limit=50`,
-    {
-      headers,
-      cache: "no-store",
+  try {
+    if (!isConfigured) {
+      return NextResponse.json({ reviews: [] });
     }
-  );
 
-  if (!response.ok) {
-    const error = await response.text();
-    console.error("Could not load reviews:", error);
+    const response = await fetch(
+      `${supabaseRestUrl}/rest/v1/reviews?select=name,text,stars,created_at&order=created_at.desc&limit=50`,
+      {
+        headers,
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("Could not load reviews:", error);
+      return NextResponse.json({ reviews: [] }, { status: 200 });
+    }
+
+    const reviews = await response.json();
+    return NextResponse.json({ reviews });
+  } catch (error) {
+    console.error("Review GET failed:", error);
     return NextResponse.json({ reviews: [] }, { status: 200 });
   }
-
-  const reviews = await response.json();
-  return NextResponse.json({ reviews });
 }
 
 export async function POST(request) {
-  const review = cleanReview(await request.json());
+  try {
+    const review = cleanReview(await request.json());
 
-  if (!review.name || !review.text) {
+    if (!review.name || !review.text) {
+      return NextResponse.json(
+        { error: "Name und Text sind erforderlich." },
+        { status: 400 }
+      );
+    }
+
+    if (!isConfigured) {
+      return NextResponse.json(
+        { error: "Online-Speicher ist noch nicht konfiguriert." },
+        { status: 503 }
+      );
+    }
+
+    const response = await fetch(`${supabaseRestUrl}/rest/v1/reviews`, {
+      method: "POST",
+      headers: {
+        ...headers,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(review),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("Could not save review:", error);
+
+      return NextResponse.json(
+        { error: "Bewertung konnte nicht gespeichert werden.", details: error },
+        { status: 500 }
+      );
+    }
+
+    const [savedReview] = await response.json();
+    return NextResponse.json({ review: savedReview });
+  } catch (error) {
+    console.error("Review POST failed:", error);
     return NextResponse.json(
-      { error: "Name und Text sind erforderlich." },
-      { status: 400 }
-    );
-  }
-
-  if (!isConfigured) {
-    return NextResponse.json(
-      { error: "Online-Speicher ist noch nicht konfiguriert." },
-      { status: 503 }
-    );
-  }
-
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
-    method: "POST",
-    headers: {
-      ...headers,
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(review),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    console.error("Could not save review:", error);
-
-    return NextResponse.json(
-      { error: "Bewertung konnte nicht gespeichert werden." },
+      { error: "Bewertung konnte nicht verarbeitet werden." },
       { status: 500 }
     );
   }
-
-  const [savedReview] = await response.json();
-  return NextResponse.json({ review: savedReview });
 }
