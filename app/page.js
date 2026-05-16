@@ -78,27 +78,19 @@ export default function FeliixWxfPhotography() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("feliix-theme");
-    const reviewVersion = localStorage.getItem("feliix-review-version");
 
     if (savedTheme) setTheme(savedTheme);
-
-    const savedReviews = localStorage.getItem("feliix-reviews");
-
-    if (reviewVersion !== "2") {
-      localStorage.setItem("feliix-reviews", JSON.stringify(DEFAULT_REVIEWS));
-      localStorage.setItem("feliix-review-version", "2");
-    } else if (savedReviews) {
-      setReviews(JSON.parse(savedReviews));
-    }
 
     fetch("/api/reviews")
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
-        if (data?.reviews?.length) setReviews(data.reviews);
+        if (data?.reviews?.length) {
+          setReviews([...data.reviews, ...DEFAULT_REVIEWS]);
+        }
       })
       .catch(() => {
         setReviewMessage(
-          "Bewertungen werden gerade lokal angezeigt. Online-Speicher noch nicht verbunden."
+          "Online-Bewertungen konnten gerade nicht geladen werden."
         );
       });
 
@@ -109,10 +101,6 @@ export default function FeliixWxfPhotography() {
   useEffect(() => {
     localStorage.setItem("feliix-theme", theme);
   }, [theme]);
-
-  useEffect(() => {
-    localStorage.setItem("feliix-reviews", JSON.stringify(reviews));
-  }, [reviews]);
 
   useEffect(() => {
     if (activeGallery) window.scrollTo({ top: 0, behavior: "smooth" });
@@ -315,11 +303,8 @@ export default function FeliixWxfPhotography() {
       e.currentTarget.reset();
       setReviewMessage("Danke! Deine Bewertung ist jetzt veröffentlicht.");
     } catch {
-      setReviews((currentReviews) => [newReview, ...currentReviews]);
-      setRating(0);
-      e.currentTarget.reset();
       setReviewMessage(
-        "Bewertung lokal gespeichert. Für öffentliche Bewertungen muss Supabase noch verbunden werden."
+        "Bewertung konnte nicht veröffentlicht werden. Bitte später nochmal versuchen."
       );
     } finally {
       setReviewSubmitting(false);
