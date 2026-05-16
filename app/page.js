@@ -69,6 +69,7 @@ export default function FeliixWxfPhotography() {
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewMessage, setReviewMessage] = useState("");
+  const [uploadedImages, setUploadedImages] = useState([]);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedPortfolioImage, setSelectedPortfolioImage] = useState(null);
@@ -93,6 +94,15 @@ export default function FeliixWxfPhotography() {
           "Online-Bewertungen konnten gerade nicht geladen werden."
         );
       });
+
+    fetch("/api/portfolio-images")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.images)) {
+          setUploadedImages(data.images);
+        }
+      })
+      .catch(() => {});
 
     const timer = setTimeout(() => setShowPopup(true), 8000);
     return () => clearTimeout(timer);
@@ -271,6 +281,27 @@ export default function FeliixWxfPhotography() {
     ],
   };
 
+  const uploadedImagesByCategory = uploadedImages.reduce((groups, image) => {
+    if (!image?.category || !image?.url) return groups;
+
+    return {
+      ...groups,
+      [image.category]: [...(groups[image.category] || []), image.url],
+    };
+  }, {});
+
+  const visibleGalleryImages = Object.fromEntries(
+    Object.entries(galleryImages).map(([category, images]) => [
+      category,
+      [...(uploadedImagesByCategory[category] || []), ...images],
+    ])
+  );
+
+  const visiblePortfolioItems = portfolioItems.map((item) => ({
+    ...item,
+    image: uploadedImagesByCategory[item.key]?.[0] || item.image,
+  }));
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setReviewSubmitting(true);
@@ -365,7 +396,9 @@ export default function FeliixWxfPhotography() {
   );
 
   if (activeGallery) {
-    const current = portfolioItems.find((item) => item.key === activeGallery);
+    const current = visiblePortfolioItems.find(
+      (item) => item.key === activeGallery
+    );
 
     return (
       <div className={`min-h-screen ${pageStyle}`}>
@@ -391,7 +424,7 @@ export default function FeliixWxfPhotography() {
           </div>
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {galleryImages[activeGallery].map((image, index) => (
+            {visibleGalleryImages[activeGallery].map((image, index) => (
               <motion.button
                 key={index}
                 type="button"
@@ -668,7 +701,7 @@ export default function FeliixWxfPhotography() {
             </h2>
 
             <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {portfolioItems.map((item) => (
+              {visiblePortfolioItems.map((item) => (
                 <Card
                   key={item.key}
                   onClick={() => setActiveGallery(item.key)}
