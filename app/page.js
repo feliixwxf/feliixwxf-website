@@ -67,6 +67,8 @@ export default function FeliixWxfPhotography() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupClosed, setPopupClosed] = useState(false);
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState("");
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedPortfolioImage, setSelectedPortfolioImage] = useState(null);
@@ -80,14 +82,25 @@ export default function FeliixWxfPhotography() {
 
     if (savedTheme) setTheme(savedTheme);
 
+    const savedReviews = localStorage.getItem("feliix-reviews");
+
     if (reviewVersion !== "2") {
       localStorage.setItem("feliix-reviews", JSON.stringify(DEFAULT_REVIEWS));
       localStorage.setItem("feliix-review-version", "2");
-      setReviews(DEFAULT_REVIEWS);
-    } else {
-      const savedReviews = localStorage.getItem("feliix-reviews");
-      if (savedReviews) setReviews(JSON.parse(savedReviews));
+    } else if (savedReviews) {
+      setReviews(JSON.parse(savedReviews));
     }
+
+    fetch("/api/reviews")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data?.reviews?.length) setReviews(data.reviews);
+      })
+      .catch(() => {
+        setReviewMessage(
+          "Bewertungen werden gerade lokal angezeigt. Online-Speicher noch nicht verbunden."
+        );
+      });
 
     const timer = setTimeout(() => setShowPopup(true), 8000);
     return () => clearTimeout(timer);
@@ -270,20 +283,47 @@ export default function FeliixWxfPhotography() {
     ],
   };
 
-  const handleReviewSubmit = (e) => {
+  const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    setReviewSubmitting(true);
+    setReviewMessage("");
 
     const form = new FormData(e.currentTarget);
 
     const newReview = {
-      name: form.get("name"),
-      text: form.get("text"),
+      name: String(form.get("name") || "").trim(),
+      text: String(form.get("text") || "").trim(),
       stars: rating || 5,
     };
 
-    setReviews([newReview, ...reviews]);
-    setRating(0);
-    e.currentTarget.reset();
+    try {
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newReview),
+      });
+
+      if (!response.ok) throw new Error("Review could not be saved");
+
+      const data = await response.json();
+      const savedReview = data.review || newReview;
+
+      setReviews((currentReviews) => [savedReview, ...currentReviews]);
+      setRating(0);
+      e.currentTarget.reset();
+      setReviewMessage("Danke! Deine Bewertung ist jetzt veröffentlicht.");
+    } catch {
+      setReviews((currentReviews) => [newReview, ...currentReviews]);
+      setRating(0);
+      e.currentTarget.reset();
+      setReviewMessage(
+        "Bewertung lokal gespeichert. Für öffentliche Bewertungen muss Supabase noch verbunden werden."
+      );
+    } finally {
+      setReviewSubmitting(false);
+    }
   };
 
   const renderStars = (value, size = "h-5 w-5") => {
@@ -779,10 +819,19 @@ export default function FeliixWxfPhotography() {
 
                     <Button
                       type="submit"
+                      disabled={reviewSubmitting}
                       className={`rounded-2xl py-6 text-base md:col-span-2 ${buttonHover}`}
                     >
-                      Bewertung veröffentlichen
+                      {reviewSubmitting
+                        ? "Bewertung wird veröffentlicht..."
+                        : "Bewertung veröffentlichen"}
                     </Button>
+
+                    {reviewMessage && (
+                      <p className={`text-sm leading-6 ${muted} md:col-span-2`}>
+                        {reviewMessage}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
