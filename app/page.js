@@ -69,6 +69,7 @@ export default function FeliixWxfPhotography() {
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
+  const [selectedPortfolioImage, setSelectedPortfolioImage] = useState(null);
   const [showImpressum, setShowImpressum] = useState(false);
   const [showDatenschutz, setShowDatenschutz] = useState(false);
 
@@ -104,7 +105,13 @@ export default function FeliixWxfPhotography() {
   }, [activeGallery]);
 
   useEffect(() => {
-    if (showAllReviews || selectedReview || showImpressum || showDatenschutz) {
+    if (
+      showAllReviews ||
+      selectedReview ||
+      selectedPortfolioImage ||
+      showImpressum ||
+      showDatenschutz
+    ) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -113,7 +120,13 @@ export default function FeliixWxfPhotography() {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [showAllReviews, selectedReview, showImpressum, showDatenschutz]);
+  }, [
+    showAllReviews,
+    selectedReview,
+    selectedPortfolioImage,
+    showImpressum,
+    showDatenschutz,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -332,7 +345,10 @@ export default function FeliixWxfPhotography() {
       <div className={`min-h-screen ${pageStyle}`}>
         <div className="mx-auto max-w-7xl px-5 py-10">
           <Button
-            onClick={() => setActiveGallery(null)}
+            onClick={() => {
+              setSelectedPortfolioImage(null);
+              setActiveGallery(null);
+            }}
             className={`mb-8 rounded-full ${buttonHover}`}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -349,12 +365,14 @@ export default function FeliixWxfPhotography() {
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {galleryImages[activeGallery].map((image, index) => (
-              <motion.div
+              <motion.button
                 key={index}
+                type="button"
+                onClick={() => setSelectedPortfolioImage(image)}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.025, duration: 0.35 }}
-                className="group overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.06] p-2 shadow-lg"
+                className="group overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.06] p-2 text-left shadow-lg outline-none ring-white/50 transition-transform duration-200 hover:-translate-y-1 focus-visible:ring-2"
               >
                 <img
                   src={image}
@@ -363,10 +381,40 @@ export default function FeliixWxfPhotography() {
                   decoding="async"
                   className="aspect-[3/4] h-full w-full rounded-[1.5rem] object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
-              </motion.div>
+              </motion.button>
             ))}
           </div>
         </div>
+
+        {selectedPortfolioImage && (
+          <div
+            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+            onClick={() => setSelectedPortfolioImage(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.22 }}
+              className="relative max-h-[92vh] w-full max-w-6xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedPortfolioImage(null)}
+                className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/65 text-white shadow-lg transition hover:bg-black/85"
+                aria-label="Bild schließen"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <img
+                src={selectedPortfolioImage}
+                alt=""
+                className="mx-auto max-h-[92vh] w-auto max-w-full rounded-[1.5rem] object-contain shadow-2xl"
+              />
+            </motion.div>
+          </div>
+        )}
       </div>
     );
   }
