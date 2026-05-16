@@ -109,7 +109,7 @@ export async function POST(request) {
       method: "POST",
       headers: {
         ...headers,
-        Prefer: "return=representation",
+        Prefer: "return=minimal",
       },
       body: JSON.stringify(review),
     });
@@ -124,8 +124,12 @@ export async function POST(request) {
       );
     }
 
-    const [savedReview] = await response.json();
-    return NextResponse.json({ review: savedReview });
+    return NextResponse.json({
+      review: {
+        ...review,
+        created_at: new Date().toISOString(),
+      },
+    });
   } catch (error) {
     console.error("Review POST failed:", error);
     return NextResponse.json(
