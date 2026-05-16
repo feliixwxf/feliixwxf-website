@@ -602,7 +602,7 @@ export default function FeliixWxfPhotography() {
                   src="/images/nacher.jpg"
                   alt="Nachher"
                   draggable="false"
-                  className="className="absolute inset-0 h-full w-full object-cover
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
 
                 <div
@@ -614,7 +614,7 @@ export default function FeliixWxfPhotography() {
                     src="/images/vorher.jpg"
                     alt="Vorher"
                     draggable="false"
-                    className="className="h-full w-full object-cover
+                    className="h-full w-full object-cover"
                   />
                 </div>
 
