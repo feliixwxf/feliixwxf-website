@@ -70,6 +70,7 @@ export default function FeliixWxfPhotography() {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedPortfolioImage, setSelectedPortfolioImage] = useState(null);
+  const [portfolioImageZoomed, setPortfolioImageZoomed] = useState(false);
   const [showImpressum, setShowImpressum] = useState(false);
   const [showDatenschutz, setShowDatenschutz] = useState(false);
 
@@ -347,6 +348,7 @@ export default function FeliixWxfPhotography() {
           <Button
             onClick={() => {
               setSelectedPortfolioImage(null);
+              setPortfolioImageZoomed(false);
               setActiveGallery(null);
             }}
             className={`mb-8 rounded-full ${buttonHover}`}
@@ -368,7 +370,10 @@ export default function FeliixWxfPhotography() {
               <motion.button
                 key={index}
                 type="button"
-                onClick={() => setSelectedPortfolioImage(image)}
+                onClick={() => {
+                  setSelectedPortfolioImage(image);
+                  setPortfolioImageZoomed(false);
+                }}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.025, duration: 0.35 }}
@@ -388,30 +393,65 @@ export default function FeliixWxfPhotography() {
 
         {selectedPortfolioImage && (
           <div
-            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-            onClick={() => setSelectedPortfolioImage(null)}
+            className={`fixed inset-0 z-[300] bg-black/85 backdrop-blur-sm ${
+              portfolioImageZoomed
+                ? "overflow-auto p-4"
+                : "flex items-center justify-center overflow-hidden p-4"
+            }`}
+            onClick={() => {
+              setSelectedPortfolioImage(null);
+              setPortfolioImageZoomed(false);
+            }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.22 }}
-              className="relative max-h-[92vh] w-full max-w-6xl"
+              className={`relative ${
+                portfolioImageZoomed
+                  ? "mx-auto min-h-full w-max"
+                  : "max-h-[92vh] w-full max-w-6xl"
+              }`}
               onClick={(event) => event.stopPropagation()}
             >
               <button
                 type="button"
-                onClick={() => setSelectedPortfolioImage(null)}
+                onClick={() => {
+                  setSelectedPortfolioImage(null);
+                  setPortfolioImageZoomed(false);
+                }}
                 className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/65 text-white shadow-lg transition hover:bg-black/85"
                 aria-label="Bild schließen"
               >
                 <X className="h-5 w-5" />
               </button>
 
-              <img
-                src={selectedPortfolioImage}
-                alt=""
-                className="mx-auto max-h-[92vh] w-auto max-w-full rounded-[1.5rem] object-contain shadow-2xl"
-              />
+              <button
+                type="button"
+                onClick={() => setPortfolioImageZoomed(!portfolioImageZoomed)}
+                className="block"
+                aria-label={
+                  portfolioImageZoomed
+                    ? "Bild verkleinern"
+                    : "Bild vergrößern"
+                }
+              >
+                <img
+                  src={selectedPortfolioImage}
+                  alt=""
+                  className={`mx-auto rounded-[1.5rem] object-contain shadow-2xl transition-[width,max-height] duration-200 ${
+                    portfolioImageZoomed
+                      ? "max-h-none w-[165vw] max-w-none md:w-[110vw]"
+                      : "max-h-[92vh] w-auto max-w-full"
+                  }`}
+                />
+              </button>
+
+              <div className="pointer-events-none fixed bottom-5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/65 px-4 py-2 text-center text-xs font-semibold text-white shadow-lg">
+                {portfolioImageZoomed
+                  ? "Antippen zum Verkleinern"
+                  : "Antippen zum Vergrößern"}
+              </div>
             </motion.div>
           </div>
         )}
