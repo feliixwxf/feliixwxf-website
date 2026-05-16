@@ -297,11 +297,6 @@ export default function FeliixWxfPhotography() {
     ])
   );
 
-  const visiblePortfolioItems = portfolioItems.map((item) => ({
-    ...item,
-    image: uploadedImagesByCategory[item.key]?.[0] || item.image,
-  }));
-
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setReviewSubmitting(true);
@@ -396,9 +391,7 @@ export default function FeliixWxfPhotography() {
   );
 
   if (activeGallery) {
-    const current = visiblePortfolioItems.find(
-      (item) => item.key === activeGallery
-    );
+    const current = portfolioItems.find((item) => item.key === activeGallery);
 
     return (
       <div className={`min-h-screen ${pageStyle}`}>
@@ -701,7 +694,7 @@ export default function FeliixWxfPhotography() {
             </h2>
 
             <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {visiblePortfolioItems.map((item) => (
+              {portfolioItems.map((item) => (
                 <Card
                   key={item.key}
                   onClick={() => setActiveGallery(item.key)}
