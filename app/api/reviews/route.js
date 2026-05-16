@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 const headers = {
-  apikey: SUPABASE_ANON_KEY || "",
-  Authorization: `Bearer ${SUPABASE_ANON_KEY || ""}`,
+  apikey: SUPABASE_KEY || "",
+  Authorization: `Bearer ${SUPABASE_KEY || ""}`,
   "Content-Type": "application/json",
 };
 
-const isConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+const isConfigured = Boolean(SUPABASE_URL && SUPABASE_KEY);
 
 function cleanReview(review) {
   const name = String(review?.name || "").trim().slice(0, 60);
@@ -37,6 +40,8 @@ export async function GET() {
   );
 
   if (!response.ok) {
+    const error = await response.text();
+    console.error("Could not load reviews:", error);
     return NextResponse.json({ reviews: [] }, { status: 200 });
   }
 
@@ -71,6 +76,9 @@ export async function POST(request) {
   });
 
   if (!response.ok) {
+    const error = await response.text();
+    console.error("Could not save review:", error);
+
     return NextResponse.json(
       { error: "Bewertung konnte nicht gespeichert werden." },
       { status: 500 }
