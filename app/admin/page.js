@@ -58,8 +58,10 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("info");
   const [busyId, setBusyId] = useState(null);
   const [busyImageId, setBusyImageId] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   const approvedReviews = reviews.filter((review) => review.is_approved);
   const pendingReviews = reviews.filter((review) => !review.is_approved);
@@ -88,6 +90,18 @@ export default function AdminPage() {
     { value: "settings", label: "Einstellungen" },
   ];
 
+  const showMessage = (text, type = "info") => {
+    setMessage(text);
+    setMessageType(type);
+  };
+
+  const messageStyle =
+    messageType === "success"
+      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
+      : messageType === "error"
+        ? "border-red-400/30 bg-red-500/10 text-red-100"
+        : "border-yellow-400/30 bg-yellow-400/10 text-yellow-100";
+
   const loadReviews = async () => {
     setMessage("");
 
@@ -97,7 +111,7 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      setMessage(data.error || "Bewertungen konnten nicht geladen werden.");
+      showMessage(data.error || "Bewertungen konnten nicht geladen werden.", "error");
       return;
     }
 
@@ -113,7 +127,7 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      setMessage(data.error || "Bilder konnten nicht geladen werden.");
+      showMessage(data.error || "Bilder konnten nicht geladen werden.", "error");
       return;
     }
 
@@ -132,7 +146,7 @@ export default function AdminPage() {
         }
       })
       .catch(() => {
-        setMessage("Admin-Status konnte nicht geladen werden.");
+        showMessage("Admin-Status konnte nicht geladen werden.", "error");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -150,7 +164,7 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      setMessage(data.error || "Login fehlgeschlagen.");
+      showMessage(data.error || "Login fehlgeschlagen.", "error");
       setLoading(false);
       return;
     }
@@ -166,13 +180,26 @@ export default function AdminPage() {
     setAuthenticated(false);
     setReviews([]);
     setImages([]);
+    showMessage("Du wurdest ausgeloggt.", "success");
   };
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview("");
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(imageFile);
+    setImagePreview(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [imageFile]);
 
   const uploadImage = async (event) => {
     event.preventDefault();
 
     if (!imageFile) {
-      setMessage("Bitte zuerst ein Bild auswaehlen.");
+      showMessage("Bitte zuerst ein Bild auswaehlen.", "error");
       return;
     }
 
@@ -190,7 +217,7 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      setMessage(data.error || "Bild konnte nicht hochgeladen werden.");
+      showMessage(data.error || "Bild konnte nicht hochgeladen werden.", "error");
       setImageUploading(false);
       return;
     }
@@ -198,7 +225,7 @@ export default function AdminPage() {
     setImages((current) => [data.image, ...current]);
     setImageFile(null);
     event.currentTarget.reset();
-    setMessage("Bild wurde hochgeladen und ist jetzt in der Galerie.");
+    showMessage("Bild wurde hochgeladen und ist jetzt in der Galerie.", "success");
     setImageUploading(false);
   };
 
@@ -218,12 +245,13 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      setMessage(data.error || "Bewertung konnte nicht geloescht werden.");
+      showMessage(data.error || "Bewertung konnte nicht geloescht werden.", "error");
       setBusyId(null);
       return;
     }
 
     setReviews((current) => current.filter((item) => item.id !== review.id));
+    showMessage("Bewertung wurde geloescht.", "success");
     setBusyId(null);
   };
 
@@ -242,8 +270,9 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      setMessage(
-        data.error || "Bewertungsstatus konnte nicht geaendert werden."
+      showMessage(
+        data.error || "Bewertungsstatus konnte nicht geaendert werden.",
+        "error"
       );
       setBusyId(null);
       return;
@@ -251,6 +280,12 @@ export default function AdminPage() {
 
     setReviews((current) =>
       current.map((item) => (item.id === review.id ? data.review : item))
+    );
+    showMessage(
+      isApproved
+        ? "Bewertung wurde freigegeben."
+        : "Bewertung wurde ausgeblendet.",
+      "success"
     );
     setBusyId(null);
   };
@@ -271,12 +306,13 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      setMessage(data.error || "Bild konnte nicht geloescht werden.");
+      showMessage(data.error || "Bild konnte nicht geloescht werden.", "error");
       setBusyImageId(null);
       return;
     }
 
     setImages((current) => current.filter((item) => item.id !== image.id));
+    showMessage("Bild wurde aus der Galerie geloescht.", "success");
     setBusyImageId(null);
   };
 
@@ -296,7 +332,11 @@ export default function AdminPage() {
     );
     const targetIndex = currentIndex + direction;
 
-    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= categoryImages.length) {
+    if (
+      currentIndex < 0 ||
+      targetIndex < 0 ||
+      targetIndex >= categoryImages.length
+    ) {
       return;
     }
 
@@ -327,8 +367,13 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      setMessage(data.error || "Sortierung konnte nicht gespeichert werden.");
+      showMessage(
+        data.error || "Sortierung konnte nicht gespeichert werden.",
+        "error"
+      );
       await loadImages();
+    } else {
+      showMessage("Sortierung wurde gespeichert.", "success");
     }
 
     setBusyImageId(null);
@@ -350,8 +395,8 @@ export default function AdminPage() {
               Admin Bereich
             </h1>
             <p className="mt-3 max-w-xl text-neutral-300">
-              Hier kannst du spaeter deine Website-Inhalte verwalten. Als erstes
-              ist das Loeschen von Bewertungen freigeschaltet.
+              Hier verwaltest du Portfolio-Bilder, Bildreihenfolge und
+              Bewertungen fuer deine Website.
             </p>
           </div>
 
@@ -367,7 +412,7 @@ export default function AdminPage() {
         </div>
 
         {message && (
-          <div className="mt-6 rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-5 py-4 text-sm text-yellow-100">
+          <div className={`mt-6 rounded-2xl border px-5 py-4 text-sm ${messageStyle}`}>
             {message}
           </div>
         )}
@@ -508,9 +553,10 @@ export default function AdminPage() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(event) =>
-                        setImageFile(event.target.files?.[0] || null)
-                      }
+                      onChange={(event) => {
+                        setImageFile(event.target.files?.[0] || null);
+                        setMessage("");
+                      }}
                       className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 file:mr-4 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
                     />
                   </label>
@@ -523,6 +569,31 @@ export default function AdminPage() {
                     <Upload className="h-4 w-4" />
                     {imageUploading ? "Laedt hoch..." : "Hochladen"}
                   </button>
+
+                  {imagePreview && (
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-3 md:col-span-3">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                        <img
+                          src={imagePreview}
+                          alt="Vorschau"
+                          className="h-28 w-full rounded-xl object-cover sm:w-40"
+                        />
+                        <div>
+                          <p className="text-sm font-bold text-white">
+                            Ausgewaehltes Bild
+                          </p>
+                          <p className="mt-1 break-all text-sm text-neutral-300">
+                            {imageFile?.name}
+                          </p>
+                          <p className="mt-1 text-xs text-neutral-500">
+                            {imageFile
+                              ? `${(imageFile.size / 1024 / 1024).toFixed(2)} MB`
+                              : ""}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </form>
 
                 <div className="mt-8 space-y-8">

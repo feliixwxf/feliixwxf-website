@@ -282,12 +282,23 @@ export async function DELETE(request) {
     }
   );
 
+  let storageWarning = "";
+
   if (!storageResponse.ok) {
     const details = await storageResponse.text();
-    return NextResponse.json(
-      { error: "Bilddatei konnte nicht geloescht werden.", details },
-      { status: 500 }
-    );
+    const missingStorageFile =
+      storageResponse.status === 404 ||
+      details.toLowerCase().includes("not found") ||
+      details.toLowerCase().includes("not exist");
+
+    if (!missingStorageFile) {
+      return NextResponse.json(
+        { error: "Bilddatei konnte nicht geloescht werden.", details },
+        { status: 500 }
+      );
+    }
+
+    storageWarning = details;
   }
 
   const deleteResponse = await fetch(
@@ -311,5 +322,8 @@ export async function DELETE(request) {
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    warning: storageWarning || undefined,
+  });
 }
