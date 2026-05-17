@@ -6,14 +6,22 @@ import {
   ArrowDown,
   ArrowUp,
   CheckCircle2,
+  Clock,
+  Copy,
+  ExternalLink,
   EyeOff,
+  Eye,
   Image as ImageIcon,
+  Images,
   Lock,
   LogOut,
+  MessageSquare,
   RefreshCw,
+  ShieldCheck,
   Star,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -45,6 +53,12 @@ function renderStars(value) {
   });
 }
 
+function formatDate(value) {
+  if (!value) return "Ohne Datum";
+
+  return new Date(value).toLocaleString("de-DE");
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -62,6 +76,7 @@ export default function AdminPage() {
   const [busyId, setBusyId] = useState(null);
   const [busyImageId, setBusyImageId] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const approvedReviews = reviews.filter((review) => review.is_approved);
   const pendingReviews = reviews.filter((review) => !review.is_approved);
@@ -89,6 +104,10 @@ export default function AdminPage() {
     { value: "reviews", label: "Bewertungen", count: pendingReviews.length },
     { value: "settings", label: "Einstellungen" },
   ];
+  const latestReview = reviews[0];
+  const latestImage = [...images].sort(
+    (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
+  )[0];
 
   const showMessage = (text, type = "info") => {
     setMessage(text);
@@ -132,6 +151,12 @@ export default function AdminPage() {
     }
 
     setImages(data.images || []);
+  };
+
+  const refreshDashboard = async () => {
+    setMessage("");
+    await Promise.all([loadReviews(), loadImages()]);
+    showMessage("Admin-Daten wurden neu geladen.", "success");
   };
 
   useEffect(() => {
@@ -181,6 +206,15 @@ export default function AdminPage() {
     setReviews([]);
     setImages([]);
     showMessage("Du wurdest ausgeloggt.", "success");
+  };
+
+  const copyText = async (text, successMessage) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showMessage(successMessage, "success");
+    } catch {
+      showMessage("Kopieren ist in diesem Browser gerade nicht moeglich.", "error");
+    }
   };
 
   useEffect(() => {
@@ -380,9 +414,10 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#080808,#151515,#242427)] px-5 py-8 text-white">
-      <div className="mx-auto max-w-5xl">
-        <div className="flex flex-col gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-center sm:justify-between">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.11),transparent_28%),linear-gradient(135deg,#070707,#141416,#242427)] px-5 py-8 text-white">
+      <div className="mx-auto max-w-6xl">
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur-xl">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <Link
               href="/"
@@ -401,14 +436,33 @@ export default function AdminPage() {
           </div>
 
           {authenticated && (
-            <button
-              onClick={handleLogout}
-              className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
-            >
-              <LogOut className="h-4 w-4" />
-              Ausloggen
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={refreshDashboard}
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Alles neu laden
+              </button>
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Live ansehen
+              </a>
+              <button
+                onClick={handleLogout}
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+              >
+                <LogOut className="h-4 w-4" />
+                Ausloggen
+              </button>
+            </div>
           )}
+        </div>
         </div>
 
         {message && (
@@ -456,19 +510,47 @@ export default function AdminPage() {
           <section className="mt-10">
             <div className="grid gap-4 md:grid-cols-3">
               <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
-                <p className="text-sm text-neutral-400">Portfolio-Bilder</p>
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm text-neutral-400">Portfolio-Bilder</p>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
+                    <Images className="h-5 w-5" />
+                  </div>
+                </div>
                 <p className="mt-2 text-3xl font-black">{images.length}</p>
+                <p className="mt-2 line-clamp-1 text-xs text-neutral-500">
+                  {latestImage
+                    ? `Zuletzt: ${formatDate(latestImage.created_at)}`
+                    : "Noch keine Uploads"}
+                </p>
               </div>
               <div className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-5">
-                <p className="text-sm text-yellow-100">Warten auf Freigabe</p>
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm text-yellow-100">Warten auf Freigabe</p>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-yellow-400/15">
+                    <Clock className="h-5 w-5 text-yellow-100" />
+                  </div>
+                </div>
                 <p className="mt-2 text-3xl font-black">
                   {pendingReviews.length}
                 </p>
+                <p className="mt-2 text-xs text-yellow-100/70">
+                  Neue Bewertungen bleiben unsichtbar, bis du sie freigibst.
+                </p>
               </div>
               <div className="rounded-[1.5rem] border border-emerald-400/20 bg-emerald-400/10 p-5">
-                <p className="text-sm text-emerald-100">Oeffentlich sichtbar</p>
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm text-emerald-100">Oeffentlich sichtbar</p>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-400/15">
+                    <MessageSquare className="h-5 w-5 text-emerald-100" />
+                  </div>
+                </div>
                 <p className="mt-2 text-3xl font-black">
                   {approvedReviews.length}
+                </p>
+                <p className="mt-2 line-clamp-1 text-xs text-emerald-100/70">
+                  {latestReview
+                    ? `Neueste: ${latestReview.name}`
+                    : "Noch keine Bewertungen"}
                 </p>
               </div>
             </div>
@@ -635,8 +717,44 @@ export default function AdminPage() {
                                   <ImageIcon className="h-4 w-4" />
                                   {category.label}
                                 </div>
+                                <div className="mt-2 flex flex-wrap gap-2 text-xs text-neutral-500">
+                                  <span>Position {index + 1}</span>
+                                  <span>·</span>
+                                  <span>{formatDate(image.created_at)}</span>
+                                </div>
                                 <div className="mt-4 flex flex-wrap gap-2">
                                   <button
+                                    type="button"
+                                    onClick={() => setSelectedImage(image)}
+                                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-neutral-100 transition hover:bg-white/15"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                    Ansehen
+                                  </button>
+
+                                  <a
+                                    href={image.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-neutral-100 transition hover:bg-white/15"
+                                  >
+                                    <ExternalLink className="h-4 w-4" />
+                                    Oeffnen
+                                  </a>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      copyText(image.url, "Bild-URL wurde kopiert.")
+                                    }
+                                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-neutral-100 transition hover:bg-white/15"
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                    URL
+                                  </button>
+
+                                  <button
+                                    type="button"
                                     onClick={() =>
                                       moveImage(category.value, image.id, -1)
                                     }
@@ -650,6 +768,7 @@ export default function AdminPage() {
                                   </button>
 
                                   <button
+                                    type="button"
                                     onClick={() =>
                                       moveImage(category.value, image.id, 1)
                                     }
@@ -664,6 +783,7 @@ export default function AdminPage() {
                                   </button>
 
                                   <button
+                                    type="button"
                                     onClick={() => deleteImage(image)}
                                     disabled={busyImageId === image.id}
                                     className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
@@ -774,17 +894,14 @@ export default function AdminPage() {
                             "{review.text}"
                           </p>
                           <p className="mt-4 text-xs uppercase tracking-[0.22em] text-neutral-500">
-                            {review.created_at
-                              ? new Date(review.created_at).toLocaleString(
-                                  "de-DE"
-                                )
-                              : "Ohne Datum"}
+                            {formatDate(review.created_at)}
                           </p>
                         </div>
 
                         <div className="flex flex-wrap gap-2 md:justify-end">
                           {review.is_approved ? (
                             <button
+                              type="button"
                               onClick={() => setReviewApproval(review, false)}
                               disabled={busyId === review.id}
                               className="inline-flex w-fit items-center gap-2 rounded-full border border-yellow-400/30 bg-yellow-500/10 px-4 py-2 text-sm font-bold text-yellow-100 transition hover:bg-yellow-500/20 disabled:opacity-60"
@@ -794,6 +911,7 @@ export default function AdminPage() {
                             </button>
                           ) : (
                             <button
+                              type="button"
                               onClick={() => setReviewApproval(review, true)}
                               disabled={busyId === review.id}
                               className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-sm font-bold text-emerald-100 transition hover:bg-emerald-500/20 disabled:opacity-60"
@@ -804,6 +922,7 @@ export default function AdminPage() {
                           )}
 
                           <button
+                            type="button"
                             onClick={() => deleteReview(review)}
                             disabled={busyId === review.id}
                             className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
@@ -820,22 +939,131 @@ export default function AdminPage() {
             )}
 
             {activeTab === "settings" && (
-              <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+              <div className="mt-8">
                 <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                   Einstellungen
                 </p>
                 <h2 className="mt-3 text-3xl font-black">
-                  Vorbereitung fuer die naechsten Funktionen
+                  Admin-Status und wichtige Hinweise
                 </h2>
-                <p className="mt-4 max-w-2xl leading-7 text-neutral-300">
-                  Hier koennen spaeter Portfolio-Titelbilder, Startseitenbilder,
-                  Kontaktdaten und weitere Website-Inhalte verwaltet werden.
-                </p>
+
+                <div className="mt-6 grid gap-4 lg:grid-cols-3">
+                  <div className="rounded-[1.5rem] border border-emerald-400/20 bg-emerald-400/10 p-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-400/15">
+                      <ShieldCheck className="h-5 w-5 text-emerald-100" />
+                    </div>
+                    <h3 className="mt-5 text-xl font-black">Admin-Schutz</h3>
+                    <p className="mt-3 text-sm leading-6 text-emerald-100/80">
+                      Der Admin-Bereich ist mit Passwort und Session-Cookie
+                      geschuetzt. Teile dein Admin-Passwort nicht weiter.
+                    </p>
+                  </div>
+
+                  <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                      <Upload className="h-5 w-5" />
+                    </div>
+                    <h3 className="mt-5 text-xl font-black">Uploads</h3>
+                    <p className="mt-3 text-sm leading-6 text-neutral-300">
+                      Bilder werden in Supabase Storage gespeichert. Erlaubt
+                      sind JPG, PNG und WebP bis 10 MB pro Datei.
+                    </p>
+                  </div>
+
+                  <div className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400/15">
+                      <MessageSquare className="h-5 w-5 text-yellow-100" />
+                    </div>
+                    <h3 className="mt-5 text-xl font-black">Bewertungen</h3>
+                    <p className="mt-3 text-sm leading-6 text-yellow-100/80">
+                      Neue Bewertungen werden gespeichert, sind aber erst nach
+                      deiner Freigabe fuer Besucher sichtbar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+                  <h3 className="text-xl font-black">Naechste sinnvolle Admin-Funktionen</h3>
+                  <div className="mt-4 grid gap-3 text-sm text-neutral-300 md:grid-cols-2">
+                    <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      Startseitenbilder direkt im Admin tauschen.
+                    </p>
+                    <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      Portfolio-Titelbilder separat verwalten.
+                    </p>
+                    <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      Kontaktinfos ohne Code-Aenderung bearbeiten.
+                    </p>
+                    <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      Spaeter Kundenkonten und Download-Galerien anbinden.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </section>
         )}
       </div>
+
+      {selectedImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5 backdrop-blur-lg">
+          <div className="w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/15 bg-neutral-950 text-white shadow-2xl">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 p-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">
+                  Bildvorschau
+                </p>
+                <p className="mt-1 font-bold">
+                  {CATEGORIES.find(
+                    (category) => category.value === selectedImage.category
+                  )?.label || selectedImage.category}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedImage(null)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
+                aria-label="Bildvorschau schliessen"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <img
+              src={selectedImage.url}
+              alt=""
+              className="max-h-[72vh] w-full object-contain bg-black"
+            />
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 p-4">
+              <p className="text-sm text-neutral-400">
+                {formatDate(selectedImage.created_at)}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyText(selectedImage.url, "Bild-URL wurde kopiert.")
+                  }
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                >
+                  <Copy className="h-4 w-4" />
+                  URL kopieren
+                </button>
+                <a
+                  href={selectedImage.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Original oeffnen
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
