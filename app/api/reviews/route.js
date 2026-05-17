@@ -66,7 +66,7 @@ export async function GET(request) {
     }
 
     const response = await fetch(
-      `${supabaseRestUrl}/rest/v1/reviews?select=name,text,stars,created_at&order=created_at.desc&limit=50`,
+      `${supabaseRestUrl}/rest/v1/reviews?select=name,text,stars,created_at&is_approved=eq.true&order=created_at.desc&limit=50`,
       {
         headers,
         cache: "no-store",
@@ -111,7 +111,7 @@ export async function POST(request) {
         ...headers,
         Prefer: "return=minimal",
       },
-      body: JSON.stringify(review),
+      body: JSON.stringify({ ...review, is_approved: false }),
     });
 
     if (!response.ok) {
@@ -127,6 +127,7 @@ export async function POST(request) {
     return NextResponse.json({
       review: {
         ...review,
+        is_approved: false,
         created_at: new Date().toISOString(),
       },
     });

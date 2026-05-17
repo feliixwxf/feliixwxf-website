@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
-  supabaseHeaders,
+  supabaseServiceHeaders,
   supabaseRestUrl,
 } from "../_lib/supabase";
 
@@ -24,9 +24,9 @@ export async function GET() {
   }
 
   const response = await fetch(
-    `${supabaseRestUrl}/rest/v1/reviews?select=id,name,text,stars,created_at&order=created_at.desc&limit=200`,
+    `${supabaseRestUrl}/rest/v1/reviews?select=id,name,text,stars,is_approved,created_at&order=created_at.desc&limit=200`,
     {
-      headers: supabaseHeaders,
+      headers: supabaseServiceHeaders,
       cache: "no-store",
     }
   );
@@ -40,6 +40,49 @@ export async function GET() {
   }
 
   return NextResponse.json({ reviews: await response.json() });
+}
+
+export async function PATCH(request) {
+  if (!(await isAdminAuthenticated())) return unauthorized();
+
+  if (!hasSupabaseConfig) {
+    return NextResponse.json(
+      { error: "Supabase ist noch nicht konfiguriert." },
+      { status: 503 }
+    );
+  }
+
+  const { id, is_approved } = await request.json();
+
+  if (!id || typeof is_approved !== "boolean") {
+    return NextResponse.json(
+      { error: "Bewertungs-ID oder Status fehlt." },
+      { status: 400 }
+    );
+  }
+
+  const response = await fetch(
+    `${supabaseRestUrl}/rest/v1/reviews?id=eq.${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      headers: {
+        ...supabaseServiceHeaders,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({ is_approved }),
+    }
+  );
+
+  if (!response.ok) {
+    const details = await response.text();
+    return NextResponse.json(
+      { error: "Bewertungsstatus konnte nicht geaendert werden.", details },
+      { status: 500 }
+    );
+  }
+
+  const [review] = await response.json();
+  return NextResponse.json({ review });
 }
 
 export async function DELETE(request) {
@@ -66,7 +109,7 @@ export async function DELETE(request) {
     {
       method: "DELETE",
       headers: {
-        ...supabaseHeaders,
+        ...supabaseServiceHeaders,
         Prefer: "return=minimal",
       },
     }
@@ -82,4 +125,3 @@ export async function DELETE(request) {
 
   return NextResponse.json({ ok: true });
 }
-

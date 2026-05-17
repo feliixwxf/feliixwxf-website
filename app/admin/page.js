@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  CheckCircle2,
+  EyeOff,
   Image as ImageIcon,
   Lock,
   LogOut,
@@ -54,6 +56,9 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [busyImageId, setBusyImageId] = useState(null);
+
+  const approvedReviews = reviews.filter((review) => review.is_approved);
+  const pendingReviews = reviews.filter((review) => !review.is_approved);
 
   const loadReviews = async () => {
     setMessage("");
@@ -191,6 +196,34 @@ export default function AdminPage() {
     }
 
     setReviews((current) => current.filter((item) => item.id !== review.id));
+    setBusyId(null);
+  };
+
+  const setReviewApproval = async (review, isApproved) => {
+    setBusyId(review.id);
+    setMessage("");
+
+    const response = await fetch("/api/admin/reviews", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: review.id,
+        is_approved: isApproved,
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setMessage(
+        data.error || "Bewertungsstatus konnte nicht geaendert werden."
+      );
+      setBusyId(null);
+      return;
+    }
+
+    setReviews((current) =>
+      current.map((item) => (item.id === review.id ? data.review : item))
+    );
     setBusyId(null);
   };
 
@@ -413,6 +446,10 @@ export default function AdminPage() {
                 <h2 className="mt-3 text-3xl font-black">
                   {reviews.length} Eintraege
                 </h2>
+                <p className="mt-3 text-sm text-neutral-400">
+                  {pendingReviews.length} wartet auf Freigabe ·{" "}
+                  {approvedReviews.length} sichtbar
+                </p>
               </div>
 
               <button
@@ -438,8 +475,22 @@ export default function AdminPage() {
                 >
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
-                      <div className="flex gap-1">
-                        {renderStars(review.stars)}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex gap-1">
+                          {renderStars(review.stars)}
+                        </div>
+
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-bold ${
+                            review.is_approved
+                              ? "bg-emerald-400 text-neutral-950"
+                              : "bg-yellow-400 text-neutral-950"
+                          }`}
+                        >
+                          {review.is_approved
+                            ? "Oeffentlich"
+                            : "Wartet auf Freigabe"}
+                        </span>
                       </div>
                       <h3 className="mt-4 text-xl font-black">
                         {review.name}
@@ -454,14 +505,36 @@ export default function AdminPage() {
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => deleteReview(review)}
-                      disabled={busyId === review.id}
-                      className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {busyId === review.id ? "Loescht..." : "Loeschen"}
-                    </button>
+                    <div className="flex flex-wrap gap-2 md:justify-end">
+                      {review.is_approved ? (
+                        <button
+                          onClick={() => setReviewApproval(review, false)}
+                          disabled={busyId === review.id}
+                          className="inline-flex w-fit items-center gap-2 rounded-full border border-yellow-400/30 bg-yellow-500/10 px-4 py-2 text-sm font-bold text-yellow-100 transition hover:bg-yellow-500/20 disabled:opacity-60"
+                        >
+                          <EyeOff className="h-4 w-4" />
+                          Ausblenden
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setReviewApproval(review, true)}
+                          disabled={busyId === review.id}
+                          className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-2 text-sm font-bold text-emerald-100 transition hover:bg-emerald-500/20 disabled:opacity-60"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          Freigeben
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => deleteReview(review)}
+                        disabled={busyId === review.id}
+                        className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Loeschen
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))}

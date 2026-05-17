@@ -321,13 +321,11 @@ export default function FeliixWxfPhotography() {
 
       if (!response.ok) throw new Error("Review could not be saved");
 
-      const data = await response.json();
-      const savedReview = data.review || newReview;
-
-      setReviews((currentReviews) => [savedReview, ...currentReviews]);
       setRating(0);
       e.currentTarget.reset();
-      setReviewMessage("Danke! Deine Bewertung ist jetzt veröffentlicht.");
+      setReviewMessage(
+        "Danke! Deine Bewertung wurde gesendet und wird nach Freigabe veröffentlicht."
+      );
     } catch {
       setReviewMessage(
         "Bewertung konnte nicht veröffentlicht werden. Bitte später nochmal versuchen."
