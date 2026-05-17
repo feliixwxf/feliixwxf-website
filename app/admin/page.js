@@ -13,6 +13,7 @@ import {
   Eye,
   Image as ImageIcon,
   Images,
+  LayoutDashboard,
   Lock,
   LogOut,
   MessageSquare,
@@ -97,7 +98,7 @@ export default function AdminPage() {
   const [imageFile, setImageFile] = useState(null);
   const [siteAssetFiles, setSiteAssetFiles] = useState({});
   const [siteAssetPreviews, setSiteAssetPreviews] = useState({});
-  const [activeTab, setActiveTab] = useState("portfolio");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [reviewFilter, setReviewFilter] = useState("pending");
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
@@ -130,7 +131,16 @@ export default function AdminPage() {
         return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       }),
   }));
+  const missingCoverAssets = SITE_ASSET_GROUPS.flatMap((group) =>
+    group.assets.filter((asset) => !siteAssets[asset.key])
+  );
   const tabs = [
+    {
+      value: "dashboard",
+      label: "Start",
+      description: "Uebersicht und Schnellzugriff",
+      icon: LayoutDashboard,
+    },
     {
       value: "portfolio",
       label: "Portfolio",
@@ -736,6 +746,216 @@ export default function AdminPage() {
             </aside>
 
             <div className="min-w-0 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 shadow-2xl backdrop-blur-xl md:p-6">
+
+            {activeTab === "dashboard" && (
+              <div>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Admin Start
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black">
+                      Was ist gerade wichtig?
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-neutral-300">
+                      Von hier aus kommst du direkt zu den Bereichen, die du am
+                      haeufigsten brauchst.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={refreshDashboard}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Daten aktualisieren
+                  </button>
+                </div>
+
+                <div className="mt-8 grid gap-4 lg:grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("reviews");
+                      setReviewFilter("pending");
+                    }}
+                    className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-6 text-left transition hover:-translate-y-1 hover:bg-yellow-400/15"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400/15">
+                      <Clock className="h-5 w-5 text-yellow-100" />
+                    </div>
+                    <p className="mt-5 text-3xl font-black">
+                      {pendingReviews.length}
+                    </p>
+                    <h3 className="mt-2 text-lg font-black">
+                      Offene Bewertungen
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-yellow-100/75">
+                      Bewertungen pruefen, freigeben oder direkt loeschen.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("portfolio")}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                      <Images className="h-5 w-5" />
+                    </div>
+                    <p className="mt-5 text-3xl font-black">{images.length}</p>
+                    <h3 className="mt-2 text-lg font-black">
+                      Galerie-Bilder
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-neutral-300">
+                      Neue Bilder hochladen, Reihenfolge sortieren oder alte
+                      Bilder entfernen.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("covers")}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                      <ImageIcon className="h-5 w-5" />
+                    </div>
+                    <p className="mt-5 text-3xl font-black">
+                      {SITE_ASSET_GROUPS.flatMap((group) => group.assets).length -
+                        missingCoverAssets.length}
+                    </p>
+                    <h3 className="mt-2 text-lg font-black">Titelbilder</h3>
+                    <p className="mt-2 text-sm leading-6 text-neutral-300">
+                      Startseitenbilder und Portfolio-Kacheln getrennt von der
+                      Galerie pflegen.
+                    </p>
+                  </button>
+                </div>
+
+                <div className="mt-8 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-2xl font-black">
+                          Portfolio nach Kategorien
+                        </h3>
+                        <p className="mt-2 text-sm text-neutral-400">
+                          So siehst du sofort, wo noch Bilder fehlen.
+                        </p>
+                      </div>
+                      <Images className="h-6 w-6 text-neutral-400" />
+                    </div>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      {imagesByCategory.map((category) => (
+                        <button
+                          key={category.value}
+                          type="button"
+                          onClick={() => {
+                            setImageCategory(category.value);
+                            setActiveTab("portfolio");
+                          }}
+                          className="rounded-2xl border border-white/10 bg-black/20 p-4 text-left transition hover:bg-white/10"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-bold">{category.label}</p>
+                            <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-neutral-950">
+                              {category.images.length}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-xs text-neutral-500">
+                            Anklicken zum Bearbeiten
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-2xl font-black">Checkliste</h3>
+                        <p className="mt-2 text-sm text-neutral-400">
+                          Kleine Kontrolle vor dem Veröffentlichen.
+                        </p>
+                      </div>
+                      <ShieldCheck className="h-6 w-6 text-neutral-400" />
+                    </div>
+
+                    <div className="mt-5 space-y-3">
+                      {[
+                        {
+                          done: images.length > 0,
+                          label: "Mindestens ein Portfolio-Bild ist online",
+                        },
+                        {
+                          done: pendingReviews.length === 0,
+                          label: "Keine offenen Bewertungen",
+                        },
+                        {
+                          done: missingCoverAssets.length === 0,
+                          label: "Alle eigenen Titelbilder gesetzt",
+                        },
+                      ].map((item) => (
+                        <div
+                          key={item.label}
+                          className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4"
+                        >
+                          <span
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                              item.done
+                                ? "bg-emerald-400 text-neutral-950"
+                                : "bg-yellow-400 text-neutral-950"
+                            }`}
+                          >
+                            {item.done ? (
+                              <CheckCircle2 className="h-5 w-5" />
+                            ) : (
+                              <Clock className="h-5 w-5" />
+                            )}
+                          </span>
+                          <p className="text-sm font-semibold text-neutral-200">
+                            {item.label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-black/20 p-6">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <h3 className="text-xl font-black">Schnellzugriff</h3>
+                      <p className="mt-2 text-sm text-neutral-400">
+                        Direkt testen, ob deine Aenderungen vorne sichtbar sind.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <a
+                        href="/#portfolio"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Portfolio ansehen
+                      </a>
+                      <a
+                        href="/#bewertung"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Bewertungen ansehen
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {activeTab === "portfolio" && (
               <div className="mt-8">
