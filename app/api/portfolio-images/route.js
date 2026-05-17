@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     const response = await fetch(
-      `${supabaseBaseUrl}/rest/v1/portfolio_images?select=id,category,url,path,created_at&order=created_at.desc&limit=200`,
+      `${supabaseBaseUrl}/rest/v1/portfolio_images?select=id,category,url,path,sort_order,created_at&order=sort_order.asc&order=created_at.desc&limit=200`,
       {
         headers: supabaseHeaders,
         cache: "no-store",
@@ -31,4 +31,3 @@ export async function GET() {
     return NextResponse.json({ images: [] }, { status: 200 });
   }
 }
-

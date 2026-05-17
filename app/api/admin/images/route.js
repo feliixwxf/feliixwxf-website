@@ -36,7 +36,7 @@ export async function GET() {
   }
 
   const response = await fetch(
-    `${supabaseRestUrl}/rest/v1/portfolio_images?select=id,category,url,path,created_at&order=created_at.desc&limit=200`,
+    `${supabaseRestUrl}/rest/v1/portfolio_images?select=id,category,url,path,sort_order,created_at&order=sort_order.asc&order=created_at.desc&limit=200`,
     {
       headers: supabaseServiceHeaders,
       cache: "no-store",
@@ -98,6 +98,22 @@ export async function POST(request) {
 
   const path = `${category}/${safeFileName(file.name)}`;
   const bytes = await file.arrayBuffer();
+  const countResponse = await fetch(
+    `${supabaseRestUrl}/rest/v1/portfolio_images?select=id&category=eq.${encodeURIComponent(
+      category
+    )}`,
+    {
+      method: "HEAD",
+      headers: {
+        ...supabaseServiceHeaders,
+        Prefer: "count=exact",
+      },
+      cache: "no-store",
+    }
+  );
+  const imageCount = Number(
+    countResponse.headers.get("content-range")?.split("/")?.[1] || 0
+  );
 
   const uploadResponse = await fetch(
     `${supabaseRestUrl}/storage/v1/object/${storageBucket}/${path}`,
@@ -136,7 +152,12 @@ export async function POST(request) {
         ...supabaseServiceHeaders,
         Prefer: "return=representation",
       },
-      body: JSON.stringify({ category, url, path }),
+      body: JSON.stringify({
+        category,
+        url,
+        path,
+        sort_order: imageCount,
+      }),
     }
   );
 
@@ -154,6 +175,56 @@ export async function POST(request) {
 
   const [image] = await insertResponse.json();
   return NextResponse.json({ image });
+}
+
+export async function PATCH(request) {
+  if (!(await isAdminAuthenticated())) return unauthorized();
+
+  if (!hasSupabaseConfig) {
+    return NextResponse.json(
+      { error: "Supabase ist noch nicht konfiguriert." },
+      { status: 503 }
+    );
+  }
+
+  const { orderedIds } = await request.json();
+
+  if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+    return NextResponse.json(
+      { error: "Sortierung fehlt." },
+      { status: 400 }
+    );
+  }
+
+  const updates = await Promise.all(
+    orderedIds.map((id, index) =>
+      fetch(
+        `${supabaseRestUrl}/rest/v1/portfolio_images?id=eq.${encodeURIComponent(
+          id
+        )}`,
+        {
+          method: "PATCH",
+          headers: {
+            ...supabaseServiceHeaders,
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({ sort_order: index }),
+        }
+      )
+    )
+  );
+
+  const failedUpdate = updates.find((response) => !response.ok);
+
+  if (failedUpdate) {
+    const details = await failedUpdate.text();
+    return NextResponse.json(
+      { error: "Sortierung konnte nicht gespeichert werden.", details },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(request) {
@@ -242,4 +313,3 @@ export async function DELETE(request) {
 
   return NextResponse.json({ ok: true });
 }
-

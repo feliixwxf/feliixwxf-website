@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  ArrowDown,
+  ArrowUp,
   CheckCircle2,
   EyeOff,
   Image as ImageIcon,
@@ -69,7 +71,16 @@ export default function AdminPage() {
         : reviews;
   const imagesByCategory = CATEGORIES.map((category) => ({
     ...category,
-    images: images.filter((image) => image.category === category.value),
+    images: images
+      .filter((image) => image.category === category.value)
+      .sort((a, b) => {
+        const orderDifference =
+          Number(a.sort_order || 0) - Number(b.sort_order || 0);
+
+        if (orderDifference !== 0) return orderDifference;
+
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      }),
   }));
   const tabs = [
     { value: "portfolio", label: "Portfolio", count: images.length },
@@ -266,6 +277,60 @@ export default function AdminPage() {
     }
 
     setImages((current) => current.filter((item) => item.id !== image.id));
+    setBusyImageId(null);
+  };
+
+  const moveImage = async (categoryValue, imageId, direction) => {
+    const categoryImages = images
+      .filter((image) => image.category === categoryValue)
+      .sort((a, b) => {
+        const orderDifference =
+          Number(a.sort_order || 0) - Number(b.sort_order || 0);
+
+        if (orderDifference !== 0) return orderDifference;
+
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      });
+    const currentIndex = categoryImages.findIndex(
+      (image) => image.id === imageId
+    );
+    const targetIndex = currentIndex + direction;
+
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= categoryImages.length) {
+      return;
+    }
+
+    const nextCategoryImages = [...categoryImages];
+    const [movedImage] = nextCategoryImages.splice(currentIndex, 1);
+    nextCategoryImages.splice(targetIndex, 0, movedImage);
+
+    setBusyImageId(imageId);
+    setMessage("");
+
+    setImages((current) =>
+      current.map((image) => {
+        const newIndex = nextCategoryImages.findIndex(
+          (item) => item.id === image.id
+        );
+
+        return newIndex >= 0 ? { ...image, sort_order: newIndex } : image;
+      })
+    );
+
+    const response = await fetch("/api/admin/images", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderedIds: nextCategoryImages.map((image) => image.id),
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setMessage(data.error || "Sortierung konnte nicht gespeichert werden.");
+      await loadImages();
+    }
+
     setBusyImageId(null);
   };
 
@@ -482,7 +547,7 @@ export default function AdminPage() {
                         </div>
                       ) : (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {category.images.map((image) => (
+                          {category.images.map((image, index) => (
                             <article
                               key={image.id}
                               className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.08] backdrop-blur-md"
@@ -499,16 +564,43 @@ export default function AdminPage() {
                                   <ImageIcon className="h-4 w-4" />
                                   {category.label}
                                 </div>
-                                <button
-                                  onClick={() => deleteImage(image)}
-                                  disabled={busyImageId === image.id}
-                                  className="mt-4 inline-flex w-fit items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  {busyImageId === image.id
-                                    ? "Loescht..."
-                                    : "Loeschen"}
-                                </button>
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                  <button
+                                    onClick={() =>
+                                      moveImage(category.value, image.id, -1)
+                                    }
+                                    disabled={
+                                      index === 0 || busyImageId === image.id
+                                    }
+                                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-neutral-100 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    <ArrowUp className="h-4 w-4" />
+                                    Hoch
+                                  </button>
+
+                                  <button
+                                    onClick={() =>
+                                      moveImage(category.value, image.id, 1)
+                                    }
+                                    disabled={
+                                      index === category.images.length - 1 ||
+                                      busyImageId === image.id
+                                    }
+                                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-neutral-100 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    <ArrowDown className="h-4 w-4" />
+                                    Runter
+                                  </button>
+
+                                  <button
+                                    onClick={() => deleteImage(image)}
+                                    disabled={busyImageId === image.id}
+                                    className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    Loeschen
+                                  </button>
+                                </div>
                               </div>
                             </article>
                           ))}
