@@ -64,6 +64,8 @@ export default function FeliixWxfPhotography() {
   const [theme, setTheme] = useState("dark");
   const [activeGallery, setActiveGallery] = useState(null);
   const [rating, setRating] = useState(0);
+  const [reviewName, setReviewName] = useState("");
+  const [reviewText, setReviewText] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [popupClosed, setPopupClosed] = useState(false);
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
@@ -304,11 +306,9 @@ export default function FeliixWxfPhotography() {
     setReviewSubmitting(true);
     setReviewMessage("");
 
-    const form = new FormData(formElement);
-
     const newReview = {
-      name: String(form.get("name") || "").trim(),
-      text: String(form.get("text") || "").trim(),
+      name: reviewName.trim(),
+      text: reviewText.trim(),
       stars: rating || 5,
     };
 
@@ -324,6 +324,8 @@ export default function FeliixWxfPhotography() {
       if (!response.ok) throw new Error("Review could not be saved");
 
       setRating(0);
+      setReviewName("");
+      setReviewText("");
       formElement.reset();
       setReviewMessage(
         "Danke! Deine Bewertung wurde gesendet und wird nach Freigabe veröffentlicht."
@@ -796,6 +798,8 @@ export default function FeliixWxfPhotography() {
                     <input
                       name="name"
                       required
+                      value={reviewName}
+                      onChange={(event) => setReviewName(event.target.value)}
                       placeholder="Dein Name"
                       className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400"
                     />
@@ -824,6 +828,8 @@ export default function FeliixWxfPhotography() {
                       name="text"
                       required
                       rows="5"
+                      value={reviewText}
+                      onChange={(event) => setReviewText(event.target.value)}
                       placeholder="Schreib kurz, wie dein Shooting war..."
                       className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400 md:col-span-2"
                     />
