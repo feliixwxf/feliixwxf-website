@@ -24,6 +24,7 @@
 .DS_Store
 *.pem
 public/images/originals/
+*-handoff-*.zip
 
 # debug
 npm-debug.log*
