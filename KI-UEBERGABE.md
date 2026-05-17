@@ -186,6 +186,32 @@ Wichtige Dateien:
 
 Fallback-Werte stehen in `app/page.js` und `app/admin/page.js` in `DEFAULT_SITE_SETTINGS`.
 
+## Website-Texte
+
+Admin kann folgende Texte ändern:
+- Startseiten-Kicker
+- Startseiten-Headline Zeile 1
+- Startseiten-Headline Zeile 2
+- Startseiten-Untertext
+- Info-Kicker
+- Info-Überschrift
+- Info-Text
+- Portfolio-Kicker
+- Portfolio-Überschrift
+- Bewertungs-Kicker
+- Bewertungs-Überschrift
+- Bewertungsformular-Kicker
+- Bewertungsformular-Überschrift
+- Bewertungsformular-Text
+
+Diese Werte werden ebenfalls in `site_settings` gespeichert.
+
+Wichtige Dateien:
+- Public API: `app/api/site-settings/route.js`
+- Admin API: `app/api/admin/site-settings/route.js`
+- Admin UI: `app/admin/page.js`
+- Website UI: `app/page.js`
+
 ## Adminbereich
 
 Der Adminbereich ist absichtlich strukturiert, damit er nicht unübersichtlich wird.
@@ -194,6 +220,7 @@ Tabs:
 - Start
 - Portfolio
 - Titelbilder
+- Texte
 - Kontakt
 - Bewertungen
 - Einstellungen
@@ -263,4 +290,3 @@ Bei Änderungen am Code:
 4. Commit erstellen.
 5. Pushen.
 6. Vercel Deployment abwarten.
-

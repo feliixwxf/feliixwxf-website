@@ -64,6 +64,23 @@ const SITE_ASSET_LABELS = Object.fromEntries(
 );
 
 const DEFAULT_SITE_SETTINGS = {
+  hero_eyebrow: "Fotografie & Editing",
+  hero_title_line_1: "Bilder mit Charakter.",
+  hero_title_line_2: "Bearbeitung mit Stil.",
+  hero_intro:
+    "Willkommen bei feliix.wxf. Moderne Fotografie, kreative Bearbeitung und visuelle Inhalte mit starkem Look.",
+  info_eyebrow: "Info",
+  info_heading: "Über feliix.wxf",
+  info_text:
+    "Hinter feliix.wxf steckt viel Erfahrung in Fotografie und Bildbearbeitung. Mein Fokus liegt auf klaren Looks, sauberer Retusche, starken Kontrasten und Bildern, die natürlich wirken, aber trotzdem einen professionellen Wiedererkennungswert haben.",
+  portfolio_eyebrow: "Portfolio",
+  portfolio_heading: "Ausgewählte Arbeiten",
+  reviews_eyebrow: "Bewertung",
+  reviews_heading: "Kundenstimmen",
+  review_form_eyebrow: "Deine Meinung",
+  review_form_heading: "Wie war dein Shooting?",
+  review_form_text:
+    "Hinterlasse eine kurze Bewertung. Deine Rückmeldung hilft anderen, einen echten Eindruck von meiner Arbeit zu bekommen.",
   contact_heading: "Lass uns dein Shooting planen.",
   contact_intro: "Schreib mir direkt über das Formular.",
   contact_email: "felixwolff411@gmail.com",
@@ -72,6 +89,96 @@ const DEFAULT_SITE_SETTINGS = {
   instagram_label: "@feliix.wxf",
   form_action: "https://formspree.io/f/xqennvyy",
 };
+
+const TEXT_FIELD_GROUPS = [
+  {
+    title: "Startseite",
+    description: "Texte im ersten sichtbaren Bereich deiner Website.",
+    fields: [
+      {
+        key: "hero_eyebrow",
+        label: "Kleine Zeile",
+        placeholder: "Fotografie & Editing",
+      },
+      {
+        key: "hero_title_line_1",
+        label: "Headline Zeile 1",
+        placeholder: "Bilder mit Charakter.",
+      },
+      {
+        key: "hero_title_line_2",
+        label: "Headline Zeile 2",
+        placeholder: "Bearbeitung mit Stil.",
+      },
+      {
+        key: "hero_intro",
+        label: "Untertext",
+        placeholder: "Willkommen bei feliix.wxf...",
+        multiline: true,
+      },
+    ],
+  },
+  {
+    title: "Info & Portfolio",
+    description: "Texte für den Info-Block und die Portfolio-Überschrift.",
+    fields: [
+      { key: "info_eyebrow", label: "Info kleine Zeile", placeholder: "Info" },
+      {
+        key: "info_heading",
+        label: "Info Überschrift",
+        placeholder: "Über feliix.wxf",
+      },
+      {
+        key: "info_text",
+        label: "Info Text",
+        placeholder: "Hinter feliix.wxf steckt...",
+        multiline: true,
+      },
+      {
+        key: "portfolio_eyebrow",
+        label: "Portfolio kleine Zeile",
+        placeholder: "Portfolio",
+      },
+      {
+        key: "portfolio_heading",
+        label: "Portfolio Überschrift",
+        placeholder: "Ausgewählte Arbeiten",
+      },
+    ],
+  },
+  {
+    title: "Bewertungen",
+    description: "Überschriften und Erklärung im Bewertungsbereich.",
+    fields: [
+      {
+        key: "reviews_eyebrow",
+        label: "Bewertung kleine Zeile",
+        placeholder: "Bewertung",
+      },
+      {
+        key: "reviews_heading",
+        label: "Bewertung Überschrift",
+        placeholder: "Kundenstimmen",
+      },
+      {
+        key: "review_form_eyebrow",
+        label: "Formular kleine Zeile",
+        placeholder: "Deine Meinung",
+      },
+      {
+        key: "review_form_heading",
+        label: "Formular Überschrift",
+        placeholder: "Wie war dein Shooting?",
+      },
+      {
+        key: "review_form_text",
+        label: "Formular Text",
+        placeholder: "Hinterlasse eine kurze Bewertung...",
+        multiline: true,
+      },
+    ],
+  },
+];
 
 const CONTACT_FIELDS = [
   {
@@ -222,6 +329,12 @@ export default function AdminPage() {
       label: "Titelbilder",
       description: "Startseite und Portfolio-Kacheln",
       icon: ImageIcon,
+    },
+    {
+      value: "texts",
+      label: "Texte",
+      description: "Startseite, Info und Bewertung",
+      icon: Type,
     },
     {
       value: "contact",
@@ -1008,6 +1121,30 @@ export default function AdminPage() {
                   </button>
                 </div>
 
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("texts")}
+                    className="flex w-full flex-col gap-4 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12] md:flex-row md:items-center md:justify-between"
+                  >
+                    <span>
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                        <Type className="h-5 w-5" />
+                      </span>
+                      <span className="mt-4 block text-xl font-black">
+                        Website-Texte bearbeiten
+                      </span>
+                      <span className="mt-2 block max-w-2xl text-sm leading-6 text-neutral-300">
+                        Startseite, Info, Portfolio und Bewertungsbereich ohne
+                        Code-Anpassung pflegen.
+                      </span>
+                    </span>
+                    <span className="rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950">
+                      Öffnen
+                    </span>
+                  </button>
+                </div>
+
                 <div className="mt-8 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
                   <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
                     <div className="flex items-center justify-between gap-4">
@@ -1489,6 +1626,116 @@ export default function AdminPage() {
                     </section>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {activeTab === "texts" && (
+              <div className="mt-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Texte
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black">
+                      Website-Texte bearbeiten
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-neutral-300">
+                      Hier änderst du sichtbare Texte auf der Website, ohne in
+                      den Code zu gehen.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={loadSiteSettings}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Texte neu laden
+                  </button>
+                </div>
+
+                <form onSubmit={saveSiteSettings} className="mt-8 space-y-6">
+                  {TEXT_FIELD_GROUPS.map((group) => (
+                    <section
+                      key={group.title}
+                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
+                    >
+                      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                        <div>
+                          <h3 className="text-2xl font-black">{group.title}</h3>
+                          <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-300">
+                            {group.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                        {group.fields.map((field) => {
+                          const value = settingsDraft[field.key] || "";
+
+                          return (
+                            <label
+                              key={field.key}
+                              className={field.multiline ? "lg:col-span-2" : ""}
+                            >
+                              <span className="flex items-center gap-2 text-sm font-bold text-neutral-200">
+                                <Type className="h-4 w-4 text-neutral-400" />
+                                {field.label}
+                              </span>
+
+                              {field.multiline ? (
+                                <textarea
+                                  value={value}
+                                  onChange={(event) =>
+                                    updateSettingsDraft(
+                                      field.key,
+                                      event.target.value
+                                    )
+                                  }
+                                  placeholder={field.placeholder}
+                                  rows="4"
+                                  className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                                />
+                              ) : (
+                                <input
+                                  value={value}
+                                  onChange={(event) =>
+                                    updateSettingsDraft(
+                                      field.key,
+                                      event.target.value
+                                    )
+                                  }
+                                  placeholder={field.placeholder}
+                                  className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                                />
+                              )}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  ))}
+
+                  <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="font-bold">Vorschau Startseite</p>
+                      <p className="mt-1 text-sm text-neutral-400">
+                        {settingsDraft.hero_title_line_1}{" "}
+                        {settingsDraft.hero_title_line_2}
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={settingsSaving}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      {settingsSaving ? "Speichert..." : "Texte speichern"}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
 

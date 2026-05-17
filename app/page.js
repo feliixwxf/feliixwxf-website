@@ -48,6 +48,23 @@ const DEFAULT_SITE_ASSETS = {
 };
 
 const DEFAULT_SITE_SETTINGS = {
+  hero_eyebrow: "Fotografie & Editing",
+  hero_title_line_1: "Bilder mit Charakter.",
+  hero_title_line_2: "Bearbeitung mit Stil.",
+  hero_intro:
+    "Willkommen bei feliix.wxf. Moderne Fotografie, kreative Bearbeitung und visuelle Inhalte mit starkem Look.",
+  info_eyebrow: "Info",
+  info_heading: "Über feliix.wxf",
+  info_text:
+    "Hinter feliix.wxf steckt viel Erfahrung in Fotografie und Bildbearbeitung. Mein Fokus liegt auf klaren Looks, sauberer Retusche, starken Kontrasten und Bildern, die natürlich wirken, aber trotzdem einen professionellen Wiedererkennungswert haben.",
+  portfolio_eyebrow: "Portfolio",
+  portfolio_heading: "Ausgewählte Arbeiten",
+  reviews_eyebrow: "Bewertung",
+  reviews_heading: "Kundenstimmen",
+  review_form_eyebrow: "Deine Meinung",
+  review_form_heading: "Wie war dein Shooting?",
+  review_form_text:
+    "Hinterlasse eine kurze Bewertung. Deine Rückmeldung hilft anderen, einen echten Eindruck von meiner Arbeit zu bekommen.",
   contact_heading: "Lass uns dein Shooting planen.",
   contact_intro: "Schreib mir direkt über das Formular.",
   contact_email: "felixwolff411@gmail.com",
@@ -643,18 +660,17 @@ export default function FeliixWxfPhotography() {
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
             <div>
               <p className={`mb-4 text-sm uppercase tracking-[0.35em] ${muted}`}>
-                Fotografie & Editing
+                {siteSettings.hero_eyebrow}
               </p>
 
               <h1 className="max-w-3xl text-5xl font-black leading-tight md:text-7xl">
-                Bilder mit Charakter.
+                {siteSettings.hero_title_line_1}
                 <br />
-                Bearbeitung mit Stil.
+                {siteSettings.hero_title_line_2}
               </h1>
 
               <p className={`mt-6 max-w-xl text-lg leading-8 ${muted}`}>
-                Willkommen bei <strong>feliix.wxf</strong>. Moderne Fotografie,
-                kreative Bearbeitung und visuelle Inhalte mit starkem Look.
+                {siteSettings.hero_intro}
               </p>
             </div>
 
@@ -723,15 +739,14 @@ export default function FeliixWxfPhotography() {
 
         <Section id="info" className="px-5 py-24">
           <div className={`mx-auto max-w-7xl rounded-[2rem] border p-8 ${glass}`}>
-            <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>Info</p>
+            <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
+              {siteSettings.info_eyebrow}
+            </p>
             <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-              Über feliix.wxf
+              {siteSettings.info_heading}
             </h2>
             <p className={`mt-8 max-w-4xl text-lg leading-8 ${muted}`}>
-              Hinter feliix.wxf steckt viel Erfahrung in Fotografie und
-              Bildbearbeitung. Mein Fokus liegt auf klaren Looks, sauberer
-              Retusche, starken Kontrasten und Bildern, die natürlich wirken,
-              aber trotzdem einen professionellen Wiedererkennungswert haben.
+              {siteSettings.info_text}
             </p>
           </div>
         </Section>
@@ -739,10 +754,10 @@ export default function FeliixWxfPhotography() {
         <Section id="portfolio" className="px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
-              Portfolio
+              {siteSettings.portfolio_eyebrow}
             </p>
             <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-              Ausgewählte Arbeiten
+              {siteSettings.portfolio_heading}
             </h2>
 
             <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -774,12 +789,12 @@ export default function FeliixWxfPhotography() {
         <Section id="bewertung" className="px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
-              Bewertung
+              {siteSettings.reviews_eyebrow}
             </p>
 
             <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-                Kundenstimmen
+                {siteSettings.reviews_heading}
               </h2>
 
               <button
@@ -818,16 +833,15 @@ export default function FeliixWxfPhotography() {
               <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
                 <div className="relative overflow-hidden border-b border-white/10 p-8 lg:border-b-0 lg:border-r">
                   <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
-                    Deine Meinung
+                    {siteSettings.review_form_eyebrow}
                   </p>
 
                   <h3 className="relative mt-4 text-3xl font-black md:text-4xl">
-                    Wie war dein Shooting?
+                    {siteSettings.review_form_heading}
                   </h3>
 
                   <p className={`relative mt-5 leading-8 ${muted}`}>
-                    Hinterlasse eine kurze Bewertung. Deine Rückmeldung hilft
-                    anderen, einen echten Eindruck von meiner Arbeit zu bekommen.
+                    {siteSettings.review_form_text}
                   </p>
 
                   <div className="relative mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-5">

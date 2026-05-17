@@ -7,6 +7,20 @@ import {
 } from "../_lib/supabase";
 
 const SETTING_KEYS = new Set([
+  "hero_eyebrow",
+  "hero_title_line_1",
+  "hero_title_line_2",
+  "hero_intro",
+  "info_eyebrow",
+  "info_heading",
+  "info_text",
+  "portfolio_eyebrow",
+  "portfolio_heading",
+  "reviews_eyebrow",
+  "reviews_heading",
+  "review_form_eyebrow",
+  "review_form_heading",
+  "review_form_text",
   "contact_heading",
   "contact_intro",
   "contact_email",
