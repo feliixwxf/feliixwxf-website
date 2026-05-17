@@ -32,6 +32,33 @@ const CATEGORIES = [
   { value: "event", label: "Event" },
 ];
 
+const SITE_ASSET_GROUPS = [
+  {
+    title: "Startseite",
+    description: "Diese Bilder steuern den Vorher/Nachher-Slider oben auf der Website.",
+    assets: [
+      { key: "hero_before", label: "Vorher-Bild" },
+      { key: "hero_after", label: "Nachher-Bild" },
+    ],
+  },
+  {
+    title: "Portfolio-Titelbilder",
+    description: "Diese Bilder sind nur die Kacheln im Portfolio. Die Galerie selbst bleibt getrennt.",
+    assets: [
+      { key: "cover_car", label: "Car" },
+      { key: "cover_portrait", label: "Portrait" },
+      { key: "cover_nature", label: "Nature & Street" },
+      { key: "cover_event", label: "Event" },
+    ],
+  },
+];
+
+const SITE_ASSET_LABELS = Object.fromEntries(
+  SITE_ASSET_GROUPS.flatMap((group) =>
+    group.assets.map((asset) => [asset.key, asset.label])
+  )
+);
+
 function renderStars(value) {
   return [1, 2, 3, 4, 5].map((star) => {
     const filled = Number(value) >= star;
@@ -65,12 +92,16 @@ export default function AdminPage() {
   const [configured, setConfigured] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [images, setImages] = useState([]);
+  const [siteAssets, setSiteAssets] = useState({});
   const [imageCategory, setImageCategory] = useState("car");
   const [imageFile, setImageFile] = useState(null);
+  const [siteAssetFiles, setSiteAssetFiles] = useState({});
+  const [siteAssetPreviews, setSiteAssetPreviews] = useState({});
   const [activeTab, setActiveTab] = useState("portfolio");
   const [reviewFilter, setReviewFilter] = useState("pending");
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
+  const [siteAssetUploadingKey, setSiteAssetUploadingKey] = useState(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [busyId, setBusyId] = useState(null);
@@ -101,6 +132,7 @@ export default function AdminPage() {
   }));
   const tabs = [
     { value: "portfolio", label: "Portfolio", count: images.length },
+    { value: "covers", label: "Titelbilder" },
     { value: "reviews", label: "Bewertungen", count: pendingReviews.length },
     { value: "settings", label: "Einstellungen" },
   ];
@@ -153,9 +185,28 @@ export default function AdminPage() {
     setImages(data.images || []);
   };
 
+  const loadSiteAssets = async () => {
+    setMessage("");
+
+    const response = await fetch("/api/admin/site-assets", {
+      cache: "no-store",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Titelbilder konnten nicht geladen werden.",
+        "error"
+      );
+      return;
+    }
+
+    setSiteAssets(data.assets || {});
+  };
+
   const refreshDashboard = async () => {
     setMessage("");
-    await Promise.all([loadReviews(), loadImages()]);
+    await Promise.all([loadReviews(), loadImages(), loadSiteAssets()]);
     showMessage("Admin-Daten wurden neu geladen.", "success");
   };
 
@@ -167,7 +218,7 @@ export default function AdminPage() {
         setAuthenticated(data.authenticated);
 
         if (data.authenticated) {
-          await Promise.all([loadReviews(), loadImages()]);
+          await Promise.all([loadReviews(), loadImages(), loadSiteAssets()]);
         }
       })
       .catch(() => {
@@ -196,7 +247,7 @@ export default function AdminPage() {
 
     setPassword("");
     setAuthenticated(true);
-    await Promise.all([loadReviews(), loadImages()]);
+    await Promise.all([loadReviews(), loadImages(), loadSiteAssets()]);
     setLoading(false);
   };
 
@@ -205,6 +256,7 @@ export default function AdminPage() {
     setAuthenticated(false);
     setReviews([]);
     setImages([]);
+    setSiteAssets({});
     showMessage("Du wurdest ausgeloggt.", "success");
   };
 
@@ -228,6 +280,18 @@ export default function AdminPage() {
 
     return () => URL.revokeObjectURL(previewUrl);
   }, [imageFile]);
+
+  useEffect(() => {
+    const previewEntries = Object.entries(siteAssetFiles)
+      .filter(([, file]) => file)
+      .map(([key, file]) => [key, URL.createObjectURL(file)]);
+
+    setSiteAssetPreviews(Object.fromEntries(previewEntries));
+
+    return () => {
+      previewEntries.forEach(([, previewUrl]) => URL.revokeObjectURL(previewUrl));
+    };
+  }, [siteAssetFiles]);
 
   const uploadImage = async (event) => {
     event.preventDefault();
@@ -261,6 +325,49 @@ export default function AdminPage() {
     event.currentTarget.reset();
     showMessage("Bild wurde hochgeladen und ist jetzt in der Galerie.", "success");
     setImageUploading(false);
+  };
+
+  const uploadSiteAsset = async (assetKey) => {
+    const file = siteAssetFiles[assetKey];
+
+    if (!file) {
+      showMessage("Bitte zuerst ein Bild auswaehlen.", "error");
+      return;
+    }
+
+    setSiteAssetUploadingKey(assetKey);
+    setMessage("");
+
+    const formData = new FormData();
+    formData.append("key", assetKey);
+    formData.append("file", file);
+
+    const response = await fetch("/api/admin/site-assets", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(data.error || "Titelbild konnte nicht gespeichert werden.", "error");
+      setSiteAssetUploadingKey(null);
+      return;
+    }
+
+    setSiteAssets((current) => ({
+      ...current,
+      [assetKey]: data.asset,
+    }));
+    setSiteAssetFiles((current) => {
+      const next = { ...current };
+      delete next[assetKey];
+      return next;
+    });
+    showMessage(
+      `${SITE_ASSET_LABELS[assetKey] || "Titelbild"} wurde aktualisiert.`,
+      "success"
+    );
+    setSiteAssetUploadingKey(null);
   };
 
   const deleteReview = async (review) => {
@@ -803,6 +910,145 @@ export default function AdminPage() {
               </div>
             )}
 
+            {activeTab === "covers" && (
+              <div className="mt-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Titelbilder
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black">
+                      Startseite und Portfolio-Kacheln
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-neutral-300">
+                      Hier tauschst du die sichtbaren Titelbilder, ohne die
+                      Galerie-Uploads zu veraendern.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={loadSiteAssets}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Titelbilder neu laden
+                  </button>
+                </div>
+
+                <div className="mt-8 space-y-8">
+                  {SITE_ASSET_GROUPS.map((group) => (
+                    <section
+                      key={group.title}
+                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-6"
+                    >
+                      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                        <div>
+                          <h3 className="text-2xl font-black">{group.title}</h3>
+                          <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-300">
+                            {group.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 grid gap-4 md:grid-cols-2">
+                        {group.assets.map((asset) => {
+                          const currentAsset = siteAssets[asset.key];
+                          const previewUrl = siteAssetPreviews[asset.key];
+                          const displayUrl = previewUrl || currentAsset?.url;
+
+                          return (
+                            <article
+                              key={asset.key}
+                              className="overflow-hidden rounded-[1.25rem] border border-white/10 bg-black/20"
+                            >
+                              <div className="aspect-[4/3] bg-black/35">
+                                {displayUrl ? (
+                                  <img
+                                    src={displayUrl}
+                                    alt={asset.label}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+                                    Noch kein eigenes Bild gesetzt
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="p-4">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div>
+                                    <h4 className="text-lg font-black">
+                                      {asset.label}
+                                    </h4>
+                                    <p className="mt-1 text-xs text-neutral-500">
+                                      {currentAsset?.updated_at
+                                        ? `Aktualisiert: ${formatDate(currentAsset.updated_at)}`
+                                        : "Verwendet aktuell den Standardwert aus dem Code"}
+                                    </p>
+                                  </div>
+                                  {currentAsset?.url && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        copyText(
+                                          currentAsset.url,
+                                          "Titelbild-URL wurde kopiert."
+                                        )
+                                      }
+                                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/15"
+                                      aria-label="Titelbild-URL kopieren"
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+
+                                <label className="mt-4 block">
+                                  <span className="text-sm font-semibold text-neutral-300">
+                                    Neues Bild auswaehlen
+                                  </span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(event) => {
+                                      setSiteAssetFiles((current) => ({
+                                        ...current,
+                                        [asset.key]:
+                                          event.target.files?.[0] || null,
+                                      }));
+                                      setMessage("");
+                                    }}
+                                    className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 file:mr-4 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                                  />
+                                </label>
+
+                                <button
+                                  type="button"
+                                  onClick={() => uploadSiteAsset(asset.key)}
+                                  disabled={
+                                    !siteAssetFiles[asset.key] ||
+                                    siteAssetUploadingKey === asset.key
+                                  }
+                                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  <Upload className="h-4 w-4" />
+                                  {siteAssetUploadingKey === asset.key
+                                    ? "Speichert..."
+                                    : "Titelbild speichern"}
+                                </button>
+                              </div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeTab === "reviews" && (
               <div className="mt-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -986,10 +1232,8 @@ export default function AdminPage() {
                   <h3 className="text-xl font-black">Naechste sinnvolle Admin-Funktionen</h3>
                   <div className="mt-4 grid gap-3 text-sm text-neutral-300 md:grid-cols-2">
                     <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      Startseitenbilder direkt im Admin tauschen.
-                    </p>
-                    <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      Portfolio-Titelbilder separat verwalten.
+                      Startseitenbilder und Portfolio-Titelbilder sind jetzt
+                      direkt im Admin pflegbar.
                     </p>
                     <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
                       Kontaktinfos ohne Code-Aenderung bearbeiten.

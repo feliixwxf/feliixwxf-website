@@ -34,6 +34,19 @@ const DEFAULT_REVIEWS = [
   },
 ];
 
+const DEFAULT_SITE_ASSETS = {
+  hero_after: { url: "/images/nacher.jpg" },
+  hero_before: { url: "/images/vorher.jpg" },
+  cover_car: { url: "/images/hyundaititel.jpg" },
+  cover_portrait: {
+    url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80",
+  },
+  cover_nature: {
+    url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+  },
+  cover_event: { url: "/images/abititel.jpg" },
+};
+
 function InstagramIcon({ className = "h-5 w-5" }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none">
@@ -87,6 +100,7 @@ export default function FeliixWxfPhotography() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewMessage, setReviewMessage] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [siteAssets, setSiteAssets] = useState(DEFAULT_SITE_ASSETS);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedPortfolioImage, setSelectedPortfolioImage] = useState(null);
@@ -117,6 +131,15 @@ export default function FeliixWxfPhotography() {
       .then((data) => {
         if (Array.isArray(data?.images)) {
           setUploadedImages(data.images);
+        }
+      })
+      .catch(() => {});
+
+    fetch("/api/site-assets")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data?.assets) {
+          setSiteAssets((current) => ({ ...current, ...data.assets }));
         }
       })
       .catch(() => {});
@@ -228,26 +251,25 @@ export default function FeliixWxfPhotography() {
     {
       title: "Car",
       key: "car",
-      image:
-        "/images/hyundaititel.jpg",
+      image: siteAssets.cover_car?.url || DEFAULT_SITE_ASSETS.cover_car.url,
     },
     {
       title: "Portrait",
       key: "portrait",
       image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80",
+        siteAssets.cover_portrait?.url ||
+        DEFAULT_SITE_ASSETS.cover_portrait.url,
     },
     {
       title: "Nature & Street",
       key: "nature",
       image:
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+        siteAssets.cover_nature?.url || DEFAULT_SITE_ASSETS.cover_nature.url,
     },
     {
       title: "Event",
       key: "event",
-      image:
-        "/images/abititel.jpg",
+      image: siteAssets.cover_event?.url || DEFAULT_SITE_ASSETS.cover_event.url,
     },
   ];
 
@@ -629,7 +651,10 @@ export default function FeliixWxfPhotography() {
                 className="relative aspect-[4/5] touch-none select-none overflow-hidden rounded-[1.5rem]"
               >
                 <img
-                  src="/images/nacher.jpg"
+                  src={
+                    siteAssets.hero_after?.url ||
+                    DEFAULT_SITE_ASSETS.hero_after.url
+                  }
                   alt="Nachher"
                   draggable="false"
                   className="absolute inset-0 h-full w-full object-cover"
@@ -641,7 +666,10 @@ export default function FeliixWxfPhotography() {
                   style={{ clipPath: "inset(0 50% 0 0)" }}
                 >
                   <img
-                    src="/images/vorher.jpg"
+                    src={
+                      siteAssets.hero_before?.url ||
+                      DEFAULT_SITE_ASSETS.hero_before.url
+                    }
                     alt="Vorher"
                     draggable="false"
                     className="h-full w-full object-cover"
