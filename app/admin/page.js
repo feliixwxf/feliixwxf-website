@@ -131,10 +131,32 @@ export default function AdminPage() {
       }),
   }));
   const tabs = [
-    { value: "portfolio", label: "Portfolio", count: images.length },
-    { value: "covers", label: "Titelbilder" },
-    { value: "reviews", label: "Bewertungen", count: pendingReviews.length },
-    { value: "settings", label: "Einstellungen" },
+    {
+      value: "portfolio",
+      label: "Portfolio",
+      description: "Galerie-Uploads und Reihenfolge",
+      count: images.length,
+      icon: Images,
+    },
+    {
+      value: "covers",
+      label: "Titelbilder",
+      description: "Startseite und Portfolio-Kacheln",
+      icon: ImageIcon,
+    },
+    {
+      value: "reviews",
+      label: "Bewertungen",
+      description: "Freigeben, ausblenden, loeschen",
+      count: pendingReviews.length,
+      icon: MessageSquare,
+    },
+    {
+      value: "settings",
+      label: "Einstellungen",
+      description: "Status und naechste Schritte",
+      icon: ShieldCheck,
+    },
   ];
   const latestReview = reviews[0];
   const latestImage = [...images].sort(
@@ -614,80 +636,106 @@ export default function AdminPage() {
             </button>
           </form>
         ) : (
-          <section className="mt-10">
-            <div className="grid gap-4 md:grid-cols-3">
+          <section className="mt-10 grid gap-6 lg:grid-cols-[300px_1fr]">
+            <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
               <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm text-neutral-400">Portfolio-Bilder</p>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
-                    <Images className="h-5 w-5" />
+                <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
+                  Uebersicht
+                </p>
+                <div className="mt-5 grid gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-sm text-neutral-400">Portfolio-Bilder</p>
+                      <Images className="h-5 w-5 text-neutral-300" />
+                    </div>
+                    <p className="mt-2 text-3xl font-black">{images.length}</p>
+                    <p className="mt-2 line-clamp-1 text-xs text-neutral-500">
+                      {latestImage
+                        ? `Zuletzt: ${formatDate(latestImage.created_at)}`
+                        : "Noch keine Uploads"}
+                    </p>
                   </div>
-                </div>
-                <p className="mt-2 text-3xl font-black">{images.length}</p>
-                <p className="mt-2 line-clamp-1 text-xs text-neutral-500">
-                  {latestImage
-                    ? `Zuletzt: ${formatDate(latestImage.created_at)}`
-                    : "Noch keine Uploads"}
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm text-yellow-100">Warten auf Freigabe</p>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-yellow-400/15">
-                    <Clock className="h-5 w-5 text-yellow-100" />
-                  </div>
-                </div>
-                <p className="mt-2 text-3xl font-black">
-                  {pendingReviews.length}
-                </p>
-                <p className="mt-2 text-xs text-yellow-100/70">
-                  Neue Bewertungen bleiben unsichtbar, bis du sie freigibst.
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] border border-emerald-400/20 bg-emerald-400/10 p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm text-emerald-100">Oeffentlich sichtbar</p>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-400/15">
-                    <MessageSquare className="h-5 w-5 text-emerald-100" />
-                  </div>
-                </div>
-                <p className="mt-2 text-3xl font-black">
-                  {approvedReviews.length}
-                </p>
-                <p className="mt-2 line-clamp-1 text-xs text-emerald-100/70">
-                  {latestReview
-                    ? `Neueste: ${latestReview.name}`
-                    : "Noch keine Bewertungen"}
-                </p>
-              </div>
-            </div>
 
-            <div className="mt-8 flex gap-2 overflow-x-auto rounded-full border border-white/10 bg-white/[0.06] p-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.value}
-                  onClick={() => setActiveTab(tab.value)}
-                  className={`flex shrink-0 items-center gap-2 rounded-full px-5 py-3 text-sm font-bold transition ${
-                    activeTab === tab.value
-                      ? "bg-white text-neutral-950"
-                      : "text-neutral-300 hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  {tab.label}
-                  {typeof tab.count === "number" && (
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${
+                  <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-sm text-yellow-100">Offen</p>
+                      <Clock className="h-5 w-5 text-yellow-100" />
+                    </div>
+                    <p className="mt-2 text-3xl font-black">
+                      {pendingReviews.length}
+                    </p>
+                    <p className="mt-2 text-xs text-yellow-100/70">
+                      Bewertungen warten auf Freigabe.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-sm text-emerald-100">Sichtbar</p>
+                      <MessageSquare className="h-5 w-5 text-emerald-100" />
+                    </div>
+                    <p className="mt-2 text-3xl font-black">
+                      {approvedReviews.length}
+                    </p>
+                    <p className="mt-2 line-clamp-1 text-xs text-emerald-100/70">
+                      {latestReview
+                        ? `Neueste: ${latestReview.name}`
+                        : "Noch keine Bewertungen"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <nav className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-2">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+
+                  return (
+                    <button
+                      key={tab.value}
+                      type="button"
+                      onClick={() => setActiveTab(tab.value)}
+                      className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${
                         activeTab === tab.value
-                          ? "bg-neutral-950 text-white"
-                          : "bg-white/10 text-neutral-200"
+                          ? "bg-white text-neutral-950"
+                          : "text-neutral-300 hover:bg-white/10 hover:text-white"
                       }`}
                     >
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+                      <span
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                          activeTab === tab.value
+                            ? "bg-neutral-950 text-white"
+                            : "bg-white/10"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2 font-bold">
+                          {tab.label}
+                          {typeof tab.count === "number" && (
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs ${
+                                activeTab === tab.value
+                                  ? "bg-neutral-950 text-white"
+                                  : "bg-white/10 text-neutral-200"
+                              }`}
+                            >
+                              {tab.count}
+                            </span>
+                          )}
+                        </span>
+                        <span className="mt-0.5 block text-xs opacity-70">
+                          {tab.description}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </aside>
+
+            <div className="min-w-0 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 shadow-2xl backdrop-blur-xl md:p-6">
 
             {activeTab === "portfolio" && (
               <div className="mt-8">
@@ -1245,6 +1293,7 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+            </div>
           </section>
         )}
       </div>
