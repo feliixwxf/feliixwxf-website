@@ -52,6 +52,21 @@ function InstagramIcon({ className = "h-5 w-5" }) {
   );
 }
 
+function Section({ id, children, className = "" }) {
+  return (
+    <motion.section
+      id={id}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.16 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className={`relative z-0 scroll-mt-28 ${className}`}
+    >
+      {children}
+    </motion.section>
+  );
+}
+
 export default function FeliixWxfPhotography() {
   const sliderRef = useRef(null);
   const beforeRef = useRef(null);
@@ -359,19 +374,6 @@ export default function FeliixWxfPhotography() {
       );
     });
   };
-
-  const Section = ({ id, children, className = "" }) => (
-    <motion.section
-      id={id}
-      initial={{ opacity: 0, y: 32 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.16 }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
-      className={`relative z-0 scroll-mt-28 ${className}`}
-    >
-      {children}
-    </motion.section>
-  );
 
   const ThemeToggle = () => (
     <button
