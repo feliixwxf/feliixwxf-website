@@ -299,10 +299,12 @@ export default function FeliixWxfPhotography() {
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    const formElement = e.currentTarget;
+
     setReviewSubmitting(true);
     setReviewMessage("");
 
-    const form = new FormData(e.currentTarget);
+    const form = new FormData(formElement);
 
     const newReview = {
       name: String(form.get("name") || "").trim(),
@@ -322,7 +324,7 @@ export default function FeliixWxfPhotography() {
       if (!response.ok) throw new Error("Review could not be saved");
 
       setRating(0);
-      e.currentTarget.reset();
+      formElement.reset();
       setReviewMessage(
         "Danke! Deine Bewertung wurde gesendet und wird nach Freigabe veröffentlicht."
       );
