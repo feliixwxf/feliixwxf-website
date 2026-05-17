@@ -47,6 +47,16 @@ const DEFAULT_SITE_ASSETS = {
   cover_event: { url: "/images/abititel.jpg" },
 };
 
+const DEFAULT_SITE_SETTINGS = {
+  contact_heading: "Lass uns dein Shooting planen.",
+  contact_intro: "Schreib mir direkt über das Formular.",
+  contact_email: "felixwolff411@gmail.com",
+  contact_phone: "+49 15259105754",
+  instagram_url: "https://www.instagram.com/feliix.wxf",
+  instagram_label: "@feliix.wxf",
+  form_action: "https://formspree.io/f/xqennvyy",
+};
+
 function InstagramIcon({ className = "h-5 w-5" }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none">
@@ -101,6 +111,7 @@ export default function FeliixWxfPhotography() {
   const [reviewMessage, setReviewMessage] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
   const [siteAssets, setSiteAssets] = useState(DEFAULT_SITE_ASSETS);
+  const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedPortfolioImage, setSelectedPortfolioImage] = useState(null);
@@ -140,6 +151,15 @@ export default function FeliixWxfPhotography() {
       .then((data) => {
         if (data?.assets) {
           setSiteAssets((current) => ({ ...current, ...data.assets }));
+        }
+      })
+      .catch(() => {});
+
+    fetch("/api/site-settings")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data?.settings) {
+          setSiteSettings((current) => ({ ...current, ...data.settings }));
         }
       })
       .catch(() => {});
@@ -895,10 +915,10 @@ export default function FeliixWxfPhotography() {
                 Kontakt
               </p>
               <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-                Lass uns dein Shooting planen.
+                {siteSettings.contact_heading}
               </h2>
               <p className={`mt-6 max-w-xl text-lg leading-8 ${muted}`}>
-                Schreib mir direkt über das Formular.
+                {siteSettings.contact_intro}
               </p>
 
               <div className={`mt-8 space-y-5 ${muted}`}>
@@ -912,9 +932,7 @@ export default function FeliixWxfPhotography() {
                       E-Mail
                     </span>
 
-                    <span className="font-medium">
-                      felixwolff411@gmail.com
-                    </span>
+                    <span className="font-medium">{siteSettings.contact_email}</span>
                   </div>
                 </div>
 
@@ -928,14 +946,12 @@ export default function FeliixWxfPhotography() {
                       Telefon
                     </span>
 
-                    <span className="font-medium">
-                      +49 15259105754
-                    </span>
+                    <span className="font-medium">{siteSettings.contact_phone}</span>
                   </div>
                 </div>
 
                 <a
-                  href="https://www.instagram.com/feliix.wxf"
+                  href={siteSettings.instagram_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4 transition-transform duration-200 hover:-translate-y-0.5"
@@ -950,7 +966,7 @@ export default function FeliixWxfPhotography() {
                     </span>
 
                     <span className="font-medium transition group-hover:text-pink-300">
-                      @feliix.wxf
+                      {siteSettings.instagram_label}
                     </span>
                   </div>
                 </a>
@@ -958,7 +974,7 @@ export default function FeliixWxfPhotography() {
             </div>
 
             <form
-              action="https://formspree.io/f/xqennvyy"
+              action={siteSettings.form_action}
               method="POST"
               className="rounded-[2rem] border border-white/15 bg-white/[0.08] p-6 shadow-lg"
             >
@@ -1161,9 +1177,9 @@ export default function FeliixWxfPhotography() {
               <div>
                 <h3 className="text-2xl font-bold text-white">Kontakt</h3>
                 <p className="mt-3">
-                  E-Mail: felixwolff411@gmail.com
+                  E-Mail: {siteSettings.contact_email}
                   <br />
-                  Telefon: +49 15259105754
+                  Telefon: {siteSettings.contact_phone}
                 </p>
               </div>
 

@@ -16,11 +16,14 @@ import {
   LayoutDashboard,
   Lock,
   LogOut,
+  Mail,
   MessageSquare,
+  Phone,
   RefreshCw,
   ShieldCheck,
   Star,
   Trash2,
+  Type,
   Upload,
   X,
 } from "lucide-react";
@@ -60,6 +63,69 @@ const SITE_ASSET_LABELS = Object.fromEntries(
   )
 );
 
+const DEFAULT_SITE_SETTINGS = {
+  contact_heading: "Lass uns dein Shooting planen.",
+  contact_intro: "Schreib mir direkt über das Formular.",
+  contact_email: "felixwolff411@gmail.com",
+  contact_phone: "+49 15259105754",
+  instagram_url: "https://www.instagram.com/feliix.wxf",
+  instagram_label: "@feliix.wxf",
+  form_action: "https://formspree.io/f/xqennvyy",
+};
+
+const CONTACT_FIELDS = [
+  {
+    key: "contact_heading",
+    label: "Kontakt-Ueberschrift",
+    helper: "Grosse Ueberschrift im Kontaktbereich.",
+    placeholder: "Lass uns dein Shooting planen.",
+    icon: Type,
+  },
+  {
+    key: "contact_intro",
+    label: "Kontakt-Text",
+    helper: "Kurzer Satz direkt unter der Ueberschrift.",
+    placeholder: "Schreib mir direkt über das Formular.",
+    icon: MessageSquare,
+    multiline: true,
+  },
+  {
+    key: "contact_email",
+    label: "E-Mail",
+    helper: "Wird im Kontaktbereich und Impressum angezeigt.",
+    placeholder: "name@example.com",
+    icon: Mail,
+  },
+  {
+    key: "contact_phone",
+    label: "Telefon",
+    helper: "Wird im Kontaktbereich und Impressum angezeigt.",
+    placeholder: "+49 ...",
+    icon: Phone,
+  },
+  {
+    key: "instagram_url",
+    label: "Instagram-Link",
+    helper: "Vollstaendiger Link zum Profil.",
+    placeholder: "https://www.instagram.com/feliix.wxf",
+    icon: ExternalLink,
+  },
+  {
+    key: "instagram_label",
+    label: "Instagram-Name",
+    helper: "Text, der auf der Website angezeigt wird.",
+    placeholder: "@feliix.wxf",
+    icon: Type,
+  },
+  {
+    key: "form_action",
+    label: "Formular-Ziel",
+    helper: "Formspree-Link fuer das Kontaktformular.",
+    placeholder: "https://formspree.io/f/...",
+    icon: ExternalLink,
+  },
+];
+
 function renderStars(value) {
   return [1, 2, 3, 4, 5].map((star) => {
     const filled = Number(value) >= star;
@@ -94,6 +160,8 @@ export default function AdminPage() {
   const [reviews, setReviews] = useState([]);
   const [images, setImages] = useState([]);
   const [siteAssets, setSiteAssets] = useState({});
+  const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
+  const [settingsDraft, setSettingsDraft] = useState(DEFAULT_SITE_SETTINGS);
   const [imageCategory, setImageCategory] = useState("car");
   const [imageFile, setImageFile] = useState(null);
   const [siteAssetFiles, setSiteAssetFiles] = useState({});
@@ -103,6 +171,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
   const [siteAssetUploadingKey, setSiteAssetUploadingKey] = useState(null);
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [busyId, setBusyId] = useState(null);
@@ -153,6 +222,12 @@ export default function AdminPage() {
       label: "Titelbilder",
       description: "Startseite und Portfolio-Kacheln",
       icon: ImageIcon,
+    },
+    {
+      value: "contact",
+      label: "Kontakt",
+      description: "E-Mail, Telefon und Links",
+      icon: Mail,
     },
     {
       value: "reviews",
@@ -236,9 +311,39 @@ export default function AdminPage() {
     setSiteAssets(data.assets || {});
   };
 
+  const loadSiteSettings = async () => {
+    setMessage("");
+
+    const response = await fetch("/api/admin/site-settings", {
+      cache: "no-store",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Kontaktinfos konnten nicht geladen werden.",
+        "error"
+      );
+      return;
+    }
+
+    const nextSettings = {
+      ...DEFAULT_SITE_SETTINGS,
+      ...(data.settings || {}),
+    };
+
+    setSiteSettings(nextSettings);
+    setSettingsDraft(nextSettings);
+  };
+
   const refreshDashboard = async () => {
     setMessage("");
-    await Promise.all([loadReviews(), loadImages(), loadSiteAssets()]);
+    await Promise.all([
+      loadReviews(),
+      loadImages(),
+      loadSiteAssets(),
+      loadSiteSettings(),
+    ]);
     showMessage("Admin-Daten wurden neu geladen.", "success");
   };
 
@@ -250,7 +355,12 @@ export default function AdminPage() {
         setAuthenticated(data.authenticated);
 
         if (data.authenticated) {
-          await Promise.all([loadReviews(), loadImages(), loadSiteAssets()]);
+          await Promise.all([
+            loadReviews(),
+            loadImages(),
+            loadSiteAssets(),
+            loadSiteSettings(),
+          ]);
         }
       })
       .catch(() => {
@@ -279,7 +389,12 @@ export default function AdminPage() {
 
     setPassword("");
     setAuthenticated(true);
-    await Promise.all([loadReviews(), loadImages(), loadSiteAssets()]);
+    await Promise.all([
+      loadReviews(),
+      loadImages(),
+      loadSiteAssets(),
+      loadSiteSettings(),
+    ]);
     setLoading(false);
   };
 
@@ -289,6 +404,8 @@ export default function AdminPage() {
     setReviews([]);
     setImages([]);
     setSiteAssets({});
+    setSiteSettings(DEFAULT_SITE_SETTINGS);
+    setSettingsDraft(DEFAULT_SITE_SETTINGS);
     showMessage("Du wurdest ausgeloggt.", "success");
   };
 
@@ -400,6 +517,47 @@ export default function AdminPage() {
       "success"
     );
     setSiteAssetUploadingKey(null);
+  };
+
+  const updateSettingsDraft = (key, value) => {
+    setSettingsDraft((current) => ({
+      ...current,
+      [key]: value,
+    }));
+    setMessage("");
+  };
+
+  const saveSiteSettings = async (event) => {
+    event.preventDefault();
+    setSettingsSaving(true);
+    setMessage("");
+
+    const response = await fetch("/api/admin/site-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ settings: settingsDraft }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Kontaktinfos konnten nicht gespeichert werden.",
+        "error"
+      );
+      setSettingsSaving(false);
+      return;
+    }
+
+    const nextSettings = {
+      ...DEFAULT_SITE_SETTINGS,
+      ...settingsDraft,
+      ...(data.settings || {}),
+    };
+
+    setSiteSettings(nextSettings);
+    setSettingsDraft(nextSettings);
+    showMessage("Kontaktinfos wurden gespeichert.", "success");
+    setSettingsSaving(false);
   };
 
   const deleteReview = async (review) => {
@@ -772,7 +930,7 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className="mt-8 grid gap-4 lg:grid-cols-3">
+                <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                   <button
                     type="button"
                     onClick={() => {
@@ -829,6 +987,23 @@ export default function AdminPage() {
                     <p className="mt-2 text-sm leading-6 text-neutral-300">
                       Startseitenbilder und Portfolio-Kacheln getrennt von der
                       Galerie pflegen.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("contact")}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                      <Mail className="h-5 w-5" />
+                    </div>
+                    <p className="mt-5 text-lg font-black">
+                      {siteSettings.contact_email}
+                    </p>
+                    <h3 className="mt-2 text-lg font-black">Kontaktinfos</h3>
+                    <p className="mt-2 text-sm leading-6 text-neutral-300">
+                      E-Mail, Telefon, Instagram und Formular-Link bearbeiten.
                     </p>
                   </button>
                 </div>
@@ -1314,6 +1489,101 @@ export default function AdminPage() {
                     </section>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {activeTab === "contact" && (
+              <div className="mt-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Kontakt
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black">
+                      Kontaktinfos bearbeiten
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-neutral-300">
+                      Diese Angaben erscheinen auf der Website im Kontaktbereich
+                      und teilweise im Impressum.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={loadSiteSettings}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Kontakt neu laden
+                  </button>
+                </div>
+
+                <form
+                  onSubmit={saveSiteSettings}
+                  className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
+                >
+                  <div className="grid gap-5 lg:grid-cols-2">
+                    {CONTACT_FIELDS.map((field) => {
+                      const Icon = field.icon;
+                      const value = settingsDraft[field.key] || "";
+
+                      return (
+                        <label
+                          key={field.key}
+                          className={field.multiline ? "lg:col-span-2" : ""}
+                        >
+                          <span className="flex items-center gap-2 text-sm font-bold text-neutral-200">
+                            <Icon className="h-4 w-4 text-neutral-400" />
+                            {field.label}
+                          </span>
+                          <span className="mt-1 block text-xs leading-5 text-neutral-500">
+                            {field.helper}
+                          </span>
+
+                          {field.multiline ? (
+                            <textarea
+                              value={value}
+                              onChange={(event) =>
+                                updateSettingsDraft(field.key, event.target.value)
+                              }
+                              placeholder={field.placeholder}
+                              rows="3"
+                              className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                            />
+                          ) : (
+                            <input
+                              value={value}
+                              onChange={(event) =>
+                                updateSettingsDraft(field.key, event.target.value)
+                              }
+                              placeholder={field.placeholder}
+                              className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                            />
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="font-bold">Vorschau</p>
+                      <p className="mt-1 break-all text-sm text-neutral-400">
+                        {settingsDraft.contact_email} · {settingsDraft.contact_phone} ·{" "}
+                        {settingsDraft.instagram_label}
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={settingsSaving}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      {settingsSaving ? "Speichert..." : "Kontakt speichern"}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
 
