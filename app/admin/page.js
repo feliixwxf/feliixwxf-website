@@ -274,6 +274,25 @@ function createImageDrafts(items) {
   );
 }
 
+function sortImages(items, mode = "manual") {
+  return [...items].sort((a, b) => {
+    if (mode === "newest") {
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    }
+
+    if (mode === "oldest") {
+      return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+    }
+
+    const orderDifference =
+      Number(a.sort_order || 0) - Number(b.sort_order || 0);
+
+    if (orderDifference !== 0) return orderDifference;
+
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+  });
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -288,6 +307,8 @@ export default function AdminPage() {
   const [imageDrafts, setImageDrafts] = useState({});
   const [imageSearch, setImageSearch] = useState("");
   const [imageCategoryFilter, setImageCategoryFilter] = useState("all");
+  const [imageSortMode, setImageSortMode] = useState("manual");
+  const [selectedImageIds, setSelectedImageIds] = useState([]);
   const [siteAssetFiles, setSiteAssetFiles] = useState({});
   const [siteAssetPreviews, setSiteAssetPreviews] = useState({});
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -314,34 +335,32 @@ export default function AdminPage() {
   const normalizedImageSearch = imageSearch.trim().toLowerCase();
   const imagesByCategory = CATEGORIES.map((category) => ({
     ...category,
-    images: images
-      .filter((image) => image.category === category.value)
-      .filter((image) => {
-        if (imageCategoryFilter !== "all" && image.category !== imageCategoryFilter) {
-          return false;
-        }
+    images: sortImages(
+      images
+        .filter((image) => image.category === category.value)
+        .filter((image) => {
+          if (
+            imageCategoryFilter !== "all" &&
+            image.category !== imageCategoryFilter
+          ) {
+            return false;
+          }
 
-        if (!normalizedImageSearch) return true;
+          if (!normalizedImageSearch) return true;
 
-        return [
-          image.title,
-          image.note,
-          image.path,
-          category.label,
-          formatDate(image.created_at),
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedImageSearch);
-      })
-      .sort((a, b) => {
-        const orderDifference =
-          Number(a.sort_order || 0) - Number(b.sort_order || 0);
-
-        if (orderDifference !== 0) return orderDifference;
-
-        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-      }),
+          return [
+            image.title,
+            image.note,
+            image.path,
+            category.label,
+            formatDate(image.created_at),
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(normalizedImageSearch);
+        }),
+      imageSortMode
+    ),
   }));
   const visibleImageCount = imagesByCategory.reduce(
     (total, category) => total + category.images.length,
@@ -351,6 +370,15 @@ export default function AdminPage() {
     (category) =>
       imageCategoryFilter === "all" || category.value === imageCategoryFilter
   );
+  const visibleImageIds = imagesByCategory.flatMap((category) =>
+    category.images.map((image) => image.id)
+  );
+  const selectedImages = images.filter((image) =>
+    selectedImageIds.includes(image.id)
+  );
+  const allVisibleImagesSelected =
+    visibleImageIds.length > 0 &&
+    visibleImageIds.every((id) => selectedImageIds.includes(id));
   const missingCoverAssets = SITE_ASSET_GROUPS.flatMap((group) =>
     group.assets.filter((asset) => !siteAssets[asset.key])
   );
@@ -449,6 +477,9 @@ export default function AdminPage() {
     const nextImages = data.images || [];
     setImages(nextImages);
     setImageDrafts(createImageDrafts(nextImages));
+    setSelectedImageIds((current) =>
+      current.filter((id) => nextImages.some((image) => image.id === id))
+    );
   };
 
   const loadSiteAssets = async () => {
@@ -865,7 +896,71 @@ export default function AdminPage() {
     }
 
     setImages((current) => current.filter((item) => item.id !== image.id));
+    setSelectedImageIds((current) => current.filter((id) => id !== image.id));
     showMessage("Bild wurde aus der Galerie geloescht.", "success");
+    setBusyImageId(null);
+  };
+
+  const toggleImageSelection = (imageId) => {
+    setSelectedImageIds((current) =>
+      current.includes(imageId)
+        ? current.filter((id) => id !== imageId)
+        : [...current, imageId]
+    );
+  };
+
+  const toggleVisibleImageSelection = () => {
+    setSelectedImageIds((current) => {
+      if (allVisibleImagesSelected) {
+        return current.filter((id) => !visibleImageIds.includes(id));
+      }
+
+      return Array.from(new Set([...current, ...visibleImageIds]));
+    });
+  };
+
+  const deleteSelectedImages = async () => {
+    if (selectedImages.length === 0) return;
+
+    if (
+      !window.confirm(
+        `${selectedImages.length} ausgewaehlte Bilder wirklich loeschen?`
+      )
+    ) {
+      return;
+    }
+
+    setBusyImageId("bulk-delete");
+    setMessage("");
+
+    const responses = await Promise.all(
+      selectedImages.map((image) =>
+        fetch("/api/admin/images", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: image.id }),
+        })
+      )
+    );
+    const failedResponse = responses.find((response) => !response.ok);
+
+    if (failedResponse) {
+      const data = await failedResponse.json();
+      showMessage(
+        data.error || "Mindestens ein Bild konnte nicht geloescht werden.",
+        "error"
+      );
+      setBusyImageId(null);
+      await loadImages();
+      return;
+    }
+
+    const deletedIds = selectedImages.map((image) => image.id);
+    setImages((current) =>
+      current.filter((image) => !deletedIds.includes(image.id))
+    );
+    setSelectedImageIds([]);
+    showMessage("Ausgewaehlte Bilder wurden geloescht.", "success");
     setBusyImageId(null);
   };
 
@@ -1487,6 +1582,19 @@ export default function AdminPage() {
                       />
                     </label>
 
+                    <label className="block min-w-[12rem]">
+                      <span className="sr-only">Sortierung</span>
+                      <select
+                        value={imageSortMode}
+                        onChange={(event) => setImageSortMode(event.target.value)}
+                        className="w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                      >
+                        <option value="manual">Eigene Reihenfolge</option>
+                        <option value="newest">Neueste zuerst</option>
+                        <option value="oldest">Aelteste zuerst</option>
+                      </select>
+                    </label>
+
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
@@ -1519,7 +1627,52 @@ export default function AdminPage() {
                   <p className="mt-3 text-sm text-neutral-400">
                     {visibleImageCount} von {images.length} Bildern werden angezeigt.
                   </p>
+
+                  {imageSortMode !== "manual" && (
+                    <p className="mt-2 text-xs text-neutral-500">
+                      Hoch/Runter ist nur bei eigener Reihenfolge aktiv.
+                    </p>
+                  )}
                 </div>
+
+                {images.length > 0 && (
+                  <div className="mt-4 flex flex-col gap-3 rounded-[1.25rem] border border-white/10 bg-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <label className="flex w-fit items-center gap-3 text-sm font-semibold text-neutral-200">
+                      <input
+                        type="checkbox"
+                        checked={allVisibleImagesSelected}
+                        onChange={toggleVisibleImageSelection}
+                        disabled={visibleImageCount === 0}
+                        className="h-4 w-4 rounded border-white/20 accent-yellow-400"
+                      />
+                      Sichtbare Bilder auswaehlen
+                    </label>
+
+                    {selectedImageIds.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-black text-black">
+                          {selectedImageIds.length} ausgewaehlt
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedImageIds([])}
+                          className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-neutral-100 transition hover:bg-white/15"
+                        >
+                          Auswahl leeren
+                        </button>
+                        <button
+                          type="button"
+                          onClick={deleteSelectedImages}
+                          disabled={busyImageId === "bulk-delete"}
+                          className="inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Ausgewaehlte loeschen
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="mt-8 space-y-8">
                   {images.length === 0 && (
@@ -1552,9 +1705,22 @@ export default function AdminPage() {
                           {category.images.map((image, index) => (
                             <article
                               key={image.id}
-                              className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.08] backdrop-blur-md"
+                              className={`overflow-hidden rounded-[1.5rem] border bg-white/[0.08] backdrop-blur-md ${
+                                selectedImageIds.includes(image.id)
+                                  ? "border-yellow-400/70"
+                                  : "border-white/10"
+                              }`}
                             >
-                              <div className="aspect-[4/3] bg-black/30">
+                              <div className="relative aspect-[4/3] bg-black/30">
+                                <label className="absolute left-3 top-3 z-10 flex items-center gap-2 rounded-full border border-white/20 bg-black/55 px-3 py-2 text-xs font-bold text-white backdrop-blur-md">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedImageIds.includes(image.id)}
+                                    onChange={() => toggleImageSelection(image.id)}
+                                    className="h-4 w-4 rounded border-white/20 accent-yellow-400"
+                                  />
+                                  Auswahl
+                                </label>
                                 <img
                                   src={image.url}
                                   alt=""
@@ -1567,7 +1733,11 @@ export default function AdminPage() {
                                   {category.label}
                                 </div>
                                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-neutral-500">
-                                  <span>Position {index + 1}</span>
+                                  <span>
+                                    {imageSortMode === "manual"
+                                      ? `Position ${index + 1}`
+                                      : `Anzeige ${index + 1}`}
+                                  </span>
                                   <span>·</span>
                                   <span>{formatDate(image.created_at)}</span>
                                 </div>
@@ -1668,7 +1838,9 @@ export default function AdminPage() {
                                       moveImage(category.value, image.id, -1)
                                     }
                                     disabled={
-                                      index === 0 || busyImageId === image.id
+                                      imageSortMode !== "manual" ||
+                                      index === 0 ||
+                                      busyImageId === image.id
                                     }
                                     className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-neutral-100 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40"
                                   >
@@ -1682,6 +1854,7 @@ export default function AdminPage() {
                                       moveImage(category.value, image.id, 1)
                                     }
                                     disabled={
+                                      imageSortMode !== "manual" ||
                                       index === category.images.length - 1 ||
                                       busyImageId === image.id
                                     }

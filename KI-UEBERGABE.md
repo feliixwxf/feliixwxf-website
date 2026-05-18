@@ -146,6 +146,8 @@ Wichtig:
 - Uploads ändern nicht automatisch die Kacheln auf der Startseite.
 - Reihenfolge kann im Adminbereich sortiert werden.
 - Im Adminbereich gibt es Suche, Kategorie-Filter sowie optionale Bildnamen und Notizen.
+- Portfolio-Bilder koennen im Admin nach eigener Reihenfolge, neuesten oder aeltesten Uploads sortiert werden.
+- Mehrfachauswahl ist fuer sichtbare Bilder vorhanden, inklusive gesammelt loeschen.
 - Fuer Bildnamen und Notizen muss einmal `supabase-portfolio-metadata.sql` ausgefuehrt werden.
 
 Wichtige Dateien:
