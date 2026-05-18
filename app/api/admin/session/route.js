@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
-import { hasAdminConfig, isAdminAuthenticated } from "../_lib/auth";
+import {
+  applyNoStore,
+  hasAdminConfig,
+  isAdminAuthenticated,
+} from "../_lib/auth";
 
 export async function GET() {
-  return NextResponse.json({
-    configured: hasAdminConfig(),
-    authenticated: await isAdminAuthenticated(),
-  });
+  return applyNoStore(
+    NextResponse.json({
+      configured: hasAdminConfig(),
+      authenticated: await isAdminAuthenticated(),
+    })
+  );
 }
-

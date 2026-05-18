@@ -59,6 +59,9 @@ Supabase-Hilfsdatei:
 
 Admin-Auth:
 - `app/api/admin/_lib/auth.js`
+- Login nutzt ein HTTP-only Session-Cookie, `Cache-Control: no-store`,
+  timing-sicheren Passwortvergleich und eine kleine Sperre nach mehreren
+  falschen Login-Versuchen.
 
 ## API-Routen
 
@@ -81,7 +84,7 @@ Admin:
 
 Benötigt:
 - `ADMIN_PASSWORD`
-- `ADMIN_SESSION_SECRET`
+- `ADMIN_SESSION_SECRET` mindestens 32 Zeichen lang
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`

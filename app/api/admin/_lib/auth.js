@@ -4,13 +4,14 @@ import { cookies } from "next/headers";
 export const ADMIN_COOKIE_NAME = "feliix_admin_session";
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
+const MIN_SECRET_LENGTH = 32;
 
 function getAdminPassword() {
   return process.env.ADMIN_PASSWORD || "";
 }
 
 function getSessionSecret() {
-  return process.env.ADMIN_SESSION_SECRET || getAdminPassword();
+  return process.env.ADMIN_SESSION_SECRET || "";
 }
 
 function sign(value) {
@@ -26,16 +27,32 @@ function signaturesMatch(value, signature) {
   return timingSafeEqual(expected, received);
 }
 
+function secureStringMatch(value, expectedValue) {
+  const expected = Buffer.from(expectedValue);
+  const received = Buffer.from(value || "");
+
+  if (expected.length !== received.length) return false;
+
+  return timingSafeEqual(expected, received);
+}
+
 export function isAdminPassword(password) {
   const configuredPassword = getAdminPassword();
 
   if (!configuredPassword) return false;
 
-  return password === configuredPassword;
+  return secureStringMatch(password, configuredPassword);
 }
 
 export function hasAdminConfig() {
-  return Boolean(getAdminPassword() && getSessionSecret());
+  return Boolean(
+    getAdminPassword() && getSessionSecret().length >= MIN_SECRET_LENGTH
+  );
+}
+
+export function applyNoStore(response) {
+  response.headers.set("Cache-Control", "no-store, max-age=0");
+  return response;
 }
 
 export function setAdminCookie(response) {
@@ -50,7 +67,7 @@ export function setAdminCookie(response) {
     maxAge: SESSION_MAX_AGE,
   });
 
-  return response;
+  return applyNoStore(response);
 }
 
 export function clearAdminCookie(response) {
@@ -62,7 +79,7 @@ export function clearAdminCookie(response) {
     maxAge: 0,
   });
 
-  return response;
+  return applyNoStore(response);
 }
 
 export async function isAdminAuthenticated() {

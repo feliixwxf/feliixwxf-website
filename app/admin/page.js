@@ -1087,7 +1087,7 @@ export default function AdminPage() {
 
         {!configured && (
           <div className="mt-6 rounded-2xl border border-red-400/30 bg-red-500/10 px-5 py-4 text-sm text-red-100">
-            ADMIN_PASSWORD oder ADMIN_SESSION_SECRET fehlt noch in Vercel.
+            ADMIN_PASSWORD fehlt oder ADMIN_SESSION_SECRET ist kuerzer als 32 Zeichen.
           </div>
         )}
 
@@ -2381,7 +2381,8 @@ export default function AdminPage() {
                     <h3 className="mt-5 text-xl font-black">Admin-Schutz</h3>
                     <p className="mt-3 text-sm leading-6 text-emerald-100/80">
                       Der Admin-Bereich ist mit Passwort und Session-Cookie
-                      geschuetzt. Teile dein Admin-Passwort nicht weiter.
+                      geschuetzt. Nach mehreren falschen Login-Versuchen wird
+                      kurz gebremst.
                     </p>
                   </div>
 
