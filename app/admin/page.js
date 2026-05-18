@@ -20,6 +20,8 @@ import {
   MessageSquare,
   Phone,
   RefreshCw,
+  Save,
+  Search,
   ShieldCheck,
   Star,
   Trash2,
@@ -260,6 +262,18 @@ function formatDate(value) {
   return new Date(value).toLocaleString("de-DE");
 }
 
+function createImageDrafts(items) {
+  return Object.fromEntries(
+    items.map((image) => [
+      image.id,
+      {
+        title: image.title || "",
+        note: image.note || "",
+      },
+    ])
+  );
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -271,6 +285,9 @@ export default function AdminPage() {
   const [settingsDraft, setSettingsDraft] = useState(DEFAULT_SITE_SETTINGS);
   const [imageCategory, setImageCategory] = useState("car");
   const [imageFile, setImageFile] = useState(null);
+  const [imageDrafts, setImageDrafts] = useState({});
+  const [imageSearch, setImageSearch] = useState("");
+  const [imageCategoryFilter, setImageCategoryFilter] = useState("all");
   const [siteAssetFiles, setSiteAssetFiles] = useState({});
   const [siteAssetPreviews, setSiteAssetPreviews] = useState({});
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -294,10 +311,29 @@ export default function AdminPage() {
       : reviewFilter === "approved"
         ? approvedReviews
         : reviews;
+  const normalizedImageSearch = imageSearch.trim().toLowerCase();
   const imagesByCategory = CATEGORIES.map((category) => ({
     ...category,
     images: images
       .filter((image) => image.category === category.value)
+      .filter((image) => {
+        if (imageCategoryFilter !== "all" && image.category !== imageCategoryFilter) {
+          return false;
+        }
+
+        if (!normalizedImageSearch) return true;
+
+        return [
+          image.title,
+          image.note,
+          image.path,
+          category.label,
+          formatDate(image.created_at),
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedImageSearch);
+      })
       .sort((a, b) => {
         const orderDifference =
           Number(a.sort_order || 0) - Number(b.sort_order || 0);
@@ -307,6 +343,14 @@ export default function AdminPage() {
         return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       }),
   }));
+  const visibleImageCount = imagesByCategory.reduce(
+    (total, category) => total + category.images.length,
+    0
+  );
+  const displayedImageCategories = imagesByCategory.filter(
+    (category) =>
+      imageCategoryFilter === "all" || category.value === imageCategoryFilter
+  );
   const missingCoverAssets = SITE_ASSET_GROUPS.flatMap((group) =>
     group.assets.filter((asset) => !siteAssets[asset.key])
   );
@@ -402,7 +446,9 @@ export default function AdminPage() {
       return;
     }
 
-    setImages(data.images || []);
+    const nextImages = data.images || [];
+    setImages(nextImages);
+    setImageDrafts(createImageDrafts(nextImages));
   };
 
   const loadSiteAssets = async () => {
@@ -583,6 +629,13 @@ export default function AdminPage() {
     }
 
     setImages((current) => [data.image, ...current]);
+    setImageDrafts((current) => ({
+      ...current,
+      [data.image.id]: {
+        title: data.image.title || "",
+        note: data.image.note || "",
+      },
+    }));
     setImageFile(null);
     event.currentTarget.reset();
     showMessage("Bild wurde hochgeladen und ist jetzt in der Galerie.", "success");
@@ -638,6 +691,62 @@ export default function AdminPage() {
       [key]: value,
     }));
     setMessage("");
+  };
+
+  const updateImageDraft = (imageId, key, value) => {
+    setImageDrafts((current) => ({
+      ...current,
+      [imageId]: {
+        title: "",
+        note: "",
+        ...(current[imageId] || {}),
+        [key]: value,
+      },
+    }));
+    setMessage("");
+  };
+
+  const saveImageDetails = async (image) => {
+    const draft = imageDrafts[image.id] || {
+      title: image.title || "",
+      note: image.note || "",
+    };
+
+    setBusyImageId(image.id);
+    setMessage("");
+
+    const response = await fetch("/api/admin/images", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: image.id,
+        title: draft.title,
+        note: draft.note,
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(data.error || "Bilddetails konnten nicht gespeichert werden.", "error");
+      setBusyImageId(null);
+      return;
+    }
+
+    setImages((current) =>
+      current.map((item) => (item.id === image.id ? data.image : item))
+    );
+    setSelectedImage((current) =>
+      current?.id === image.id ? data.image : current
+    );
+    setImageDrafts((current) => ({
+      ...current,
+      [image.id]: {
+        title: data.image.title || "",
+        note: data.image.note || "",
+      },
+    }));
+    showMessage("Bilddetails wurden gespeichert.", "success");
+    setBusyImageId(null);
   };
 
   const saveSiteSettings = async (event) => {
@@ -1365,6 +1474,53 @@ export default function AdminPage() {
                   )}
                 </form>
 
+                <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <label className="relative block flex-1">
+                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                      <input
+                        type="search"
+                        value={imageSearch}
+                        onChange={(event) => setImageSearch(event.target.value)}
+                        placeholder="Bild suchen nach Name, Notiz, Kategorie..."
+                        className="w-full rounded-2xl border border-white/10 bg-white px-11 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                      />
+                    </label>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setImageCategoryFilter("all")}
+                        className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
+                          imageCategoryFilter === "all"
+                            ? "border-yellow-400 bg-yellow-400 text-black"
+                            : "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
+                        }`}
+                      >
+                        Alle
+                      </button>
+                      {CATEGORIES.map((category) => (
+                        <button
+                          key={category.value}
+                          type="button"
+                          onClick={() => setImageCategoryFilter(category.value)}
+                          className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
+                            imageCategoryFilter === category.value
+                              ? "border-yellow-400 bg-yellow-400 text-black"
+                              : "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
+                          }`}
+                        >
+                          {category.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="mt-3 text-sm text-neutral-400">
+                    {visibleImageCount} von {images.length} Bildern werden angezeigt.
+                  </p>
+                </div>
+
                 <div className="mt-8 space-y-8">
                   {images.length === 0 && (
                     <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-neutral-300">
@@ -1372,7 +1528,13 @@ export default function AdminPage() {
                     </div>
                   )}
 
-                  {imagesByCategory.map((category) => (
+                  {images.length > 0 && visibleImageCount === 0 && (
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-neutral-300">
+                      Keine Bilder zu deiner Suche gefunden.
+                    </div>
+                  )}
+
+                  {displayedImageCategories.map((category) => (
                     <div key={category.value}>
                       <div className="mb-4 flex items-center justify-between">
                         <h3 className="text-xl font-black">{category.label}</h3>
@@ -1408,6 +1570,66 @@ export default function AdminPage() {
                                   <span>Position {index + 1}</span>
                                   <span>·</span>
                                   <span>{formatDate(image.created_at)}</span>
+                                </div>
+                                <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3">
+                                  <div className="grid gap-3">
+                                    <label className="block">
+                                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                                        Bildname
+                                      </span>
+                                      <input
+                                        value={
+                                          imageDrafts[image.id]?.title ??
+                                          image.title ??
+                                          ""
+                                        }
+                                        onChange={(event) =>
+                                          updateImageDraft(
+                                            image.id,
+                                            "title",
+                                            event.target.value
+                                          )
+                                        }
+                                        maxLength={80}
+                                        placeholder="z. B. Porsche Abendshooting"
+                                        className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                                      />
+                                    </label>
+
+                                    <label className="block">
+                                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                                        Notiz
+                                      </span>
+                                      <textarea
+                                        value={
+                                          imageDrafts[image.id]?.note ??
+                                          image.note ??
+                                          ""
+                                        }
+                                        onChange={(event) =>
+                                          updateImageDraft(
+                                            image.id,
+                                            "note",
+                                            event.target.value
+                                          )
+                                        }
+                                        maxLength={240}
+                                        rows={2}
+                                        placeholder="Interne Notiz, z. B. Kunde, Ort oder Serie"
+                                        className="mt-2 w-full resize-none rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                                      />
+                                    </label>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => saveImageDetails(image)}
+                                      disabled={busyImageId === image.id}
+                                      className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white px-3 py-2 text-sm font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60"
+                                    >
+                                      <Save className="h-4 w-4" />
+                                      Details speichern
+                                    </button>
+                                  </div>
                                 </div>
                                 <div className="mt-4 flex flex-wrap gap-2">
                                   <button
@@ -2044,10 +2266,17 @@ export default function AdminPage() {
                   Bildvorschau
                 </p>
                 <p className="mt-1 font-bold">
-                  {CATEGORIES.find(
-                    (category) => category.value === selectedImage.category
-                  )?.label || selectedImage.category}
+                  {selectedImage.title ||
+                    CATEGORIES.find(
+                      (category) => category.value === selectedImage.category
+                    )?.label ||
+                    selectedImage.category}
                 </p>
+                {selectedImage.note && (
+                  <p className="mt-1 max-w-xl text-sm text-neutral-400">
+                    {selectedImage.note}
+                  </p>
+                )}
               </div>
               <button
                 type="button"

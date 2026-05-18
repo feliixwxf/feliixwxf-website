@@ -9,6 +9,9 @@ import {
 
 const CATEGORIES = new Set(["car", "portrait", "nature", "event"]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const IMAGE_SELECT_WITH_META =
+  "id,category,url,path,sort_order,created_at,title,note";
+const IMAGE_SELECT_BASE = "id,category,url,path,sort_order,created_at";
 
 function unauthorized() {
   return NextResponse.json(
@@ -35,13 +38,23 @@ export async function GET() {
     );
   }
 
-  const response = await fetch(
-    `${supabaseRestUrl}/rest/v1/portfolio_images?select=id,category,url,path,sort_order,created_at&order=sort_order.asc&order=created_at.desc&limit=200`,
+  let response = await fetch(
+    `${supabaseRestUrl}/rest/v1/portfolio_images?select=${IMAGE_SELECT_WITH_META}&order=sort_order.asc&order=created_at.desc&limit=200`,
     {
       headers: supabaseServiceHeaders,
       cache: "no-store",
     }
   );
+
+  if (!response.ok) {
+    response = await fetch(
+      `${supabaseRestUrl}/rest/v1/portfolio_images?select=${IMAGE_SELECT_BASE}&order=sort_order.asc&order=created_at.desc&limit=200`,
+      {
+        headers: supabaseServiceHeaders,
+        cache: "no-store",
+      }
+    );
+  }
 
   if (!response.ok) {
     const details = await response.text();
@@ -51,7 +64,15 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ images: await response.json() });
+  const images = await response.json();
+
+  return NextResponse.json({
+    images: images.map((image) => ({
+      title: "",
+      note: "",
+      ...image,
+    })),
+  });
 }
 
 export async function POST(request) {
@@ -187,7 +208,42 @@ export async function PATCH(request) {
     );
   }
 
-  const { orderedIds } = await request.json();
+  const body = await request.json();
+  const { id, orderedIds } = body;
+
+  if (id && ("title" in body || "note" in body)) {
+    const title = String(body.title || "").trim().slice(0, 80);
+    const note = String(body.note || "").trim().slice(0, 240);
+
+    const response = await fetch(
+      `${supabaseRestUrl}/rest/v1/portfolio_images?id=eq.${encodeURIComponent(
+        id
+      )}&select=${IMAGE_SELECT_WITH_META}`,
+      {
+        method: "PATCH",
+        headers: {
+          ...supabaseServiceHeaders,
+          Prefer: "return=representation",
+        },
+        body: JSON.stringify({ title, note }),
+      }
+    );
+
+    if (!response.ok) {
+      const details = await response.text();
+      return NextResponse.json(
+        {
+          error:
+            "Bilddetails konnten nicht gespeichert werden. Fuehre vorher supabase-portfolio-metadata.sql in Supabase aus.",
+          details,
+        },
+        { status: 500 }
+      );
+    }
+
+    const [image] = await response.json();
+    return NextResponse.json({ image });
+  }
 
   if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
     return NextResponse.json(

@@ -145,11 +145,14 @@ Wichtig:
 - Galerie-Bilder sind getrennt von Portfolio-Titelbildern.
 - Uploads ändern nicht automatisch die Kacheln auf der Startseite.
 - Reihenfolge kann im Adminbereich sortiert werden.
+- Im Adminbereich gibt es Suche, Kategorie-Filter sowie optionale Bildnamen und Notizen.
+- Fuer Bildnamen und Notizen muss einmal `supabase-portfolio-metadata.sql` ausgefuehrt werden.
 
 Wichtige Dateien:
 - Public API: `app/api/portfolio-images/route.js`
 - Admin API: `app/api/admin/images/route.js`
 - Admin UI: `app/admin/page.js`
+- SQL-Erweiterung: `supabase-portfolio-metadata.sql`
 
 ## Titelbilder
 
