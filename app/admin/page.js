@@ -2266,8 +2266,8 @@ export default function AdminPage() {
                   onSubmit={createClientGallery}
                   className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
                 >
-                  <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr_1fr_auto]">
-                    <label className="block">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <label className="block min-w-0">
                       <span className="text-sm font-semibold text-neutral-300">
                         Galerie-Titel
                       </span>
@@ -2282,7 +2282,7 @@ export default function AdminPage() {
                       />
                     </label>
 
-                    <label className="block">
+                    <label className="block min-w-0">
                       <span className="text-sm font-semibold text-neutral-300">
                         Kundenname
                       </span>
@@ -2299,7 +2299,7 @@ export default function AdminPage() {
                       />
                     </label>
 
-                    <label className="block">
+                    <label className="block min-w-0">
                       <span className="text-sm font-semibold text-neutral-300">
                         Zugangscode
                       </span>
@@ -2326,8 +2326,8 @@ export default function AdminPage() {
                       </div>
                     </label>
 
-                    <div className="flex flex-col justify-end gap-3">
-                      <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm font-semibold text-neutral-200">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 md:col-span-2 xl:col-span-3 xl:flex-row xl:items-center xl:justify-between">
+                      <label className="flex min-w-0 items-center gap-3 text-sm font-semibold text-neutral-200">
                         <input
                           type="checkbox"
                           checked={clientGalleryForm.downloads_enabled}
@@ -2343,7 +2343,7 @@ export default function AdminPage() {
                       </label>
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl xl:w-fit"
                       >
                         <Users className="h-4 w-4" />
                         Galerie erstellen
@@ -2400,7 +2400,7 @@ export default function AdminPage() {
                             {gallery.client_name || "Ohne Kundennamen"}
                           </p>
                           <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                            <span className="rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-200">
+                            <span className="max-w-full break-all rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-200">
                               Code: {gallery.access_code}
                             </span>
                             <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
@@ -2436,7 +2436,7 @@ export default function AdminPage() {
                             </p>
                           </div>
 
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex min-w-0 flex-wrap gap-2 lg:justify-end">
                             <button
                               type="button"
                               onClick={() =>
@@ -2531,11 +2531,15 @@ export default function AdminPage() {
 
                         <form
                           onSubmit={uploadClientGalleryImage}
-                          className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 md:flex-row md:items-end"
+                          className="mt-6 grid gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end"
                         >
-                          <label className="block flex-1">
+                          <label className="block min-w-0">
                             <span className="text-sm font-semibold text-neutral-300">
                               Kundenbild hochladen
+                            </span>
+                            <span className="mt-1 block text-xs leading-5 text-neutral-500">
+                              Originaldatei bis 15 MB. Fuer fluessiges Laden sind
+                              JPG/WebP mit ca. 2000-3000 px Kantenlaenge ideal.
                             </span>
                             <input
                               type="file"
@@ -2546,13 +2550,13 @@ export default function AdminPage() {
                                 );
                                 setMessage("");
                               }}
-                              className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 file:mr-4 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                              className="mt-3 w-full min-w-0 rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-neutral-950 file:mr-3 file:max-w-full file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
                             />
                           </label>
                           <button
                             type="submit"
                             disabled={clientGalleryUploading}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 lg:w-fit"
                           >
                             <Upload className="h-4 w-4" />
                             {clientGalleryUploading
@@ -2584,6 +2588,8 @@ export default function AdminPage() {
                                   <img
                                     src={image.url}
                                     alt=""
+                                    loading="lazy"
+                                    decoding="async"
                                     className="h-full w-full object-cover"
                                   />
                                   {favoriteCount > 0 && (

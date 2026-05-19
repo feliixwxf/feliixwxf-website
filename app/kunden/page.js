@@ -294,6 +294,8 @@ export default function CustomerGalleryPage() {
                         <img
                           src={image.url}
                           alt=""
+                          loading="lazy"
+                          decoding="async"
                           className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
                         />
                       </button>
@@ -369,6 +371,7 @@ export default function CustomerGalleryPage() {
               <img
                 src={selectedImage.url}
                 alt=""
+                decoding="async"
                 className="max-h-[82vh] w-full rounded-[1.5rem] object-contain"
               />
             </div>
