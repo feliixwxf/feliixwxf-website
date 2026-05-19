@@ -8,9 +8,12 @@ import {
 } from "../_lib/supabase";
 
 const GALLERY_SELECT =
+  "id,title,client_name,access_code,is_active,downloads_enabled,status,expires_at,created_at";
+const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,is_active,downloads_enabled,expires_at,created_at";
 const IMAGE_SELECT =
   "id,gallery_id,url,path,filename,sort_order,created_at";
+const VALID_STATUSES = new Set(["active", "paused", "completed"]);
 
 function unauthorized() {
   return NextResponse.json({ error: "Nicht eingeloggt." }, { status: 401 });
@@ -29,14 +32,31 @@ function createCode() {
 }
 
 async function loadGalleries() {
-  const [galleryResponse, imageResponse, favoriteResponse] = await Promise.all([
-    fetch(
-      `${supabaseRestUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&order=created_at.desc&limit=100`,
-      {
-        headers: supabaseServiceHeaders,
-        cache: "no-store",
-      }
-    ),
+  let galleryResponse = await fetch(
+    `${supabaseRestUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&order=created_at.desc&limit=100`,
+    {
+      headers: supabaseServiceHeaders,
+      cache: "no-store",
+    }
+  );
+  if (!galleryResponse.ok) {
+    const details = await galleryResponse.text();
+
+    if (details.toLowerCase().includes("status")) {
+      galleryResponse = await fetch(
+        `${supabaseRestUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&order=created_at.desc&limit=100`,
+        {
+          headers: supabaseServiceHeaders,
+          cache: "no-store",
+        }
+      );
+    } else {
+      return { error: details };
+    }
+  }
+
+  const [finalGalleryResponse, imageResponse, favoriteResponse] = await Promise.all([
+    galleryResponse,
     fetch(
       `${supabaseRestUrl}/rest/v1/client_gallery_images?select=${IMAGE_SELECT}&order=sort_order.asc&order=created_at.desc&limit=500`,
       {
@@ -53,8 +73,8 @@ async function loadGalleries() {
     ),
   ]);
 
-  if (!galleryResponse.ok) {
-    return { error: await galleryResponse.text() };
+  if (!finalGalleryResponse.ok) {
+    return { error: await finalGalleryResponse.text() };
   }
 
   if (!imageResponse.ok) {
@@ -65,7 +85,7 @@ async function loadGalleries() {
     return { error: await favoriteResponse.text() };
   }
 
-  const galleries = await galleryResponse.json();
+  const galleries = await finalGalleryResponse.json();
   const images = await imageResponse.json();
   const favorites = await favoriteResponse.json();
 
@@ -155,6 +175,7 @@ export async function POST(request) {
       client_name: clientName || null,
       access_code: accessCode,
       is_active: true,
+      status: "active",
       downloads_enabled: Boolean(body.downloads_enabled),
       expires_at: body.expires_at || null,
     }),
@@ -204,6 +225,18 @@ export async function PATCH(request) {
   }
   if ("access_code" in body) update.access_code = normalizeCode(body.access_code);
   if ("is_active" in body) update.is_active = Boolean(body.is_active);
+  if ("status" in body) {
+    const status = String(body.status || "").trim();
+
+    if (!VALID_STATUSES.has(status)) {
+      return NextResponse.json(
+        { error: "Ungueltiger Galerie-Status." },
+        { status: 400 }
+      );
+    }
+
+    update.status = status;
+  }
   if ("downloads_enabled" in body) {
     update.downloads_enabled = Boolean(body.downloads_enabled);
   }

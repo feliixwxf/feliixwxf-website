@@ -41,6 +41,21 @@ const CATEGORIES = [
   { value: "event", label: "Event" },
 ];
 
+const CLIENT_GALLERY_STATUSES = {
+  active: {
+    label: "Aktiv",
+    badge: "bg-emerald-400 text-neutral-950",
+  },
+  paused: {
+    label: "Pausiert",
+    badge: "bg-neutral-700 text-neutral-200",
+  },
+  completed: {
+    label: "Abgeschlossen",
+    badge: "bg-sky-300 text-neutral-950",
+  },
+};
+
 const SITE_ASSET_GROUPS = [
   {
     title: "Startseite",
@@ -303,6 +318,14 @@ function sortImages(items, mode = "manual") {
   });
 }
 
+function getClientGalleryStatus(gallery) {
+  if (gallery?.status && CLIENT_GALLERY_STATUSES[gallery.status]) {
+    return gallery.status;
+  }
+
+  return gallery?.is_active ? "active" : "paused";
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -488,22 +511,22 @@ export default function AdminPage() {
         )
     : [];
   const clientGalleryStats = {
-    active: clientGalleries.filter((gallery) => gallery.is_active).length,
-    paused: clientGalleries.filter((gallery) => !gallery.is_active).length,
+    active: clientGalleries.filter(
+      (gallery) => getClientGalleryStatus(gallery) === "active"
+    ).length,
+    paused: clientGalleries.filter(
+      (gallery) => getClientGalleryStatus(gallery) === "paused"
+    ).length,
+    completed: clientGalleries.filter(
+      (gallery) => getClientGalleryStatus(gallery) === "completed"
+    ).length,
   };
   const normalizedClientGallerySearch = clientGallerySearch.trim().toLowerCase();
   const visibleClientGalleries = [...clientGalleries]
     .filter((gallery) => {
       if (
-        clientGalleryStatusFilter === "active" &&
-        !gallery.is_active
-      ) {
-        return false;
-      }
-
-      if (
-        clientGalleryStatusFilter === "paused" &&
-        gallery.is_active
+        clientGalleryStatusFilter !== "all" &&
+        getClientGalleryStatus(gallery) !== clientGalleryStatusFilter
       ) {
         return false;
       }
@@ -2509,6 +2532,9 @@ export default function AdminPage() {
                             <option value="paused">
                               Pausiert ({clientGalleryStats.paused})
                             </option>
+                            <option value="completed">
+                              Abgeschlossen ({clientGalleryStats.completed})
+                            </option>
                           </select>
                         </label>
 
@@ -2557,12 +2583,16 @@ export default function AdminPage() {
                             <h4 className="font-black">{gallery.title}</h4>
                             <span
                               className={`rounded-full px-3 py-1 text-xs font-black ${
-                                gallery.is_active
-                                  ? "bg-emerald-400 text-neutral-950"
-                                  : "bg-neutral-700 text-neutral-200"
+                                CLIENT_GALLERY_STATUSES[
+                                  getClientGalleryStatus(gallery)
+                                ].badge
                               }`}
                             >
-                              {gallery.is_active ? "Aktiv" : "Pausiert"}
+                              {
+                                CLIENT_GALLERY_STATUSES[
+                                  getClientGalleryStatus(gallery)
+                                ].label
+                              }
                             </span>
                           </div>
                           <p className="mt-2 text-sm text-neutral-400">
@@ -2603,6 +2633,19 @@ export default function AdminPage() {
                               {activeClientGallery.client_name ||
                                 "Kein Kundenname hinterlegt"}
                             </p>
+                            <span
+                              className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-black ${
+                                CLIENT_GALLERY_STATUSES[
+                                  getClientGalleryStatus(activeClientGallery)
+                                ].badge
+                              }`}
+                            >
+                              {
+                                CLIENT_GALLERY_STATUSES[
+                                  getClientGalleryStatus(activeClientGallery)
+                                ].label
+                              }
+                            </span>
                           </div>
 
                           <div className="flex min-w-0 flex-wrap gap-2 lg:justify-end">
@@ -2639,6 +2682,9 @@ export default function AdminPage() {
                                   activeClientGallery,
                                   {
                                     is_active: !activeClientGallery.is_active,
+                                    status: activeClientGallery.is_active
+                                      ? "paused"
+                                      : "active",
                                   },
                                   activeClientGallery.is_active
                                     ? "Kundengalerie wurde pausiert."
@@ -2658,6 +2704,32 @@ export default function AdminPage() {
                               {activeClientGallery.is_active
                                 ? "Pausieren"
                                 : "Aktivieren"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateClientGallery(
+                                  activeClientGallery,
+                                  getClientGalleryStatus(activeClientGallery) ===
+                                    "completed"
+                                    ? { status: "active", is_active: true }
+                                    : { status: "completed", is_active: true },
+                                  getClientGalleryStatus(activeClientGallery) ===
+                                    "completed"
+                                    ? "Kundengalerie ist wieder aktiv."
+                                    : "Kundengalerie wurde abgeschlossen."
+                                )
+                              }
+                              disabled={
+                                busyClientGalleryId === activeClientGallery.id
+                              }
+                              className="inline-flex items-center gap-2 rounded-full border border-sky-300/30 bg-sky-300/10 px-4 py-2 text-sm font-bold text-sky-100 transition hover:bg-sky-300/20 disabled:opacity-60"
+                            >
+                              <CheckCircle2 className="h-4 w-4" />
+                              {getClientGalleryStatus(activeClientGallery) ===
+                              "completed"
+                                ? "Wieder aktiv"
+                                : "Abschließen"}
                             </button>
                             <button
                               type="button"

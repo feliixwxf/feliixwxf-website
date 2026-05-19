@@ -4,10 +4,29 @@ create table if not exists public.client_galleries (
   client_name text,
   access_code text not null unique,
   is_active boolean not null default true,
+  status text not null default 'active'
+    check (status in ('active', 'paused', 'completed')),
   downloads_enabled boolean not null default false,
   expires_at timestamptz,
   created_at timestamptz not null default now()
 );
+
+alter table public.client_galleries
+  add column if not exists status text not null default 'active';
+
+alter table public.client_galleries
+  drop constraint if exists client_galleries_status_check;
+
+alter table public.client_galleries
+  add constraint client_galleries_status_check
+  check (status in ('active', 'paused', 'completed'));
+
+update public.client_galleries
+set status = case
+  when is_active then 'active'
+  else 'paused'
+end
+where status is null or status not in ('active', 'paused', 'completed');
 
 create table if not exists public.client_gallery_images (
   id uuid primary key default gen_random_uuid(),
