@@ -11,8 +11,10 @@ import {
   ExternalLink,
   EyeOff,
   Eye,
+  Heart,
   Image as ImageIcon,
   Images,
+  KeyRound,
   LayoutDashboard,
   Lock,
   LogOut,
@@ -27,6 +29,7 @@ import {
   Trash2,
   Type,
   Upload,
+  Users,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -235,6 +238,13 @@ const CONTACT_FIELDS = [
   },
 ];
 
+const DEFAULT_CLIENT_GALLERY_FORM = {
+  title: "",
+  client_name: "",
+  access_code: "",
+  downloads_enabled: false,
+};
+
 function renderStars(value) {
   return [1, 2, 3, 4, 5].map((star) => {
     const filled = Number(value) >= star;
@@ -299,9 +309,15 @@ export default function AdminPage() {
   const [configured, setConfigured] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [images, setImages] = useState([]);
+  const [clientGalleries, setClientGalleries] = useState([]);
   const [siteAssets, setSiteAssets] = useState({});
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
   const [settingsDraft, setSettingsDraft] = useState(DEFAULT_SITE_SETTINGS);
+  const [clientGalleryForm, setClientGalleryForm] = useState(
+    DEFAULT_CLIENT_GALLERY_FORM
+  );
+  const [activeClientGalleryId, setActiveClientGalleryId] = useState("");
+  const [clientGalleryFile, setClientGalleryFile] = useState(null);
   const [imageCategory, setImageCategory] = useState("car");
   const [imageFile, setImageFile] = useState(null);
   const [imageDrafts, setImageDrafts] = useState({});
@@ -315,12 +331,15 @@ export default function AdminPage() {
   const [reviewFilter, setReviewFilter] = useState("pending");
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
+  const [clientGalleryUploading, setClientGalleryUploading] = useState(false);
   const [siteAssetUploadingKey, setSiteAssetUploadingKey] = useState(null);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [busyId, setBusyId] = useState(null);
   const [busyImageId, setBusyImageId] = useState(null);
+  const [busyClientGalleryId, setBusyClientGalleryId] = useState(null);
+  const [busyClientImageId, setBusyClientImageId] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -403,6 +422,13 @@ export default function AdminPage() {
       icon: ImageIcon,
     },
     {
+      value: "clients",
+      label: "Kunden",
+      description: "Private Galerien und Codes",
+      count: clientGalleries.length,
+      icon: Users,
+    },
+    {
       value: "texts",
       label: "Texte",
       description: "Startseite, Info und Bewertung",
@@ -432,6 +458,10 @@ export default function AdminPage() {
   const latestImage = [...images].sort(
     (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
   )[0];
+  const activeClientGallery =
+    clientGalleries.find((gallery) => gallery.id === activeClientGalleryId) ||
+    clientGalleries[0];
+  const latestClientGallery = clientGalleries[0];
 
   const showMessage = (text, type = "info") => {
     setMessage(text);
@@ -479,6 +509,31 @@ export default function AdminPage() {
     setImageDrafts(createImageDrafts(nextImages));
     setSelectedImageIds((current) =>
       current.filter((id) => nextImages.some((image) => image.id === id))
+    );
+  };
+
+  const loadClientGalleries = async () => {
+    setMessage("");
+
+    const response = await fetch("/api/admin/client-galleries", {
+      cache: "no-store",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Kundengalerien konnten nicht geladen werden.",
+        "error"
+      );
+      return;
+    }
+
+    const galleries = data.galleries || [];
+    setClientGalleries(galleries);
+    setActiveClientGalleryId((current) =>
+      current && galleries.some((gallery) => gallery.id === current)
+        ? current
+        : galleries[0]?.id || ""
     );
   };
 
@@ -531,6 +586,7 @@ export default function AdminPage() {
     await Promise.all([
       loadReviews(),
       loadImages(),
+      loadClientGalleries(),
       loadSiteAssets(),
       loadSiteSettings(),
     ]);
@@ -548,6 +604,7 @@ export default function AdminPage() {
           await Promise.all([
             loadReviews(),
             loadImages(),
+            loadClientGalleries(),
             loadSiteAssets(),
             loadSiteSettings(),
           ]);
@@ -582,6 +639,7 @@ export default function AdminPage() {
     await Promise.all([
       loadReviews(),
       loadImages(),
+      loadClientGalleries(),
       loadSiteAssets(),
       loadSiteSettings(),
     ]);
@@ -593,6 +651,9 @@ export default function AdminPage() {
     setAuthenticated(false);
     setReviews([]);
     setImages([]);
+    setClientGalleries([]);
+    setActiveClientGalleryId("");
+    setClientGalleryForm(DEFAULT_CLIENT_GALLERY_FORM);
     setSiteAssets({});
     setSiteSettings(DEFAULT_SITE_SETTINGS);
     setSettingsDraft(DEFAULT_SITE_SETTINGS);
@@ -694,6 +755,234 @@ export default function AdminPage() {
       window.clearTimeout(timeoutId);
       setImageUploading(false);
     }
+  };
+
+  const updateClientGalleryForm = (key, value) => {
+    setClientGalleryForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+    setMessage("");
+  };
+
+  const generateClientGalleryCode = () => {
+    updateClientGalleryForm(
+      "access_code",
+      `GAL-${Math.random().toString(36).slice(2, 8).toUpperCase()}`
+    );
+  };
+
+  const createClientGallery = async (event) => {
+    event.preventDefault();
+    setMessage("");
+
+    const response = await fetch("/api/admin/client-galleries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(clientGalleryForm),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Kundengalerie konnte nicht erstellt werden.",
+        "error"
+      );
+      return;
+    }
+
+    setClientGalleries((current) => [data.gallery, ...current]);
+    setActiveClientGalleryId(data.gallery.id);
+    setClientGalleryForm(DEFAULT_CLIENT_GALLERY_FORM);
+    showMessage("Kundengalerie wurde erstellt.", "success");
+  };
+
+  const updateClientGallery = async (gallery, updates, successText) => {
+    setBusyClientGalleryId(gallery.id);
+    setMessage("");
+
+    const response = await fetch("/api/admin/client-galleries", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: gallery.id, ...updates }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Kundengalerie konnte nicht gespeichert werden.",
+        "error"
+      );
+      setBusyClientGalleryId(null);
+      return;
+    }
+
+    setClientGalleries((current) =>
+      current.map((item) =>
+        item.id === gallery.id
+          ? {
+              ...item,
+              ...data.gallery,
+              images: item.images || [],
+              favorites: item.favorites || [],
+              image_count: item.image_count || 0,
+              favorite_count: item.favorite_count || 0,
+            }
+          : item
+      )
+    );
+    showMessage(successText || "Kundengalerie wurde gespeichert.", "success");
+    setBusyClientGalleryId(null);
+  };
+
+  const deleteClientGallery = async (gallery) => {
+    if (
+      !window.confirm(
+        `Kundengalerie "${gallery.title}" inklusive Bilder wirklich loeschen?`
+      )
+    ) {
+      return;
+    }
+
+    setBusyClientGalleryId(gallery.id);
+    setMessage("");
+
+    const response = await fetch("/api/admin/client-galleries", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: gallery.id }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Kundengalerie konnte nicht geloescht werden.",
+        "error"
+      );
+      setBusyClientGalleryId(null);
+      return;
+    }
+
+    const nextGalleries = clientGalleries.filter((item) => item.id !== gallery.id);
+    setClientGalleries(nextGalleries);
+    setActiveClientGalleryId(nextGalleries[0]?.id || "");
+    showMessage("Kundengalerie wurde geloescht.", "success");
+    setBusyClientGalleryId(null);
+  };
+
+  const uploadClientGalleryImage = async (event) => {
+    event.preventDefault();
+
+    if (clientGalleryUploading) return;
+
+    if (!activeClientGallery) {
+      showMessage("Bitte zuerst eine Kundengalerie erstellen.", "error");
+      return;
+    }
+
+    if (!clientGalleryFile) {
+      showMessage("Bitte zuerst ein Kundenbild auswaehlen.", "error");
+      return;
+    }
+
+    const form = event.currentTarget;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+
+    setClientGalleryUploading(true);
+    setMessage("");
+
+    try {
+      const formData = new FormData();
+      formData.append("galleryId", activeClientGallery.id);
+      formData.append("file", clientGalleryFile);
+
+      const response = await fetch("/api/admin/client-gallery-images", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Kundenbild konnte nicht hochgeladen werden."
+        );
+      }
+
+      setClientGalleries((current) =>
+        current.map((gallery) => {
+          if (gallery.id !== activeClientGallery.id) return gallery;
+
+          const nextImages = [data.image, ...(gallery.images || [])];
+
+          return {
+            ...gallery,
+            images: nextImages,
+            image_count: nextImages.length,
+          };
+        })
+      );
+      setClientGalleryFile(null);
+      form.reset();
+      showMessage("Kundenbild wurde hochgeladen.", "success");
+    } catch (error) {
+      showMessage(
+        error?.name === "AbortError"
+          ? "Upload dauert zu lange. Bitte Bild verkleinern und erneut versuchen."
+          : error.message || "Kundenbild konnte nicht hochgeladen werden.",
+        "error"
+      );
+    } finally {
+      window.clearTimeout(timeoutId);
+      setClientGalleryUploading(false);
+    }
+  };
+
+  const deleteClientGalleryImage = async (gallery, image) => {
+    if (!window.confirm("Dieses Kundenbild wirklich loeschen?")) return;
+
+    setBusyClientImageId(image.id);
+    setMessage("");
+
+    const response = await fetch("/api/admin/client-gallery-images", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: image.id }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Kundenbild konnte nicht geloescht werden.",
+        "error"
+      );
+      setBusyClientImageId(null);
+      return;
+    }
+
+    setClientGalleries((current) =>
+      current.map((item) => {
+        if (item.id !== gallery.id) return item;
+
+        const nextImages = (item.images || []).filter(
+          (entry) => entry.id !== image.id
+        );
+        const nextFavorites = (item.favorites || []).filter(
+          (favorite) => favorite.image_id !== image.id
+        );
+
+        return {
+          ...item,
+          images: nextImages,
+          favorites: nextFavorites,
+          image_count: nextImages.length,
+          favorite_count: nextFavorites.length,
+        };
+      })
+    );
+    showMessage("Kundenbild wurde geloescht.", "success");
+    setBusyClientImageId(null);
   };
 
   const uploadSiteAsset = async (assetKey) => {
@@ -1270,7 +1559,7 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                   <button
                     type="button"
                     onClick={() => {
@@ -1327,6 +1616,25 @@ export default function AdminPage() {
                     <p className="mt-2 text-sm leading-6 text-neutral-300">
                       Startseitenbilder und Portfolio-Kacheln getrennt von der
                       Galerie pflegen.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("clients")}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <p className="mt-5 text-3xl font-black">
+                      {clientGalleries.length}
+                    </p>
+                    <h3 className="mt-2 text-lg font-black">
+                      Kundengalerien
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-neutral-300">
+                      Private Galerien mit Zugangscode und Favoriten.
                     </p>
                   </button>
 
@@ -1489,6 +1797,15 @@ export default function AdminPage() {
                       >
                         <ExternalLink className="h-4 w-4" />
                         Bewertungen ansehen
+                      </a>
+                      <a
+                        href="/kunden"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Kundengalerie testen
                       </a>
                     </div>
                   </div>
@@ -1904,6 +2221,418 @@ export default function AdminPage() {
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "clients" && (
+              <div className="mt-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Kunden
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black">
+                      Private Galerien
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-neutral-300">
+                      Erstelle fuer Kunden einen Code, lade Bilder nur in diese
+                      Galerie und pruefe spaeter die markierten Favoriten.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href="/kunden"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Kundenseite öffnen
+                    </a>
+                    <button
+                      type="button"
+                      onClick={loadClientGalleries}
+                      className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Neu laden
+                    </button>
+                  </div>
+                </div>
+
+                <form
+                  onSubmit={createClientGallery}
+                  className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
+                >
+                  <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr_1fr_auto]">
+                    <label className="block">
+                      <span className="text-sm font-semibold text-neutral-300">
+                        Galerie-Titel
+                      </span>
+                      <input
+                        value={clientGalleryForm.title}
+                        onChange={(event) =>
+                          updateClientGalleryForm("title", event.target.value)
+                        }
+                        required
+                        placeholder="z. B. Shooting Familie Meyer"
+                        className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-sm font-semibold text-neutral-300">
+                        Kundenname
+                      </span>
+                      <input
+                        value={clientGalleryForm.client_name}
+                        onChange={(event) =>
+                          updateClientGalleryForm(
+                            "client_name",
+                            event.target.value
+                          )
+                        }
+                        placeholder="Optional"
+                        className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-sm font-semibold text-neutral-300">
+                        Zugangscode
+                      </span>
+                      <div className="mt-3 flex gap-2">
+                        <input
+                          value={clientGalleryForm.access_code}
+                          onChange={(event) =>
+                            updateClientGalleryForm(
+                              "access_code",
+                              event.target.value.toUpperCase()
+                            )
+                          }
+                          placeholder="Leer = automatisch"
+                          className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={generateClientGalleryCode}
+                          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/10 transition hover:bg-white/15"
+                          aria-label="Code erzeugen"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </label>
+
+                    <div className="flex flex-col justify-end gap-3">
+                      <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm font-semibold text-neutral-200">
+                        <input
+                          type="checkbox"
+                          checked={clientGalleryForm.downloads_enabled}
+                          onChange={(event) =>
+                            updateClientGalleryForm(
+                              "downloads_enabled",
+                              event.target.checked
+                            )
+                          }
+                          className="h-4 w-4 rounded border-white/20 accent-yellow-400"
+                        />
+                        Downloads erlauben
+                      </label>
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                      >
+                        <Users className="h-4 w-4" />
+                        Galerie erstellen
+                      </button>
+                    </div>
+                  </div>
+                </form>
+
+                <div className="mt-8 grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-xl font-black">Galerien</h3>
+                        <p className="mt-1 text-sm text-neutral-400">
+                          Code kopieren und an den Kunden senden.
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-neutral-950">
+                        {clientGalleries.length}
+                      </span>
+                    </div>
+
+                    <div className="mt-5 space-y-3">
+                      {clientGalleries.length === 0 && (
+                        <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-neutral-400">
+                          Noch keine Kundengalerie vorhanden.
+                        </div>
+                      )}
+
+                      {clientGalleries.map((gallery) => (
+                        <button
+                          key={gallery.id}
+                          type="button"
+                          onClick={() => setActiveClientGalleryId(gallery.id)}
+                          className={`w-full rounded-2xl border p-4 text-left transition hover:bg-white/10 ${
+                            activeClientGallery?.id === gallery.id
+                              ? "border-yellow-400/70 bg-yellow-400/10"
+                              : "border-white/10 bg-black/20"
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h4 className="font-black">{gallery.title}</h4>
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-black ${
+                                gallery.is_active
+                                  ? "bg-emerald-400 text-neutral-950"
+                                  : "bg-neutral-700 text-neutral-200"
+                              }`}
+                            >
+                              {gallery.is_active ? "Aktiv" : "Pausiert"}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-sm text-neutral-400">
+                            {gallery.client_name || "Ohne Kundennamen"}
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                            <span className="rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-200">
+                              Code: {gallery.access_code}
+                            </span>
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
+                              {gallery.image_count || 0} Bilder
+                            </span>
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
+                              {gallery.favorite_count || 0} Favoriten
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+                    {!activeClientGallery ? (
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-6 text-neutral-300">
+                        Erstelle links zuerst eine Kundengalerie.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div>
+                            <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
+                              Aktive Galerie
+                            </p>
+                            <h3 className="mt-2 text-2xl font-black">
+                              {activeClientGallery.title}
+                            </h3>
+                            <p className="mt-2 text-sm text-neutral-400">
+                              {activeClientGallery.client_name ||
+                                "Kein Kundenname hinterlegt"}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                copyText(
+                                  activeClientGallery.access_code,
+                                  "Galerie-Code wurde kopiert."
+                                )
+                              }
+                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                            >
+                              <Copy className="h-4 w-4" />
+                              Code
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                copyText(
+                                  `${window.location.origin}/kunden`,
+                                  "Kundenseite wurde kopiert."
+                                )
+                              }
+                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Link
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateClientGallery(
+                                  activeClientGallery,
+                                  {
+                                    is_active: !activeClientGallery.is_active,
+                                  },
+                                  activeClientGallery.is_active
+                                    ? "Kundengalerie wurde pausiert."
+                                    : "Kundengalerie wurde aktiviert."
+                                )
+                              }
+                              disabled={
+                                busyClientGalleryId === activeClientGallery.id
+                              }
+                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60"
+                            >
+                              {activeClientGallery.is_active ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                              {activeClientGallery.is_active
+                                ? "Pausieren"
+                                : "Aktivieren"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateClientGallery(
+                                  activeClientGallery,
+                                  {
+                                    downloads_enabled:
+                                      !activeClientGallery.downloads_enabled,
+                                  },
+                                  activeClientGallery.downloads_enabled
+                                    ? "Downloads wurden deaktiviert."
+                                    : "Downloads wurden aktiviert."
+                                )
+                              }
+                              disabled={
+                                busyClientGalleryId === activeClientGallery.id
+                              }
+                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60"
+                            >
+                              {activeClientGallery.downloads_enabled
+                                ? "Downloads aus"
+                                : "Downloads an"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                deleteClientGallery(activeClientGallery)
+                              }
+                              disabled={
+                                busyClientGalleryId === activeClientGallery.id
+                              }
+                              className="inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Löschen
+                            </button>
+                          </div>
+                        </div>
+
+                        <form
+                          onSubmit={uploadClientGalleryImage}
+                          className="mt-6 flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 md:flex-row md:items-end"
+                        >
+                          <label className="block flex-1">
+                            <span className="text-sm font-semibold text-neutral-300">
+                              Kundenbild hochladen
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(event) => {
+                                setClientGalleryFile(
+                                  event.target.files?.[0] || null
+                                );
+                                setMessage("");
+                              }}
+                              className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 file:mr-4 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                            />
+                          </label>
+                          <button
+                            type="submit"
+                            disabled={clientGalleryUploading}
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
+                          >
+                            <Upload className="h-4 w-4" />
+                            {clientGalleryUploading
+                              ? "Laedt hoch..."
+                              : "In Kundengalerie laden"}
+                          </button>
+                        </form>
+
+                        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          {(activeClientGallery.images || []).length === 0 && (
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-neutral-400 sm:col-span-2 lg:col-span-3">
+                              Noch keine Bilder in dieser Kundengalerie.
+                            </div>
+                          )}
+
+                          {(activeClientGallery.images || []).map((image) => {
+                            const favoriteCount = (
+                              activeClientGallery.favorites || []
+                            ).filter(
+                              (favorite) => favorite.image_id === image.id
+                            ).length;
+
+                            return (
+                              <article
+                                key={image.id}
+                                className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
+                              >
+                                <div className="relative aspect-[4/3]">
+                                  <img
+                                    src={image.url}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                  />
+                                  {favoriteCount > 0 && (
+                                    <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-yellow-400 px-3 py-1 text-xs font-black text-black">
+                                      <Heart className="h-3.5 w-3.5 fill-current" />
+                                      {favoriteCount}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="p-4">
+                                  <p className="truncate text-sm font-bold">
+                                    {image.filename || "Kundenbild"}
+                                  </p>
+                                  <p className="mt-1 text-xs text-neutral-500">
+                                    {formatDate(image.created_at)}
+                                  </p>
+                                  <div className="mt-4 flex flex-wrap gap-2">
+                                    <a
+                                      href={image.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold transition hover:bg-white/15"
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                      Öffnen
+                                    </a>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        deleteClientGalleryImage(
+                                          activeClientGallery,
+                                          image
+                                        )
+                                      }
+                                      disabled={busyClientImageId === image.id}
+                                      className="inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                      Löschen
+                                    </button>
+                                  </div>
+                                </div>
+                              </article>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </section>
                 </div>
               </div>
             )}

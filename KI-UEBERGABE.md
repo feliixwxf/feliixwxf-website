@@ -1,6 +1,6 @@
 # feliix.wxf Website - KI-Übergabe
 
-Stand: 18.05.2026
+Stand: 19.05.2026
 
 Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt schnell weitergeführt werden kann.
 
@@ -14,7 +14,7 @@ Tech Stack:
 - Tailwind CSS
 - Framer Motion
 - Lucide Icons
-- Supabase für Bewertungen, Portfolio-Bilder, Titelbilder und Kontaktinfos
+- Supabase für Bewertungen, Portfolio-Bilder, Titelbilder, Kontaktinfos und Kundengalerien
 - Vercel Deployment über GitHub
 
 Live-Domain:
@@ -70,6 +70,8 @@ Admin-Auth:
 - `app/api/portfolio-images/route.js`
 - `app/api/site-assets/route.js`
 - `app/api/site-settings/route.js`
+- `app/api/client-gallery/route.js`
+- `app/api/client-gallery/favorites/route.js`
 
 Admin:
 - `app/api/admin/login/route.js`
@@ -79,6 +81,8 @@ Admin:
 - `app/api/admin/images/route.js`
 - `app/api/admin/site-assets/route.js`
 - `app/api/admin/site-settings/route.js`
+- `app/api/admin/client-galleries/route.js`
+- `app/api/admin/client-gallery-images/route.js`
 
 ## Environment Variables in Vercel
 
@@ -107,16 +111,47 @@ SQL-Dateien im Projekt:
 - `supabase-portfolio-sort.sql`
 - `supabase-site-assets.sql`
 - `supabase-site-settings.sql`
+- `supabase-client-galleries.sql`
 
 Tabellen:
 - `reviews`
 - `portfolio_images`
 - `site_assets`
 - `site_settings`
+- `client_galleries`
+- `client_gallery_images`
+- `client_favorites`
 
 Storage:
 - Bucket `portfolio`
-- Darin liegen Portfolio-Bilder und Admin-gesteuerte Titelbilder.
+- Darin liegen Portfolio-Bilder, Admin-gesteuerte Titelbilder und Kundengalerie-Bilder.
+
+## Kundengalerien
+
+Kundengalerien sind ein einfacher Code-Zugang ohne Kundenkonto.
+
+Workflow:
+1. Admin erstellt im Tab `Kunden` eine Galerie.
+2. Admin kopiert Code und Link `/kunden`.
+3. Kunde öffnet `/kunden`, gibt den Code ein und sieht seine Bilder.
+4. Kunde kann Bilder als Favorit markieren.
+5. Admin sieht im Kunden-Tab die Favoritenanzahl.
+
+Wichtige Dateien:
+- Kundenseite: `app/kunden/page.js`
+- Public API: `app/api/client-gallery/route.js`
+- Public Favoriten-API: `app/api/client-gallery/favorites/route.js`
+- Admin API: `app/api/admin/client-galleries/route.js`
+- Admin Upload API: `app/api/admin/client-gallery-images/route.js`
+- SQL: `supabase-client-galleries.sql`
+
+Hinweis:
+- Die Kundengalerien werden über die eigenen Next.js API-Routen geladen.
+- Die SQL-Datei setzt RLS aktiv, legt aber keine öffentlichen Select-Policies an.
+- Die API nutzt serverseitig den `SUPABASE_SERVICE_ROLE_KEY`.
+- Der Storage-Bucket ist aktuell öffentlich. Der Galerie-Code schützt die Übersicht,
+  direkte Bild-URLs sind technisch trotzdem öffentlich, wenn jemand den exakten Link hat.
+  Für streng private Kundenbereiche später auf private Buckets und Signed URLs wechseln.
 
 ## Bewertungen
 
@@ -228,6 +263,7 @@ Tabs:
 - Start
 - Portfolio
 - Titelbilder
+- Kunden
 - Texte
 - Kontakt
 - Bewertungen
@@ -260,6 +296,7 @@ Design-Idee:
 ## Aktueller Git-Stand
 
 Letzte wichtige Commits:
+- neu: Kundengalerien mit Code-Zugang
 - `596fa8f Add editable contact settings`
 - `aeb0dbc Add admin dashboard overview`
 - `6822dc2 Restructure admin workspace layout`
@@ -269,18 +306,17 @@ Letzte wichtige Commits:
 
 ## Sinnvolle nächste Schritte
 
-1. Website-Texte im Admin bearbeitbar machen.
+1. Kundengalerien weiter ausbauen.
    Beispiele:
-   - Startseiten-Headline
-   - Startseiten-Untertext
-   - Info-Text
-   - Portfolio-Überschrift
+   - Bildreihenfolge pro Kundengalerie
+   - private Storage-Buckets mit Signed URLs
+   - Export der Favoritenliste
 
-2. Kundenbereich planen.
+2. Kundenkonto planen.
    Ziel:
-   - Kundenkonto
-   - private Galerie pro Kunde
-   - Bilder herunterladen
+   - Registrierung/Login
+   - Galerie-Zuordnung pro Benutzer
+   - sichere Downloads
 
 3. Admin weiter verbessern.
    Beispiele:

@@ -1,0 +1,215 @@
+import { NextResponse } from "next/server";
+import { isAdminAuthenticated } from "../_lib/auth";
+import {
+  hasSupabaseConfig,
+  storageBucket,
+  supabaseRestUrl,
+  supabaseServiceHeaders,
+} from "../_lib/supabase";
+
+const MAX_FILE_SIZE = 15 * 1024 * 1024;
+
+function unauthorized() {
+  return NextResponse.json({ error: "Nicht eingeloggt." }, { status: 401 });
+}
+
+function safeFileName(name) {
+  const extension = name.includes(".") ? name.split(".").pop() : "jpg";
+
+  return `${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2)}.${String(extension || "jpg").toLowerCase()}`;
+}
+
+export async function POST(request) {
+  if (!(await isAdminAuthenticated())) return unauthorized();
+
+  if (!hasSupabaseConfig) {
+    return NextResponse.json(
+      { error: "Supabase ist noch nicht konfiguriert." },
+      { status: 503 }
+    );
+  }
+
+  const formData = await request.formData();
+  const galleryId = String(formData.get("galleryId") || "");
+  const file = formData.get("file");
+
+  if (!galleryId) {
+    return NextResponse.json(
+      { error: "Bitte zuerst eine Kundengalerie auswaehlen." },
+      { status: 400 }
+    );
+  }
+
+  if (!file || typeof file === "string") {
+    return NextResponse.json(
+      { error: "Bitte ein Bild auswaehlen." },
+      { status: 400 }
+    );
+  }
+
+  if (!String(file.type || "").startsWith("image/")) {
+    return NextResponse.json(
+      { error: "Nur Bilddateien sind erlaubt." },
+      { status: 400 }
+    );
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return NextResponse.json(
+      { error: "Das Bild darf maximal 15 MB gross sein." },
+      { status: 400 }
+    );
+  }
+
+  const countResponse = await fetch(
+    `${supabaseRestUrl}/rest/v1/client_gallery_images?select=id&gallery_id=eq.${encodeURIComponent(
+      galleryId
+    )}`,
+    {
+      method: "HEAD",
+      headers: {
+        ...supabaseServiceHeaders,
+        Prefer: "count=exact",
+      },
+      cache: "no-store",
+    }
+  );
+  const imageCount = Number(
+    countResponse.headers.get("content-range")?.split("/")?.[1] || 0
+  );
+
+  const path = `client-galleries/${galleryId}/${safeFileName(file.name)}`;
+  const bytes = await file.arrayBuffer();
+
+  const uploadResponse = await fetch(
+    `${supabaseRestUrl}/storage/v1/object/${storageBucket}/${path}`,
+    {
+      method: "POST",
+      headers: {
+        apikey: supabaseServiceHeaders.apikey,
+        Authorization: supabaseServiceHeaders.Authorization,
+        "Cache-Control": "31536000",
+        "Content-Type": file.type || "image/jpeg",
+        "x-upsert": "false",
+      },
+      body: bytes,
+    }
+  );
+
+  if (!uploadResponse.ok) {
+    const details = await uploadResponse.text();
+    return NextResponse.json(
+      { error: "Kundenbild konnte nicht hochgeladen werden.", details },
+      { status: 500 }
+    );
+  }
+
+  const url = `${supabaseRestUrl}/storage/v1/object/public/${storageBucket}/${path}`;
+  const insertResponse = await fetch(
+    `${supabaseRestUrl}/rest/v1/client_gallery_images`,
+    {
+      method: "POST",
+      headers: {
+        ...supabaseServiceHeaders,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({
+        gallery_id: galleryId,
+        url,
+        path,
+        filename: file.name || null,
+        sort_order: imageCount,
+      }),
+    }
+  );
+
+  if (!insertResponse.ok) {
+    const details = await insertResponse.text();
+    return NextResponse.json(
+      {
+        error:
+          "Bild wurde hochgeladen, aber nicht in der Kundengalerie gespeichert.",
+        details,
+      },
+      { status: 500 }
+    );
+  }
+
+  const [image] = await insertResponse.json();
+  return NextResponse.json({ image });
+}
+
+export async function DELETE(request) {
+  if (!(await isAdminAuthenticated())) return unauthorized();
+
+  if (!hasSupabaseConfig) {
+    return NextResponse.json(
+      { error: "Supabase ist noch nicht konfiguriert." },
+      { status: 503 }
+    );
+  }
+
+  const { id } = await request.json();
+
+  if (!id) {
+    return NextResponse.json({ error: "Bild-ID fehlt." }, { status: 400 });
+  }
+
+  const rowResponse = await fetch(
+    `${supabaseRestUrl}/rest/v1/client_gallery_images?select=id,path&id=eq.${encodeURIComponent(
+      id
+    )}&limit=1`,
+    {
+      headers: supabaseServiceHeaders,
+      cache: "no-store",
+    }
+  );
+
+  if (!rowResponse.ok) {
+    const details = await rowResponse.text();
+    return NextResponse.json(
+      { error: "Kundenbild konnte nicht gefunden werden.", details },
+      { status: 500 }
+    );
+  }
+
+  const [image] = await rowResponse.json();
+
+  if (!image) {
+    return NextResponse.json(
+      { error: "Kundenbild existiert nicht mehr." },
+      { status: 404 }
+    );
+  }
+
+  await fetch(`${supabaseRestUrl}/storage/v1/object/${storageBucket}`, {
+    method: "DELETE",
+    headers: supabaseServiceHeaders,
+    body: JSON.stringify({ prefixes: [image.path] }),
+  });
+
+  const deleteResponse = await fetch(
+    `${supabaseRestUrl}/rest/v1/client_gallery_images?id=eq.${encodeURIComponent(
+      id
+    )}`,
+    {
+      method: "DELETE",
+      headers: {
+        ...supabaseServiceHeaders,
+        Prefer: "return=minimal",
+      },
+    }
+  );
+
+  if (!deleteResponse.ok) {
+    const details = await deleteResponse.text();
+    return NextResponse.json(
+      { error: "Kundenbild konnte nicht geloescht werden.", details },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ ok: true });
+}
