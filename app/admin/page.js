@@ -913,53 +913,74 @@ export default function AdminPage() {
   };
 
   const updateClientGallery = async (gallery, updates, successText) => {
+    const previousGalleries = clientGalleries;
+
     setBusyClientGalleryId(gallery.id);
     setMessage("");
-
-    const response = await fetch("/api/admin/client-galleries", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: gallery.id, ...updates }),
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      const missingWorkflowField =
-        typeof data.details === "string" &&
-        [
-          "internal_note",
-          "favorites_reviewed",
-          "finals_exported",
-          "archive_prepared",
-          "client_informed",
-        ].some((field) => data.details.includes(field));
-
-      showMessage(
-        missingWorkflowField
-          ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen."
-          : data.error || "Kundengalerie konnte nicht gespeichert werden.",
-        "error"
-      );
-      setBusyClientGalleryId(null);
-      return;
-    }
-
     setClientGalleries((current) =>
       current.map((item) =>
         item.id === gallery.id
           ? {
               ...item,
-              ...data.gallery,
-              images: item.images || [],
-              favorites: item.favorites || [],
-              image_count: item.image_count || 0,
-              favorite_count: item.favorite_count || 0,
+              ...updates,
             }
           : item
       )
     );
-    showMessage(successText || "Kundengalerie wurde gespeichert.", "success");
-    setBusyClientGalleryId(null);
+
+    try {
+      const response = await fetch("/api/admin/client-galleries", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: gallery.id, ...updates }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const details = String(data.details || "");
+        const missingWorkflowField = [
+          "internal_note",
+          "favorites_reviewed",
+          "finals_exported",
+          "archive_prepared",
+          "client_informed",
+        ].some((field) => details.includes(field));
+
+        setClientGalleries(previousGalleries);
+        showMessage(
+          missingWorkflowField
+            ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen."
+            : data.error || "Kundengalerie konnte nicht gespeichert werden.",
+          "error"
+        );
+        return;
+      }
+
+      setClientGalleries((current) =>
+        current.map((item) =>
+          item.id === gallery.id
+            ? {
+                ...item,
+                ...updates,
+                ...(data.gallery || {}),
+                images: item.images || [],
+                favorites: item.favorites || [],
+                image_count: item.image_count || 0,
+                favorite_count: item.favorite_count || 0,
+              }
+            : item
+        )
+      );
+      showMessage(successText || "Kundengalerie wurde gespeichert.", "success");
+    } catch (error) {
+      setClientGalleries(previousGalleries);
+      showMessage(
+        error.message || "Kundengalerie konnte nicht gespeichert werden.",
+        "error"
+      );
+    } finally {
+      setBusyClientGalleryId(null);
+    }
   };
 
   const updateClientGalleryDraft = (updates) => {
