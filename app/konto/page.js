@@ -1,0 +1,375 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  Image as ImageIcon,
+  KeyRound,
+  Lock,
+  LogOut,
+  Mail,
+  RefreshCw,
+  UserPlus,
+} from "lucide-react";
+import Link from "next/link";
+
+function formatDate(value) {
+  if (!value) return "";
+
+  return new Date(value).toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+export default function AccountPage() {
+  const [mode, setMode] = useState("login");
+  const [user, setUser] = useState(null);
+  const [galleries, setGalleries] = useState([]);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("info");
+
+  const showMessage = (text, type = "info") => {
+    setMessage(text);
+    setMessageType(type);
+  };
+
+  const messageStyle =
+    messageType === "success"
+      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
+      : messageType === "error"
+        ? "border-red-400/30 bg-red-500/10 text-red-100"
+        : "border-yellow-400/30 bg-yellow-400/10 text-yellow-100";
+
+  const updateForm = (key, value) => {
+    setForm((current) => ({ ...current, [key]: value }));
+    setMessage("");
+  };
+
+  const loadGalleries = async () => {
+    const response = await fetch("/api/account/galleries", {
+      cache: "no-store",
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      setGalleries([]);
+      showMessage(data.error || "Galerien konnten nicht geladen werden.", "error");
+      return;
+    }
+
+    setGalleries(data.galleries || []);
+  };
+
+  const loadSession = async () => {
+    setLoading(true);
+    const response = await fetch("/api/account/session", {
+      cache: "no-store",
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (data.authenticated) {
+      setUser(data.user);
+      await loadGalleries();
+    } else {
+      setUser(null);
+      setGalleries([]);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadSession();
+  }, []);
+
+  const submitAccount = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setMessage("");
+
+    const response = await fetch(
+      mode === "register" ? "/api/account/register" : "/api/account/login",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      }
+    );
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(data.error || "Aktion konnte nicht ausgeführt werden.", "error");
+      setSubmitting(false);
+      return;
+    }
+
+    if (data.needsEmailConfirmation) {
+      showMessage(data.message, "success");
+      setMode("login");
+      setSubmitting(false);
+      return;
+    }
+
+    setUser(data.user);
+    showMessage(
+      mode === "register" ? "Konto wurde erstellt." : "Du bist eingeloggt.",
+      "success"
+    );
+    await loadGalleries();
+    setSubmitting(false);
+  };
+
+  const logout = async () => {
+    await fetch("/api/account/logout", { method: "POST" });
+    setUser(null);
+    setGalleries([]);
+    showMessage("Du wurdest ausgeloggt.", "success");
+  };
+
+  const openGallery = (gallery) => {
+    localStorage.setItem("feliix-client-gallery-code", gallery.access_code);
+    window.location.href = `/kunden?code=${encodeURIComponent(
+      gallery.access_code
+    )}`;
+  };
+
+  return (
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-5 py-8 text-white">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <Link
+            href="/"
+            className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Zur Website
+          </Link>
+
+          {user && (
+            <button
+              type="button"
+              onClick={logout}
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+            >
+              <LogOut className="h-4 w-4" />
+              Ausloggen
+            </button>
+          )}
+        </div>
+
+        <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.08] shadow-2xl backdrop-blur-xl">
+          <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[0.85fr_1.15fr]">
+            <div>
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
+                <Lock className="h-6 w-6" />
+              </div>
+              <p className="mt-8 text-sm uppercase tracking-[0.3em] text-neutral-400">
+                Kundenkonto
+              </p>
+              <h1 className="mt-4 text-4xl font-black md:text-6xl">
+                Einloggen.
+                <br />
+                Galerien finden.
+              </h1>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-neutral-300">
+                Erstelle ein Konto mit derselben E-Mail, die bei deiner Galerie
+                hinterlegt ist. Danach findest du deine Galerien direkt hier.
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] border border-white/10 bg-black/25 p-6">
+              {loading ? (
+                <div className="flex min-h-64 items-center justify-center">
+                  <RefreshCw className="h-7 w-7 animate-spin text-neutral-300" />
+                </div>
+              ) : user ? (
+                <div>
+                  <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
+                    Angemeldet als
+                  </p>
+                  <h2 className="mt-2 break-all text-2xl font-black">
+                    {user.email}
+                  </h2>
+
+                  <div className="mt-6 flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl font-black">Meine Galerien</h3>
+                      <p className="mt-1 text-sm text-neutral-400">
+                        {galleries.length} Galerie
+                        {galleries.length === 1 ? "" : "n"} gefunden
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={loadGalleries}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 transition hover:bg-white/15"
+                      aria-label="Galerien neu laden"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="mt-5 grid gap-3">
+                    {galleries.length === 0 && (
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-6 text-neutral-300">
+                        Noch keine Galerie gefunden. Wichtig: Im Admin muss bei
+                        der Kundengalerie dieselbe Kunden-E-Mail eingetragen
+                        sein wie in diesem Konto.
+                      </div>
+                    )}
+
+                    {galleries.map((gallery) => (
+                      <button
+                        key={gallery.id}
+                        type="button"
+                        onClick={() => openGallery(gallery)}
+                        className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/10"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <h4 className="text-lg font-black">
+                              {gallery.title}
+                            </h4>
+                            <p className="mt-1 text-sm text-neutral-400">
+                              {gallery.client_name || "Kundengalerie"}
+                            </p>
+                            {gallery.expires_at && (
+                              <p className="mt-2 text-xs text-neutral-500">
+                                bis {formatDate(gallery.expires_at)}
+                              </p>
+                            )}
+                          </div>
+                          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black text-neutral-950">
+                            <ImageIcon className="h-4 w-4" />
+                            Öffnen
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={submitAccount}>
+                  <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/10 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setMode("login")}
+                      className={`rounded-full px-4 py-2 text-sm font-black transition ${
+                        mode === "login"
+                          ? "bg-white text-neutral-950"
+                          : "text-neutral-300"
+                      }`}
+                    >
+                      Login
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMode("register")}
+                      className={`rounded-full px-4 py-2 text-sm font-black transition ${
+                        mode === "register"
+                          ? "bg-white text-neutral-950"
+                          : "text-neutral-300"
+                      }`}
+                    >
+                      Konto erstellen
+                    </button>
+                  </div>
+
+                  <div className="mt-6 grid gap-4">
+                    {mode === "register" && (
+                      <label className="block">
+                        <span className="text-sm font-bold text-neutral-200">
+                          Name
+                        </span>
+                        <input
+                          value={form.name}
+                          onChange={(event) =>
+                            updateForm("name", event.target.value)
+                          }
+                          placeholder="Dein Name"
+                          className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                        />
+                      </label>
+                    )}
+
+                    <label className="block">
+                      <span className="text-sm font-bold text-neutral-200">
+                        E-Mail
+                      </span>
+                      <div className="relative mt-2">
+                        <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+                        <input
+                          type="email"
+                          value={form.email}
+                          onChange={(event) =>
+                            updateForm("email", event.target.value)
+                          }
+                          placeholder="kunde@example.com"
+                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block">
+                      <span className="text-sm font-bold text-neutral-200">
+                        Passwort
+                      </span>
+                      <div className="relative mt-2">
+                        <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+                        <input
+                          type="password"
+                          value={form.password}
+                          onChange={(event) =>
+                            updateForm("password", event.target.value)
+                          }
+                          placeholder="Mindestens 8 Zeichen"
+                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
+                        />
+                      </div>
+                    </label>
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
+                    >
+                      {submitting ? (
+                        <RefreshCw className="h-5 w-5 animate-spin" />
+                      ) : mode === "register" ? (
+                        <UserPlus className="h-5 w-5" />
+                      ) : (
+                        <Lock className="h-5 w-5" />
+                      )}
+                      {submitting
+                        ? "Bitte warten..."
+                        : mode === "register"
+                          ? "Konto erstellen"
+                          : "Einloggen"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {message && (
+                <div
+                  className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}
+                >
+                  {message}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}

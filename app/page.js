@@ -12,6 +12,7 @@ import {
   ArrowLeft,
   Sun,
   Moon,
+  UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -608,6 +609,18 @@ export default function FeliixWxfPhotography() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <a
+              href="/konto"
+              className={`hidden items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold md:inline-flex ${
+                dark
+                  ? "border-white/20 bg-white/10 hover:bg-white/15"
+                  : "border-black/10 bg-white/75 hover:bg-white"
+              } ${buttonHover}`}
+            >
+              <UserRound className="h-4 w-4" />
+              Konto
+            </a>
+
             <ThemeToggle />
 
             <button
@@ -647,6 +660,16 @@ export default function FeliixWxfPhotography() {
                   {item}
                 </button>
               ))}
+              <a
+                href="/konto"
+                className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition-colors duration-200 ${
+                  dark
+                    ? "border-white/10 bg-white/10 hover:bg-white/15"
+                    : "border-black/10 bg-black/5 hover:bg-black/10"
+                }`}
+              >
+                Konto
+              </a>
             </div>
           </motion.div>
         )}

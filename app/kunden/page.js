@@ -58,11 +58,6 @@ export default function CustomerGalleryPage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
 
-  useEffect(() => {
-    const savedCode = localStorage.getItem("feliix-client-gallery-code");
-    if (savedCode) setAccessCode(savedCode);
-  }, []);
-
   const favoriteImageIds = new Set(favorites.map((favorite) => favorite.image_id));
   const favoriteImages = images.filter((image) => favoriteImageIds.has(image.id));
   const galleryStatus = getGalleryStatus(gallery);
@@ -79,10 +74,8 @@ export default function CustomerGalleryPage() {
         ? "border-red-400/30 bg-red-500/10 text-red-100"
         : "border-yellow-400/30 bg-yellow-400/10 text-yellow-100";
 
-  const loadGallery = async (event) => {
-    event?.preventDefault();
-    const code = normalizeCode(accessCode);
-
+  const loadGalleryByCode = async (rawCode) => {
+    const code = normalizeCode(rawCode);
     if (!code) {
       showMessage("Bitte deinen Galerie-Code eingeben.", "error");
       return;
@@ -111,6 +104,27 @@ export default function CustomerGalleryPage() {
     setFavorites(data.favorites || []);
     showMessage("Galerie wurde geladen.", "success");
     setLoading(false);
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlCode = params.get("code");
+    const savedCode = localStorage.getItem("feliix-client-gallery-code");
+    const initialCode = normalizeCode(urlCode || savedCode);
+
+    if (!initialCode) return;
+
+    setAccessCode(initialCode);
+
+    if (urlCode) {
+      window.history.replaceState(null, "", "/kunden");
+      loadGalleryByCode(initialCode);
+    }
+  }, []);
+
+  const loadGallery = async (event) => {
+    event?.preventDefault();
+    await loadGalleryByCode(accessCode);
   };
 
   const closeGallery = () => {
