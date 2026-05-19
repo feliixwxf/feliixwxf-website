@@ -635,42 +635,65 @@ export default function AdminPage() {
   const uploadImage = async (event) => {
     event.preventDefault();
 
+    if (imageUploading) return;
+
     if (!imageFile) {
       showMessage("Bitte zuerst ein Bild auswaehlen.", "error");
       return;
     }
 
+    const form = event.currentTarget;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+
     setImageUploading(true);
     setMessage("");
 
-    const formData = new FormData();
-    formData.append("category", imageCategory);
-    formData.append("file", imageFile);
+    try {
+      const formData = new FormData();
+      formData.append("category", imageCategory);
+      formData.append("file", imageFile);
 
-    const response = await fetch("/api/admin/images", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
+      const response = await fetch("/api/admin/images", {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      const data = await response.json().catch(() => ({}));
 
-    if (!response.ok) {
-      showMessage(data.error || "Bild konnte nicht hochgeladen werden.", "error");
+      if (!response.ok) {
+        throw new Error(data.error || "Bild konnte nicht hochgeladen werden.");
+      }
+
+      if (!data.image) {
+        throw new Error("Upload war erfolgreich, aber die Bilddaten fehlen.");
+      }
+
+      setImages((current) => [data.image, ...current]);
+      setImageDrafts((current) => ({
+        ...current,
+        [data.image.id]: {
+          title: data.image.title || "",
+          note: data.image.note || "",
+        },
+      }));
+      setImageFile(null);
+      form.reset();
+      showMessage(
+        "Bild wurde hochgeladen und ist jetzt in der Galerie.",
+        "success"
+      );
+    } catch (error) {
+      showMessage(
+        error?.name === "AbortError"
+          ? "Upload dauert zu lange. Bitte Bild verkleinern und erneut versuchen."
+          : error.message || "Bild konnte nicht hochgeladen werden.",
+        "error"
+      );
+    } finally {
+      window.clearTimeout(timeoutId);
       setImageUploading(false);
-      return;
     }
-
-    setImages((current) => [data.image, ...current]);
-    setImageDrafts((current) => ({
-      ...current,
-      [data.image.id]: {
-        title: data.image.title || "",
-        note: data.image.note || "",
-      },
-    }));
-    setImageFile(null);
-    event.currentTarget.reset();
-    showMessage("Bild wurde hochgeladen und ist jetzt in der Galerie.", "success");
-    setImageUploading(false);
   };
 
   const uploadSiteAsset = async (assetKey) => {
