@@ -56,6 +56,13 @@ const CLIENT_GALLERY_STATUSES = {
   },
 };
 
+const CLIENT_GALLERY_CHECKLIST = [
+  { key: "favorites_reviewed", label: "Favoriten geprüft" },
+  { key: "finals_exported", label: "Finale Bilder exportiert" },
+  { key: "archive_prepared", label: "ZIP vorbereitet" },
+  { key: "client_informed", label: "Kunde informiert" },
+];
+
 const SITE_ASSET_GROUPS = [
   {
     title: "Startseite",
@@ -489,6 +496,11 @@ export default function AdminPage() {
   const activeClientGallery =
     clientGalleries.find((gallery) => gallery.id === activeClientGalleryId) ||
     clientGalleries[0];
+  const activeClientChecklistDone = activeClientGallery
+    ? CLIENT_GALLERY_CHECKLIST.filter(
+        (item) => activeClientGallery[item.key]
+      ).length
+    : 0;
   const activeClientFavoriteImages = activeClientGallery
     ? (activeClientGallery.favorites || [])
         .map((favorite) => {
@@ -936,6 +948,21 @@ export default function AdminPage() {
     );
     showMessage(successText || "Kundengalerie wurde gespeichert.", "success");
     setBusyClientGalleryId(null);
+  };
+
+  const updateClientGalleryDraft = (updates) => {
+    if (!activeClientGallery) return;
+
+    setClientGalleries((current) =>
+      current.map((gallery) =>
+        gallery.id === activeClientGallery.id
+          ? {
+              ...gallery,
+              ...updates,
+            }
+          : gallery
+      )
+    );
   };
 
   const deleteClientGallery = async (gallery) => {
@@ -2769,6 +2796,109 @@ export default function AdminPage() {
                             </button>
                           </div>
                         </div>
+
+                        <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <h4 className="font-black">Interne Notiz</h4>
+                                <p className="mt-1 text-sm text-neutral-500">
+                                  Nur im Admin sichtbar.
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateClientGallery(
+                                    activeClientGallery,
+                                    {
+                                      internal_note:
+                                        activeClientGallery.internal_note || "",
+                                    },
+                                    "Interne Notiz wurde gespeichert."
+                                  )
+                                }
+                                disabled={
+                                  busyClientGalleryId === activeClientGallery.id
+                                }
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60 sm:w-fit"
+                              >
+                                <Save className="h-4 w-4" />
+                                Speichern
+                              </button>
+                            </div>
+                            <textarea
+                              value={activeClientGallery.internal_note || ""}
+                              onChange={(event) =>
+                                updateClientGalleryDraft({
+                                  internal_note: event.target.value,
+                                })
+                              }
+                              rows="5"
+                              placeholder="z. B. Kunde möchte Bild 3 und 7 final retuschiert haben..."
+                              className="mt-4 w-full resize-y rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm leading-6 text-neutral-950 outline-none focus:border-yellow-400"
+                            />
+                          </div>
+
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <h4 className="font-black">
+                                  Abschluss-Checkliste
+                                </h4>
+                                <p className="mt-1 text-sm text-neutral-500">
+                                  {activeClientChecklistDone}/
+                                  {CLIENT_GALLERY_CHECKLIST.length} erledigt
+                                </p>
+                              </div>
+                              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-neutral-300">
+                                Workflow
+                              </span>
+                            </div>
+
+                            <div className="mt-4 grid gap-2">
+                              {CLIENT_GALLERY_CHECKLIST.map((item) => {
+                                const checked = Boolean(
+                                  activeClientGallery[item.key]
+                                );
+
+                                return (
+                                  <button
+                                    key={item.key}
+                                    type="button"
+                                    onClick={() =>
+                                      updateClientGallery(
+                                        activeClientGallery,
+                                        { [item.key]: !checked },
+                                        checked
+                                          ? "Punkt wurde wieder geöffnet."
+                                          : "Punkt wurde abgehakt."
+                                      )
+                                    }
+                                    disabled={
+                                      busyClientGalleryId ===
+                                      activeClientGallery.id
+                                    }
+                                    className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm font-bold transition disabled:opacity-60 ${
+                                      checked
+                                        ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-100"
+                                        : "border-white/10 bg-white/[0.06] text-neutral-300 hover:bg-white/10"
+                                    }`}
+                                  >
+                                    <span>{item.label}</span>
+                                    <CheckCircle2
+                                      className={`h-4 w-4 ${
+                                        checked
+                                          ? "fill-emerald-400 text-emerald-400"
+                                          : "text-neutral-600"
+                                      }`}
+                                    />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </section>
 
                         <form
                           onSubmit={uploadClientGalleryImage}

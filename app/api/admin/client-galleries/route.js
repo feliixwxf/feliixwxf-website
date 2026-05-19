@@ -8,7 +8,7 @@ import {
 } from "../_lib/supabase";
 
 const GALLERY_SELECT =
-  "id,title,client_name,access_code,is_active,downloads_enabled,status,expires_at,created_at";
+  "id,title,client_name,access_code,is_active,downloads_enabled,status,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,is_active,downloads_enabled,expires_at,created_at";
 const IMAGE_SELECT =
@@ -42,7 +42,16 @@ async function loadGalleries() {
   if (!galleryResponse.ok) {
     const details = await galleryResponse.text();
 
-    if (details.toLowerCase().includes("status")) {
+    const normalizedDetails = details.toLowerCase();
+
+    if (
+      normalizedDetails.includes("status") ||
+      normalizedDetails.includes("internal_note") ||
+      normalizedDetails.includes("favorites_reviewed") ||
+      normalizedDetails.includes("finals_exported") ||
+      normalizedDetails.includes("archive_prepared") ||
+      normalizedDetails.includes("client_informed")
+    ) {
       galleryResponse = await fetch(
         `${supabaseRestUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&order=created_at.desc&limit=100`,
         {
@@ -175,7 +184,6 @@ export async function POST(request) {
       client_name: clientName || null,
       access_code: accessCode,
       is_active: true,
-      status: "active",
       downloads_enabled: Boolean(body.downloads_enabled),
       expires_at: body.expires_at || null,
     }),
@@ -239,6 +247,21 @@ export async function PATCH(request) {
   }
   if ("downloads_enabled" in body) {
     update.downloads_enabled = Boolean(body.downloads_enabled);
+  }
+  if ("internal_note" in body) {
+    update.internal_note = String(body.internal_note || "").trim().slice(0, 2000);
+  }
+  if ("favorites_reviewed" in body) {
+    update.favorites_reviewed = Boolean(body.favorites_reviewed);
+  }
+  if ("finals_exported" in body) {
+    update.finals_exported = Boolean(body.finals_exported);
+  }
+  if ("archive_prepared" in body) {
+    update.archive_prepared = Boolean(body.archive_prepared);
+  }
+  if ("client_informed" in body) {
+    update.client_informed = Boolean(body.client_informed);
   }
   if ("expires_at" in body) update.expires_at = body.expires_at || null;
 

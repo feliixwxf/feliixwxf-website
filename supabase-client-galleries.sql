@@ -6,6 +6,11 @@ create table if not exists public.client_galleries (
   is_active boolean not null default true,
   status text not null default 'active'
     check (status in ('active', 'paused', 'completed')),
+  internal_note text not null default '',
+  favorites_reviewed boolean not null default false,
+  finals_exported boolean not null default false,
+  archive_prepared boolean not null default false,
+  client_informed boolean not null default false,
   downloads_enabled boolean not null default false,
   expires_at timestamptz,
   created_at timestamptz not null default now()
@@ -33,6 +38,48 @@ alter table public.client_galleries
 alter table public.client_galleries
   add constraint client_galleries_status_check
   check (status in ('active', 'paused', 'completed'));
+
+alter table public.client_galleries
+  add column if not exists internal_note text default '';
+
+update public.client_galleries
+set internal_note = ''
+where internal_note is null;
+
+alter table public.client_galleries
+  alter column internal_note set default '';
+
+alter table public.client_galleries
+  alter column internal_note set not null;
+
+alter table public.client_galleries
+  add column if not exists favorites_reviewed boolean default false;
+
+alter table public.client_galleries
+  add column if not exists finals_exported boolean default false;
+
+alter table public.client_galleries
+  add column if not exists archive_prepared boolean default false;
+
+alter table public.client_galleries
+  add column if not exists client_informed boolean default false;
+
+update public.client_galleries
+set
+  favorites_reviewed = coalesce(favorites_reviewed, false),
+  finals_exported = coalesce(finals_exported, false),
+  archive_prepared = coalesce(archive_prepared, false),
+  client_informed = coalesce(client_informed, false);
+
+alter table public.client_galleries
+  alter column favorites_reviewed set default false,
+  alter column favorites_reviewed set not null,
+  alter column finals_exported set default false,
+  alter column finals_exported set not null,
+  alter column archive_prepared set default false,
+  alter column archive_prepared set not null,
+  alter column client_informed set default false,
+  alter column client_informed set not null;
 
 create table if not exists public.client_gallery_images (
   id uuid primary key default gen_random_uuid(),
