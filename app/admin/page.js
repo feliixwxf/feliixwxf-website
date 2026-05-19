@@ -1300,6 +1300,32 @@ export default function AdminPage() {
     copyText(favoriteList, "Favoritenliste wurde kopiert.");
   };
 
+  const copyClientGalleryInvite = () => {
+    if (!activeClientGallery) {
+      showMessage("Bitte zuerst eine Kundengalerie auswaehlen.", "error");
+      return;
+    }
+
+    const customerName = activeClientGallery.client_name?.trim();
+    const inviteText = [
+      `Hallo${customerName ? ` ${customerName}` : ""},`,
+      "",
+      `deine Galerie "${activeClientGallery.title}" ist bereit.`,
+      "",
+      `Link: ${window.location.origin}/kunden`,
+      `Code: ${activeClientGallery.access_code}`,
+      "",
+      activeClientGallery.downloads_enabled
+        ? "Downloads sind freigeschaltet, du kannst deine Bilder direkt herunterladen."
+        : "Du kannst deine Favoriten markieren, damit ich die Auswahl sehen kann.",
+      "",
+      "Liebe Gruesse",
+      "Felix",
+    ].join("\n");
+
+    copyText(inviteText, "Kunden-Einladung wurde kopiert.");
+  };
+
   const uploadSiteAsset = async (assetKey) => {
     const file = siteAssetFiles[assetKey];
 
@@ -3002,6 +3028,14 @@ export default function AdminPage() {
                             >
                               <ExternalLink className="h-4 w-4" />
                               Link
+                            </button>
+                            <button
+                              type="button"
+                              onClick={copyClientGalleryInvite}
+                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                            >
+                              <Mail className="h-4 w-4" />
+                              Einladung
                             </button>
                             <button
                               type="button"
