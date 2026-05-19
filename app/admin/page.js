@@ -462,6 +462,27 @@ export default function AdminPage() {
   const activeClientGallery =
     clientGalleries.find((gallery) => gallery.id === activeClientGalleryId) ||
     clientGalleries[0];
+  const activeClientFavoriteImages = activeClientGallery
+    ? (activeClientGallery.favorites || [])
+        .map((favorite) => {
+          const image = (activeClientGallery.images || []).find(
+            (item) => item.id === favorite.image_id
+          );
+
+          if (!image) return null;
+
+          return {
+            ...image,
+            favorite_created_at: favorite.created_at,
+          };
+        })
+        .filter(Boolean)
+        .sort(
+          (a, b) =>
+            new Date(b.favorite_created_at || 0) -
+            new Date(a.favorite_created_at || 0)
+        )
+    : [];
   const latestClientGallery = clientGalleries[0];
 
   const showMessage = (text, type = "info") => {
@@ -997,6 +1018,30 @@ export default function AdminPage() {
     );
     showMessage("Kundenbild wurde geloescht.", "success");
     setBusyClientImageId(null);
+  };
+
+  const copyClientFavoriteList = () => {
+    if (!activeClientGallery || activeClientFavoriteImages.length === 0) {
+      showMessage("Noch keine Favoriten in dieser Kundengalerie.", "error");
+      return;
+    }
+
+    const favoriteList = [
+      `Favoriten: ${activeClientGallery.title}`,
+      activeClientGallery.client_name
+        ? `Kunde: ${activeClientGallery.client_name}`
+        : "",
+      `Galerie-Code: ${activeClientGallery.access_code}`,
+      "",
+      ...activeClientFavoriteImages.map(
+        (image, index) =>
+          `${index + 1}. ${image.filename || "Kundenbild"} - ${image.url}`
+      ),
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    copyText(favoriteList, "Favoritenliste wurde kopiert.");
   };
 
   const uploadSiteAsset = async (assetKey) => {
@@ -2614,6 +2659,99 @@ export default function AdminPage() {
                           )}
                         </form>
 
+                        <section className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
+                          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <div className="min-w-0">
+                              <div className="inline-flex items-center gap-2 rounded-full bg-yellow-400 px-3 py-1 text-xs font-black text-black">
+                                <Heart className="h-3.5 w-3.5 fill-current" />
+                                {activeClientFavoriteImages.length} Favorit
+                                {activeClientFavoriteImages.length === 1
+                                  ? ""
+                                  : "en"}
+                              </div>
+                              <h4 className="mt-3 text-lg font-black text-white">
+                                Favoriten des Kunden
+                              </h4>
+                              <p className="mt-1 text-sm leading-6 text-yellow-100/70">
+                                Hier siehst du nur die Bilder, die der Kunde in
+                                seiner Galerie markiert hat.
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={copyClientFavoriteList}
+                              disabled={activeClientFavoriteImages.length === 0}
+                              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-yellow-400/30 bg-yellow-400/15 px-4 py-2 text-sm font-bold text-yellow-50 transition hover:bg-yellow-400/25 disabled:cursor-not-allowed disabled:opacity-50 md:w-fit"
+                            >
+                              <Copy className="h-4 w-4" />
+                              Favoritenliste kopieren
+                            </button>
+                          </div>
+
+                          {activeClientFavoriteImages.length === 0 ? (
+                            <div className="mt-4 rounded-xl border border-yellow-400/15 bg-black/20 p-4 text-sm text-yellow-100/60">
+                              Noch keine Favoriten markiert.
+                            </div>
+                          ) : (
+                            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                              {activeClientFavoriteImages.map((image, index) => (
+                                <article
+                                  key={`favorite-${image.id}`}
+                                  className="grid grid-cols-[76px_minmax(0,1fr)] gap-3 rounded-xl border border-yellow-400/15 bg-black/25 p-3"
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedImage(image)}
+                                    className="overflow-hidden rounded-lg bg-black/30"
+                                    aria-label="Favoritenbild ansehen"
+                                  >
+                                    <img
+                                      src={image.url}
+                                      alt=""
+                                      loading="lazy"
+                                      decoding="async"
+                                      className="aspect-square h-full w-full object-cover"
+                                    />
+                                  </button>
+
+                                  <div className="min-w-0">
+                                    <p className="truncate text-sm font-bold text-white">
+                                      #{index + 1}{" "}
+                                      {image.filename || "Kundenbild"}
+                                    </p>
+                                    <p className="mt-1 text-xs text-yellow-100/55">
+                                      Markiert:{" "}
+                                      {formatDate(image.favorite_created_at)}
+                                    </p>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => setSelectedImage(image)}
+                                        className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold transition hover:bg-white/15"
+                                      >
+                                        Ansehen
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          copyText(
+                                            image.url,
+                                            "Bild-URL wurde kopiert."
+                                          )
+                                        }
+                                        className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold transition hover:bg-white/15"
+                                      >
+                                        URL
+                                      </button>
+                                    </div>
+                                  </div>
+                                </article>
+                              ))}
+                            </div>
+                          )}
+                        </section>
+
                         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {(activeClientGallery.images || []).length === 0 && (
                             <div className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-neutral-400 sm:col-span-2 lg:col-span-3">
@@ -3248,10 +3386,12 @@ export default function AdminPage() {
                 </p>
                 <p className="mt-1 font-bold">
                   {selectedImage.title ||
+                    selectedImage.filename ||
                     CATEGORIES.find(
                       (category) => category.value === selectedImage.category
                     )?.label ||
-                    selectedImage.category}
+                    selectedImage.category ||
+                    "Bildvorschau"}
                 </p>
                 {selectedImage.note && (
                   <p className="mt-1 max-w-xl text-sm text-neutral-400">
