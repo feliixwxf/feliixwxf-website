@@ -317,6 +317,10 @@ export default function AdminPage() {
     DEFAULT_CLIENT_GALLERY_FORM
   );
   const [activeClientGalleryId, setActiveClientGalleryId] = useState("");
+  const [clientGallerySearch, setClientGallerySearch] = useState("");
+  const [clientGalleryStatusFilter, setClientGalleryStatusFilter] =
+    useState("all");
+  const [clientGallerySortMode, setClientGallerySortMode] = useState("newest");
   const [clientGalleryFile, setClientGalleryFile] = useState(null);
   const [imageCategory, setImageCategory] = useState("car");
   const [imageFile, setImageFile] = useState(null);
@@ -483,6 +487,47 @@ export default function AdminPage() {
             new Date(a.favorite_created_at || 0)
         )
     : [];
+  const clientGalleryStats = {
+    active: clientGalleries.filter((gallery) => gallery.is_active).length,
+    paused: clientGalleries.filter((gallery) => !gallery.is_active).length,
+  };
+  const normalizedClientGallerySearch = clientGallerySearch.trim().toLowerCase();
+  const visibleClientGalleries = [...clientGalleries]
+    .filter((gallery) => {
+      if (
+        clientGalleryStatusFilter === "active" &&
+        !gallery.is_active
+      ) {
+        return false;
+      }
+
+      if (
+        clientGalleryStatusFilter === "paused" &&
+        gallery.is_active
+      ) {
+        return false;
+      }
+
+      if (!normalizedClientGallerySearch) return true;
+
+      return [
+        gallery.title,
+        gallery.client_name,
+        gallery.access_code,
+        formatDate(gallery.created_at),
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedClientGallerySearch);
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at || 0);
+      const dateB = new Date(b.created_at || 0);
+
+      return clientGallerySortMode === "oldest"
+        ? dateA - dateB
+        : dateB - dateA;
+    });
   const latestClientGallery = clientGalleries[0];
 
   const showMessage = (text, type = "info") => {
@@ -2427,8 +2472,60 @@ export default function AdminPage() {
                         </p>
                       </div>
                       <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-neutral-950">
-                        {clientGalleries.length}
+                        {visibleClientGalleries.length}/{clientGalleries.length}
                       </span>
+                    </div>
+
+                    <div className="mt-5 grid gap-3">
+                      <label className="relative block">
+                        <span className="sr-only">Galerie suchen</span>
+                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                        <input
+                          value={clientGallerySearch}
+                          onChange={(event) =>
+                            setClientGallerySearch(event.target.value)
+                          }
+                          placeholder="Kunde, Titel oder Code suchen"
+                          className="w-full rounded-2xl border border-white/10 bg-black/25 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-yellow-400/70"
+                        />
+                      </label>
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="block">
+                          <span className="sr-only">Status filtern</span>
+                          <select
+                            value={clientGalleryStatusFilter}
+                            onChange={(event) =>
+                              setClientGalleryStatusFilter(event.target.value)
+                            }
+                            className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm font-semibold text-white outline-none focus:border-yellow-400/70"
+                          >
+                            <option value="all">
+                              Alle ({clientGalleries.length})
+                            </option>
+                            <option value="active">
+                              Aktiv ({clientGalleryStats.active})
+                            </option>
+                            <option value="paused">
+                              Pausiert ({clientGalleryStats.paused})
+                            </option>
+                          </select>
+                        </label>
+
+                        <label className="block">
+                          <span className="sr-only">Galerien sortieren</span>
+                          <select
+                            value={clientGallerySortMode}
+                            onChange={(event) =>
+                              setClientGallerySortMode(event.target.value)
+                            }
+                            className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm font-semibold text-white outline-none focus:border-yellow-400/70"
+                          >
+                            <option value="newest">Neueste zuerst</option>
+                            <option value="oldest">Älteste zuerst</option>
+                          </select>
+                        </label>
+                      </div>
                     </div>
 
                     <div className="mt-5 space-y-3">
@@ -2438,7 +2535,14 @@ export default function AdminPage() {
                         </div>
                       )}
 
-                      {clientGalleries.map((gallery) => (
+                      {clientGalleries.length > 0 &&
+                        visibleClientGalleries.length === 0 && (
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-neutral-400">
+                            Keine Galerie passt zu Suche oder Filter.
+                          </div>
+                        )}
+
+                      {visibleClientGalleries.map((gallery) => (
                         <button
                           key={gallery.id}
                           type="button"
