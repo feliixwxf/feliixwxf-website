@@ -333,6 +333,78 @@ function getClientGalleryStatus(gallery) {
   return gallery?.is_active ? "active" : "paused";
 }
 
+function getClientChecklistDone(gallery) {
+  if (!gallery) return 0;
+
+  return CLIENT_GALLERY_CHECKLIST.filter((item) => gallery[item.key]).length;
+}
+
+function getClientProjectStep(gallery) {
+  const status = getClientGalleryStatus(gallery);
+
+  if (status === "completed") {
+    return {
+      label: "Abgeschlossen",
+      helper: "Projekt ist fertig und bleibt archiviert sichtbar.",
+      tone: "border-sky-300/25 bg-sky-300/10 text-sky-100",
+    };
+  }
+
+  if ((gallery?.image_count || 0) === 0) {
+    return {
+      label: "Bilder hochladen",
+      helper: "Noch keine Kundenbilder in dieser Galerie.",
+      tone: "border-yellow-400/25 bg-yellow-400/10 text-yellow-100",
+    };
+  }
+
+  if ((gallery?.favorite_count || 0) === 0) {
+    return {
+      label: "Auswahl offen",
+      helper: "Kunde hat noch keine Favoriten markiert.",
+      tone: "border-white/10 bg-white/[0.06] text-neutral-200",
+    };
+  }
+
+  if (!gallery?.favorites_reviewed) {
+    return {
+      label: "Favoriten prüfen",
+      helper: "Kundenauswahl kontrollieren und final bearbeiten.",
+      tone: "border-yellow-400/25 bg-yellow-400/10 text-yellow-100",
+    };
+  }
+
+  if (!gallery?.finals_exported) {
+    return {
+      label: "Finale Bilder exportieren",
+      helper: "Bearbeitete Enddateien vorbereiten.",
+      tone: "border-yellow-400/25 bg-yellow-400/10 text-yellow-100",
+    };
+  }
+
+  if (!gallery?.archive_prepared) {
+    return {
+      label: "Archiv vorbereiten",
+      helper: "Projekt fuer spaeteren Download/Account vorbereiten.",
+      tone: "border-yellow-400/25 bg-yellow-400/10 text-yellow-100",
+    };
+  }
+
+  if (!gallery?.client_informed) {
+    return {
+      label: "Kunde informieren",
+      helper: "Galerie ist bereit zur Rueckmeldung an den Kunden.",
+      tone: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+    };
+  }
+
+  return {
+    label: "Bereit zum Abschliessen",
+    helper: "Alle Workflow-Punkte sind erledigt.",
+    tone: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+  };
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -496,11 +568,8 @@ export default function AdminPage() {
   const activeClientGallery =
     clientGalleries.find((gallery) => gallery.id === activeClientGalleryId) ||
     clientGalleries[0];
-  const activeClientChecklistDone = activeClientGallery
-    ? CLIENT_GALLERY_CHECKLIST.filter(
-        (item) => activeClientGallery[item.key]
-      ).length
-    : 0;
+  const activeClientChecklistDone = getClientChecklistDone(activeClientGallery);
+  const activeClientProjectStep = getClientProjectStep(activeClientGallery);
   const activeClientFavoriteImages = activeClientGallery
     ? (activeClientGallery.favorites || [])
         .map((favorite) => {
@@ -533,6 +602,62 @@ export default function AdminPage() {
       (gallery) => getClientGalleryStatus(gallery) === "completed"
     ).length,
   };
+  const clientProjectQueue = clientGalleries.filter(
+    (gallery) => getClientGalleryStatus(gallery) !== "completed"
+  );
+  const clientProjectsNeedingReview = clientProjectQueue.filter(
+    (gallery) => (gallery.favorite_count || 0) > 0 && !gallery.favorites_reviewed
+  );
+  const clientProjectsReadyToFinish = clientProjectQueue.filter(
+    (gallery) =>
+      getClientChecklistDone(gallery) === CLIENT_GALLERY_CHECKLIST.length
+  );
+  const clientProjectPipeline = [
+    {
+      label: "Laufend",
+      value: clientProjectQueue.length,
+      helper: "aktive oder pausierte Projekte",
+      icon: Users,
+    },
+    {
+      label: "Favoriten prüfen",
+      value: clientProjectsNeedingReview.length,
+      helper: "Kundenauswahl ist da",
+      icon: Heart,
+    },
+    {
+      label: "Bereit",
+      value: clientProjectsReadyToFinish.length,
+      helper: "Checkliste komplett",
+      icon: CheckCircle2,
+    },
+  ];
+  const clientProjectFocus = [...clientProjectQueue]
+    .sort((a, b) => {
+      const doneA = getClientChecklistDone(a);
+      const doneB = getClientChecklistDone(b);
+      const favoritesA = a.favorite_count || 0;
+      const favoritesB = b.favorite_count || 0;
+
+      if (
+        favoritesA > 0 &&
+        !a.favorites_reviewed &&
+        !(favoritesB > 0 && !b.favorites_reviewed)
+      ) {
+        return -1;
+      }
+      if (
+        favoritesB > 0 &&
+        !b.favorites_reviewed &&
+        !(favoritesA > 0 && !a.favorites_reviewed)
+      ) {
+        return 1;
+      }
+      if (doneA !== doneB) return doneB - doneA;
+
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    })
+    .slice(0, 3);
   const normalizedClientGallerySearch = clientGallerySearch.trim().toLowerCase();
   const visibleClientGalleries = [...clientGalleries]
     .filter((gallery) => {
@@ -1867,6 +1992,99 @@ export default function AdminPage() {
                   </button>
                 </div>
 
+                <section className="mt-8 rounded-[1.5rem] border border-white/10 bg-black/20 p-6">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.28em] text-neutral-500">
+                        Kundenprojekte
+                      </p>
+                      <h3 className="mt-2 text-2xl font-black">
+                        Projekt-Pipeline
+                      </h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
+                        Schlanke Uebersicht fuer laufende Kundengalerien. Das ist
+                        die Basis fuer spaetere Kundenkonten.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("clients")}
+                      className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                    >
+                      <Users className="h-4 w-4" />
+                      Kunden öffnen
+                    </button>
+                  </div>
+
+                  <div className="mt-5 grid gap-3 md:grid-cols-3">
+                    {clientProjectPipeline.map((item) => {
+                      const Icon = item.icon;
+
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() => setActiveTab("clients")}
+                          className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 text-left transition hover:bg-white/10"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+                              <Icon className="h-5 w-5" />
+                            </div>
+                            <span className="text-3xl font-black">
+                              {item.value}
+                            </span>
+                          </div>
+                          <p className="mt-4 font-black">{item.label}</p>
+                          <p className="mt-1 text-sm text-neutral-500">
+                            {item.helper}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-5 grid gap-3">
+                    {clientProjectFocus.length === 0 ? (
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-neutral-400">
+                        Keine offenen Kundenprojekte.
+                      </div>
+                    ) : (
+                      clientProjectFocus.map((gallery) => {
+                        const step = getClientProjectStep(gallery);
+
+                        return (
+                          <button
+                            key={`project-focus-${gallery.id}`}
+                            type="button"
+                            onClick={() => {
+                              setActiveClientGalleryId(gallery.id);
+                              setActiveTab("clients");
+                            }}
+                            className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-left transition hover:bg-white/10 md:flex-row md:items-center md:justify-between"
+                          >
+                            <span className="min-w-0">
+                              <span className="block truncate font-black">
+                                {gallery.title}
+                              </span>
+                              <span className="mt-1 block text-sm text-neutral-500">
+                                {gallery.client_name || "Ohne Kundennamen"} ·{" "}
+                                {gallery.image_count || 0} Bilder ·{" "}
+                                {gallery.favorite_count || 0} Favoriten
+                              </span>
+                            </span>
+                            <span
+                              className={`w-fit rounded-full border px-3 py-1 text-xs font-black ${step.tone}`}
+                            >
+                              {step.label}
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </section>
+
                 <div className="mt-8 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
                   <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
                     <div className="flex items-center justify-between gap-4">
@@ -2628,49 +2846,58 @@ export default function AdminPage() {
                           </div>
                         )}
 
-                      {visibleClientGalleries.map((gallery) => (
-                        <button
-                          key={gallery.id}
-                          type="button"
-                          onClick={() => setActiveClientGalleryId(gallery.id)}
-                          className={`w-full rounded-2xl border p-4 text-left transition hover:bg-white/10 ${
-                            activeClientGallery?.id === gallery.id
-                              ? "border-yellow-400/70 bg-yellow-400/10"
-                              : "border-white/10 bg-black/20"
-                          }`}
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <h4 className="font-black">{gallery.title}</h4>
-                            <span
-                              className={`rounded-full px-3 py-1 text-xs font-black ${
-                                CLIENT_GALLERY_STATUSES[
-                                  getClientGalleryStatus(gallery)
-                                ].badge
-                              }`}
-                            >
-                              {
-                                CLIENT_GALLERY_STATUSES[
-                                  getClientGalleryStatus(gallery)
-                                ].label
-                              }
-                            </span>
-                          </div>
-                          <p className="mt-2 text-sm text-neutral-400">
-                            {gallery.client_name || "Ohne Kundennamen"}
-                          </p>
-                          <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                            <span className="max-w-full break-all rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-200">
-                              Code: {gallery.access_code}
-                            </span>
-                            <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
-                              {gallery.image_count || 0} Bilder
-                            </span>
-                            <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
-                              {gallery.favorite_count || 0} Favoriten
-                            </span>
-                          </div>
-                        </button>
-                      ))}
+                      {visibleClientGalleries.map((gallery) => {
+                        const step = getClientProjectStep(gallery);
+
+                        return (
+                          <button
+                            key={gallery.id}
+                            type="button"
+                            onClick={() => setActiveClientGalleryId(gallery.id)}
+                            className={`w-full rounded-2xl border p-4 text-left transition hover:bg-white/10 ${
+                              activeClientGallery?.id === gallery.id
+                                ? "border-yellow-400/70 bg-yellow-400/10"
+                                : "border-white/10 bg-black/20"
+                            }`}
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <h4 className="font-black">{gallery.title}</h4>
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-black ${
+                                  CLIENT_GALLERY_STATUSES[
+                                    getClientGalleryStatus(gallery)
+                                  ].badge
+                                }`}
+                              >
+                                {
+                                  CLIENT_GALLERY_STATUSES[
+                                    getClientGalleryStatus(gallery)
+                                  ].label
+                                }
+                              </span>
+                            </div>
+                            <p className="mt-2 text-sm text-neutral-400">
+                              {gallery.client_name || "Ohne Kundennamen"}
+                            </p>
+                            <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                              <span className="max-w-full break-all rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-200">
+                                Code: {gallery.access_code}
+                              </span>
+                              <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
+                                {gallery.image_count || 0} Bilder
+                              </span>
+                              <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
+                                {gallery.favorite_count || 0} Favoriten
+                              </span>
+                              <span
+                                className={`rounded-full border px-3 py-1 font-bold ${step.tone}`}
+                              >
+                                {step.label}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </section>
 
@@ -2706,6 +2933,16 @@ export default function AdminPage() {
                                 ].label
                               }
                             </span>
+                            <div
+                              className={`mt-3 max-w-xl rounded-2xl border px-4 py-3 text-sm ${activeClientProjectStep.tone}`}
+                            >
+                              <p className="font-black">
+                                Nächster Schritt: {activeClientProjectStep.label}
+                              </p>
+                              <p className="mt-1 text-xs opacity-80">
+                                {activeClientProjectStep.helper}
+                              </p>
+                            </div>
                           </div>
 
                           <div className="flex min-w-0 flex-wrap gap-2 lg:justify-end">
