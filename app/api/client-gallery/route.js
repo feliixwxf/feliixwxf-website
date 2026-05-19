@@ -5,6 +5,11 @@ import {
   supabaseServiceHeaders,
 } from "../_lib/supabase";
 
+const GALLERY_SELECT =
+  "id,title,client_name,access_code,downloads_enabled,status,expires_at,created_at";
+const LEGACY_GALLERY_SELECT =
+  "id,title,client_name,access_code,downloads_enabled,expires_at,created_at";
+
 function normalizeCode(value) {
   return String(value || "")
     .trim()
@@ -31,8 +36,8 @@ export async function POST(request) {
     );
   }
 
-  const galleryResponse = await fetch(
-    `${supabaseBaseUrl}/rest/v1/client_galleries?select=id,title,client_name,access_code,downloads_enabled,expires_at,created_at&access_code=eq.${encodeURIComponent(
+  let galleryResponse = await fetch(
+    `${supabaseBaseUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&access_code=eq.${encodeURIComponent(
       code
     )}&is_active=eq.true&limit=1`,
     {
@@ -42,10 +47,26 @@ export async function POST(request) {
   );
 
   if (!galleryResponse.ok) {
-    return NextResponse.json(
-      { error: "Galerie konnte nicht geladen werden." },
-      { status: 500 }
-    );
+    const details = await galleryResponse.text();
+
+    if (details.toLowerCase().includes("status")) {
+      galleryResponse = await fetch(
+        `${supabaseBaseUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&access_code=eq.${encodeURIComponent(
+          code
+        )}&is_active=eq.true&limit=1`,
+        {
+          headers: supabaseServiceHeaders,
+          cache: "no-store",
+        }
+      );
+    }
+
+    if (!galleryResponse.ok) {
+      return NextResponse.json(
+        { error: "Galerie konnte nicht geladen werden." },
+        { status: 500 }
+      );
+    }
   }
 
   const [gallery] = await galleryResponse.json();

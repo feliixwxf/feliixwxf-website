@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  CheckCircle2,
   Download,
   ExternalLink,
   Heart,
@@ -244,6 +245,12 @@ export default function CustomerGalleryPage() {
                     {gallery.downloads_enabled && (
                       <span className="rounded-full bg-emerald-400 px-4 py-2 font-black text-neutral-950">
                         Downloads aktiv
+                      </span>
+                    )}
+                    {gallery.status === "completed" && (
+                      <span className="inline-flex items-center gap-2 rounded-full bg-sky-300 px-4 py-2 font-black text-neutral-950">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Projekt abgeschlossen
                       </span>
                     )}
                     {gallery.expires_at && (
