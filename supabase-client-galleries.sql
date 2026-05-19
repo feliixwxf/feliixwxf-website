@@ -2,6 +2,7 @@ create table if not exists public.client_galleries (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   client_name text,
+  client_email text,
   access_code text not null unique,
   is_active boolean not null default true,
   status text not null default 'active'
@@ -41,6 +42,9 @@ alter table public.client_galleries
 
 alter table public.client_galleries
   add column if not exists internal_note text default '';
+
+alter table public.client_galleries
+  add column if not exists client_email text;
 
 update public.client_galleries
 set internal_note = ''

@@ -263,6 +263,7 @@ const CONTACT_FIELDS = [
 const DEFAULT_CLIENT_GALLERY_FORM = {
   title: "",
   client_name: "",
+  client_email: "",
   access_code: "",
   downloads_enabled: false,
 };
@@ -673,6 +674,7 @@ export default function AdminPage() {
       return [
         gallery.title,
         gallery.client_name,
+        gallery.client_email,
         gallery.access_code,
         formatDate(gallery.created_at),
       ]
@@ -1065,6 +1067,7 @@ export default function AdminPage() {
         const details = String(data.details || "");
         const missingWorkflowField = [
           "internal_note",
+          "client_email",
           "favorites_reviewed",
           "finals_exported",
           "archive_prepared",
@@ -2677,7 +2680,7 @@ export default function AdminPage() {
                   onSubmit={createClientGallery}
                   className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
                 >
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <label className="block min-w-0">
                       <span className="text-sm font-semibold text-neutral-300">
                         Galerie-Titel
@@ -2712,6 +2715,24 @@ export default function AdminPage() {
 
                     <label className="block min-w-0">
                       <span className="text-sm font-semibold text-neutral-300">
+                        Kunden-E-Mail
+                      </span>
+                      <input
+                        type="email"
+                        value={clientGalleryForm.client_email}
+                        onChange={(event) =>
+                          updateClientGalleryForm(
+                            "client_email",
+                            event.target.value
+                          )
+                        }
+                        placeholder="Optional, später fürs Kundenkonto"
+                        className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+                      />
+                    </label>
+
+                    <label className="block min-w-0">
+                      <span className="text-sm font-semibold text-neutral-300">
                         Zugangscode
                       </span>
                       <div className="mt-3 flex gap-2">
@@ -2737,7 +2758,7 @@ export default function AdminPage() {
                       </div>
                     </label>
 
-                    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 md:col-span-2 xl:col-span-3 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 md:col-span-2 xl:col-span-4 xl:flex-row xl:items-center xl:justify-between">
                       <label className="flex min-w-0 items-center gap-3 text-sm font-semibold text-neutral-200">
                         <input
                           type="checkbox"
@@ -2876,10 +2897,15 @@ export default function AdminPage() {
                                 }
                               </span>
                             </div>
-                            <p className="mt-2 text-sm text-neutral-400">
-                              {gallery.client_name || "Ohne Kundennamen"}
+                          <p className="mt-2 text-sm text-neutral-400">
+                            {gallery.client_name || "Ohne Kundennamen"}
+                          </p>
+                          {gallery.client_email && (
+                            <p className="mt-1 break-all text-xs text-neutral-500">
+                              {gallery.client_email}
                             </p>
-                            <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                          )}
+                          <div className="mt-3 flex flex-wrap gap-2 text-xs">
                               <span className="max-w-full break-all rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-200">
                                 Code: {gallery.access_code}
                               </span>
@@ -2920,6 +2946,11 @@ export default function AdminPage() {
                               {activeClientGallery.client_name ||
                                 "Kein Kundenname hinterlegt"}
                             </p>
+                            {activeClientGallery.client_email && (
+                              <p className="mt-1 break-all text-sm text-neutral-500">
+                                {activeClientGallery.client_email}
+                              </p>
+                            )}
                             <span
                               className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-black ${
                                 CLIENT_GALLERY_STATUSES[
@@ -3068,6 +3099,74 @@ export default function AdminPage() {
                         </div>
 
                         <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4 lg:col-span-2">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <h4 className="font-black">Kundendaten</h4>
+                                <p className="mt-1 text-sm text-neutral-500">
+                                  Grundlage fuer spaetere Kundenkonten.
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateClientGallery(
+                                    activeClientGallery,
+                                    {
+                                      client_name:
+                                        activeClientGallery.client_name || "",
+                                      client_email:
+                                        activeClientGallery.client_email || "",
+                                    },
+                                    "Kundendaten wurden gespeichert."
+                                  )
+                                }
+                                disabled={
+                                  busyClientGalleryId === activeClientGallery.id
+                                }
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60 sm:w-fit"
+                              >
+                                <Save className="h-4 w-4" />
+                                Speichern
+                              </button>
+                            </div>
+
+                            <div className="mt-4 grid gap-4 md:grid-cols-2">
+                              <label className="block min-w-0">
+                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                                  Kundenname
+                                </span>
+                                <input
+                                  value={activeClientGallery.client_name || ""}
+                                  onChange={(event) =>
+                                    updateClientGalleryDraft({
+                                      client_name: event.target.value,
+                                    })
+                                  }
+                                  placeholder="Name oder Firma"
+                                  className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                                />
+                              </label>
+
+                              <label className="block min-w-0">
+                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                                  Kunden-E-Mail
+                                </span>
+                                <input
+                                  type="email"
+                                  value={activeClientGallery.client_email || ""}
+                                  onChange={(event) =>
+                                    updateClientGalleryDraft({
+                                      client_email: event.target.value,
+                                    })
+                                  }
+                                  placeholder="kunde@example.com"
+                                  className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                                />
+                              </label>
+                            </div>
+                          </div>
+
                           <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <div>

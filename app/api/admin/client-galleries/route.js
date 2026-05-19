@@ -8,7 +8,7 @@ import {
 } from "../_lib/supabase";
 
 const GALLERY_SELECT =
-  "id,title,client_name,access_code,is_active,downloads_enabled,status,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,is_active,downloads_enabled,expires_at,created_at";
 const IMAGE_SELECT =
@@ -47,6 +47,7 @@ async function loadGalleries() {
     if (
       normalizedDetails.includes("status") ||
       normalizedDetails.includes("internal_note") ||
+      normalizedDetails.includes("client_email") ||
       normalizedDetails.includes("favorites_reviewed") ||
       normalizedDetails.includes("finals_exported") ||
       normalizedDetails.includes("archive_prepared") ||
@@ -157,6 +158,10 @@ export async function POST(request) {
   const body = await request.json();
   const title = String(body.title || "").trim().slice(0, 100);
   const clientName = String(body.client_name || "").trim().slice(0, 100);
+  const clientEmail = String(body.client_email || "")
+    .trim()
+    .toLowerCase()
+    .slice(0, 160);
   const accessCode = normalizeCode(body.access_code || createCode());
 
   if (!title) {
@@ -182,6 +187,7 @@ export async function POST(request) {
     body: JSON.stringify({
       title,
       client_name: clientName || null,
+      ...(clientEmail ? { client_email: clientEmail } : {}),
       access_code: accessCode,
       is_active: true,
       downloads_enabled: Boolean(body.downloads_enabled),
@@ -230,6 +236,11 @@ export async function PATCH(request) {
   if ("title" in body) update.title = String(body.title || "").trim().slice(0, 100);
   if ("client_name" in body) {
     update.client_name = String(body.client_name || "").trim().slice(0, 100) || null;
+  }
+  if ("client_email" in body) {
+    update.client_email =
+      String(body.client_email || "").trim().toLowerCase().slice(0, 160) ||
+      null;
   }
   if ("access_code" in body) update.access_code = normalizeCode(body.access_code);
   if ("is_active" in body) update.is_active = Boolean(body.is_active);
