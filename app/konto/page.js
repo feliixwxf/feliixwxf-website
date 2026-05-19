@@ -32,8 +32,10 @@ export default function AccountPage() {
     email: "",
     password: "",
   });
+  const [profileName, setProfileName] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
 
@@ -78,9 +80,11 @@ export default function AccountPage() {
 
     if (data.authenticated) {
       setUser(data.user);
+      setProfileName(data.user?.name || "");
       await loadGalleries();
     } else {
       setUser(null);
+      setProfileName("");
       setGalleries([]);
     }
 
@@ -88,6 +92,20 @@ export default function AccountPage() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const confirmed = params.get("verified") === "1";
+    const error =
+      params.get("error_description") || hashParams.get("error_description");
+
+    if (confirmed) {
+      showMessage("E-Mail wurde bestaetigt. Du kannst dich jetzt einloggen.", "success");
+      window.history.replaceState(null, "", "/konto");
+    } else if (error) {
+      showMessage(decodeURIComponent(error).replace(/\+/g, " "), "error");
+      window.history.replaceState(null, "", "/konto");
+    }
+
     loadSession();
   }, []);
 
@@ -120,6 +138,7 @@ export default function AccountPage() {
     }
 
     setUser(data.user);
+    setProfileName(data.user?.name || form.name || "");
     showMessage(
       mode === "register" ? "Konto wurde erstellt." : "Du bist eingeloggt.",
       "success"
@@ -131,8 +150,32 @@ export default function AccountPage() {
   const logout = async () => {
     await fetch("/api/account/logout", { method: "POST" });
     setUser(null);
+    setProfileName("");
     setGalleries([]);
     showMessage("Du wurdest ausgeloggt.", "success");
+  };
+
+  const saveProfile = async () => {
+    setProfileSaving(true);
+    setMessage("");
+
+    const response = await fetch("/api/account/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: profileName }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(data.error || "Benutzername konnte nicht gespeichert werden.", "error");
+      setProfileSaving(false);
+      return;
+    }
+
+    setUser(data.user);
+    setProfileName(data.user?.name || "");
+    showMessage("Benutzername wurde gespeichert.", "success");
+    setProfileSaving(false);
   };
 
   const openGallery = (gallery) => {
@@ -197,8 +240,39 @@ export default function AccountPage() {
                     Angemeldet als
                   </p>
                   <h2 className="mt-2 break-all text-2xl font-black">
-                    {user.email}
+                    {user.name || "Ohne Benutzername"}
                   </h2>
+                  <p className="mt-1 break-all text-sm text-neutral-400">
+                    {user.email}
+                  </p>
+
+                  <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                    <label className="block">
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                        Benutzername
+                      </span>
+                      <input
+                        value={profileName}
+                        onChange={(event) => {
+                          setProfileName(event.target.value);
+                          setMessage("");
+                        }}
+                        placeholder="z. B. Felix"
+                        className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={saveProfile}
+                      disabled={profileSaving}
+                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60"
+                    >
+                      {profileSaving && (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      )}
+                      Benutzername speichern
+                    </button>
+                  </div>
 
                   <div className="mt-6 flex items-center justify-between gap-3">
                     <div>
@@ -288,14 +362,14 @@ export default function AccountPage() {
                     {mode === "register" && (
                       <label className="block">
                         <span className="text-sm font-bold text-neutral-200">
-                          Name
+                          Benutzername
                         </span>
                         <input
                           value={form.name}
                           onChange={(event) =>
                             updateForm("name", event.target.value)
                           }
-                          placeholder="Dein Name"
+                          placeholder="z. B. Felix"
                           className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
                         />
                       </label>
