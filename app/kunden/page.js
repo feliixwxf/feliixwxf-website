@@ -344,7 +344,7 @@ export default function CustomerGalleryPage() {
                               download
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold transition hover:bg-white/15"
+                              className="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-3 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
                             >
                               <Download className="h-4 w-4" />
                               Download
@@ -381,6 +381,20 @@ export default function CustomerGalleryPage() {
                 decoding="async"
                 className="max-h-[82vh] w-full rounded-[1.5rem] object-contain"
               />
+              {gallery?.downloads_enabled && (
+                <div className="mt-4 flex justify-center">
+                  <a
+                    href={selectedImage.url}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-5 py-3 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                  >
+                    <Download className="h-5 w-5" />
+                    Bild herunterladen
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>

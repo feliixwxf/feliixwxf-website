@@ -924,8 +924,20 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
+      const missingWorkflowField =
+        typeof data.details === "string" &&
+        [
+          "internal_note",
+          "favorites_reviewed",
+          "finals_exported",
+          "archive_prepared",
+          "client_informed",
+        ].some((field) => data.details.includes(field));
+
       showMessage(
-        data.error || "Kundengalerie konnte nicht gespeichert werden.",
+        missingWorkflowField
+          ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen."
+          : data.error || "Kundengalerie konnte nicht gespeichert werden.",
         "error"
       );
       setBusyClientGalleryId(null);

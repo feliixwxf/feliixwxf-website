@@ -275,12 +275,12 @@ export async function PATCH(request) {
   const response = await fetch(
     `${supabaseRestUrl}/rest/v1/client_galleries?id=eq.${encodeURIComponent(
       id
-    )}&select=${GALLERY_SELECT}`,
+    )}`,
     {
       method: "PATCH",
       headers: {
         ...supabaseServiceHeaders,
-        Prefer: "return=representation",
+        Prefer: "return=minimal",
       },
       body: JSON.stringify(update),
     }
@@ -294,8 +294,7 @@ export async function PATCH(request) {
     );
   }
 
-  const [gallery] = await response.json();
-  return NextResponse.json({ gallery });
+  return NextResponse.json({ gallery: { id, ...update } });
 }
 
 export async function DELETE(request) {
