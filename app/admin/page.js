@@ -341,6 +341,7 @@ export default function AdminPage() {
   const [busyClientGalleryId, setBusyClientGalleryId] = useState(null);
   const [busyClientImageId, setBusyClientImageId] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [clientGalleryPreview, setClientGalleryPreview] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
 
   const approvedReviews = reviews.filter((review) => review.is_approved);
@@ -654,6 +655,7 @@ export default function AdminPage() {
     setClientGalleries([]);
     setActiveClientGalleryId("");
     setClientGalleryForm(DEFAULT_CLIENT_GALLERY_FORM);
+    setClientGalleryFile(null);
     setSiteAssets({});
     setSiteSettings(DEFAULT_SITE_SETTINGS);
     setSettingsDraft(DEFAULT_SITE_SETTINGS);
@@ -680,6 +682,18 @@ export default function AdminPage() {
 
     return () => URL.revokeObjectURL(previewUrl);
   }, [imageFile]);
+
+  useEffect(() => {
+    if (!clientGalleryFile) {
+      setClientGalleryPreview("");
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(clientGalleryFile);
+    setClientGalleryPreview(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [clientGalleryFile]);
 
   useEffect(() => {
     const previewEntries = Object.entries(siteAssetFiles)
@@ -1341,7 +1355,7 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.11),transparent_28%),linear-gradient(135deg,#070707,#141416,#242427)] px-5 py-8 text-white">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[1600px]">
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur-xl">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -1433,7 +1447,7 @@ export default function AdminPage() {
             </button>
           </form>
         ) : (
-          <section className="mt-10 grid gap-6 lg:grid-cols-[300px_1fr]">
+          <section className="mt-10 grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
             <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
               <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
                 <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
@@ -1772,40 +1786,46 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-black/20 p-6">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
+                  <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] xl:items-center">
+                    <div className="min-w-0">
                       <h3 className="text-xl font-black">Schnellzugriff</h3>
                       <p className="mt-2 text-sm text-neutral-400">
                         Direkt testen, ob deine Aenderungen vorne sichtbar sind.
                       </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid min-w-0 gap-2 sm:grid-cols-3">
                       <a
                         href="/#portfolio"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                        className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-center text-sm font-bold leading-5 transition hover:bg-white/15"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        Portfolio ansehen
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                        <span className="min-w-0 break-words">
+                          Portfolio ansehen
+                        </span>
                       </a>
                       <a
                         href="/#bewertung"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                        className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-center text-sm font-bold leading-5 transition hover:bg-white/15"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        Bewertungen ansehen
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                        <span className="min-w-0 break-words">
+                          Bewertungen ansehen
+                        </span>
                       </a>
                       <a
                         href="/kunden"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                        className="inline-flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-center text-sm font-bold leading-5 transition hover:bg-white/15"
                       >
-                        <ExternalLink className="h-4 w-4" />
-                        Kundengalerie testen
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                        <span className="min-w-0 break-words">
+                          Kundengalerie testen
+                        </span>
                       </a>
                     </div>
                   </div>
@@ -2563,6 +2583,35 @@ export default function AdminPage() {
                               ? "Laedt hoch..."
                               : "In Kundengalerie laden"}
                           </button>
+
+                          {clientGalleryPreview && (
+                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3 lg:col-span-2">
+                              <div className="grid gap-4 sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center">
+                                <img
+                                  src={clientGalleryPreview}
+                                  alt="Vorschau Kundenbild"
+                                  className="aspect-[4/3] w-full rounded-xl object-cover sm:w-40"
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-bold text-white">
+                                    Ausgewaehltes Kundenbild
+                                  </p>
+                                  <p className="mt-1 break-all text-sm text-neutral-300">
+                                    {clientGalleryFile?.name}
+                                  </p>
+                                  <p className="mt-1 text-xs text-neutral-500">
+                                    {clientGalleryFile
+                                      ? `${(
+                                          clientGalleryFile.size /
+                                          1024 /
+                                          1024
+                                        ).toFixed(2)} MB`
+                                      : ""}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </form>
 
                         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
