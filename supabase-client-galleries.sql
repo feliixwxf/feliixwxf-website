@@ -12,14 +12,7 @@ create table if not exists public.client_galleries (
 );
 
 alter table public.client_galleries
-  add column if not exists status text not null default 'active';
-
-alter table public.client_galleries
-  drop constraint if exists client_galleries_status_check;
-
-alter table public.client_galleries
-  add constraint client_galleries_status_check
-  check (status in ('active', 'paused', 'completed'));
+  add column if not exists status text default 'active';
 
 update public.client_galleries
 set status = case
@@ -27,6 +20,19 @@ set status = case
   else 'paused'
 end
 where status is null or status not in ('active', 'paused', 'completed');
+
+alter table public.client_galleries
+  alter column status set default 'active';
+
+alter table public.client_galleries
+  alter column status set not null;
+
+alter table public.client_galleries
+  drop constraint if exists client_galleries_status_check;
+
+alter table public.client_galleries
+  add constraint client_galleries_status_check
+  check (status in ('active', 'paused', 'completed'));
 
 create table if not exists public.client_gallery_images (
   id uuid primary key default gen_random_uuid(),
