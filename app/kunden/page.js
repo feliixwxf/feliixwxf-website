@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
-  CheckCircle2,
   Download,
   ExternalLink,
   Heart,
@@ -32,6 +31,22 @@ function normalizeCode(value) {
     .slice(0, 32);
 }
 
+function getGalleryStatus(gallery) {
+  if (gallery?.status === "completed") {
+    return {
+      label: "Abgeschlossen",
+      tone: "bg-sky-300 text-neutral-950",
+      text: "Das Projekt ist abgeschlossen. Favoriten bleiben weiterhin sichtbar.",
+    };
+  }
+
+  return {
+    label: "Aktiv",
+    tone: "bg-emerald-400 text-neutral-950",
+    text: "Du kannst deine Auswahl ansehen und Favoriten markieren.",
+  };
+}
+
 export default function CustomerGalleryPage() {
   const [accessCode, setAccessCode] = useState("");
   const [gallery, setGallery] = useState(null);
@@ -49,6 +64,8 @@ export default function CustomerGalleryPage() {
   }, []);
 
   const favoriteImageIds = new Set(favorites.map((favorite) => favorite.image_id));
+  const favoriteImages = images.filter((image) => favoriteImageIds.has(image.id));
+  const galleryStatus = getGalleryStatus(gallery);
 
   const showMessage = (text, type = "info") => {
     setMessage(text);
@@ -236,23 +253,9 @@ export default function CustomerGalleryPage() {
                     {gallery.title}
                   </h1>
                   <div className="mt-4 flex flex-wrap gap-2 text-sm">
-                    <span className="rounded-full bg-white/10 px-4 py-2 font-bold text-neutral-200">
-                      {images.length} Bilder
+                    <span className={`rounded-full px-4 py-2 font-black ${galleryStatus.tone}`}>
+                      {galleryStatus.label}
                     </span>
-                    <span className="rounded-full bg-yellow-400 px-4 py-2 font-black text-black">
-                      {favorites.length} Favoriten
-                    </span>
-                    {gallery.downloads_enabled && (
-                      <span className="rounded-full bg-emerald-400 px-4 py-2 font-black text-neutral-950">
-                        Downloads aktiv
-                      </span>
-                    )}
-                    {gallery.status === "completed" && (
-                      <span className="inline-flex items-center gap-2 rounded-full bg-sky-300 px-4 py-2 font-black text-neutral-950">
-                        <CheckCircle2 className="h-4 w-4" />
-                        Projekt abgeschlossen
-                      </span>
-                    )}
                     {gallery.expires_at && (
                       <span className="rounded-full bg-white/10 px-4 py-2 font-bold text-neutral-200">
                         bis {formatDate(gallery.expires_at)}
@@ -270,6 +273,60 @@ export default function CustomerGalleryPage() {
                   <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                   Neu laden
                 </button>
+              </div>
+
+              <div className="mt-8 grid gap-3 md:grid-cols-3">
+                <div className="rounded-[1.3rem] border border-white/10 bg-black/25 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
+                      <ImageIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-black">{images.length}</p>
+                      <p className="text-sm text-neutral-400">Bilder</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[1.3rem] border border-yellow-400/20 bg-yellow-400/10 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-400 text-black">
+                      <Heart className="h-5 w-5 fill-current" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-black">{favorites.length}</p>
+                      <p className="text-sm text-yellow-100">Favoriten</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-[1.3rem] border border-white/10 bg-black/25 p-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                        gallery.downloads_enabled
+                          ? "bg-emerald-400 text-neutral-950"
+                          : "bg-white/10 text-neutral-300"
+                      }`}
+                    >
+                      <Download className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-base font-black">
+                        {gallery.downloads_enabled ? "Downloads aktiv" : "Downloads aus"}
+                      </p>
+                      <p className="text-sm text-neutral-400">
+                        {gallery.downloads_enabled
+                          ? "Bilder koennen geladen werden"
+                          : "Nur Ansicht freigegeben"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-[1.3rem] border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-neutral-300">
+                {galleryStatus.text}
               </div>
 
               {message && (
@@ -356,6 +413,46 @@ export default function CustomerGalleryPage() {
                   );
                 })}
               </div>
+
+              {favoriteImages.length > 0 && (
+                <section className="mt-10 rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-5">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.3em] text-yellow-100/70">
+                        Auswahl
+                      </p>
+                      <h2 className="mt-2 text-2xl font-black">
+                        Deine markierten Favoriten
+                      </h2>
+                    </div>
+                    <span className="w-fit rounded-full bg-yellow-400 px-4 py-2 text-sm font-black text-black">
+                      {favoriteImages.length} ausgewählt
+                    </span>
+                  </div>
+
+                  <div className="mt-5 flex gap-3 overflow-x-auto pb-1">
+                    {favoriteImages.map((image) => (
+                      <button
+                        key={`favorite-${image.id}`}
+                        type="button"
+                        onClick={() => setSelectedImage(image)}
+                        className="relative h-24 w-32 shrink-0 overflow-hidden rounded-2xl border border-yellow-400/30 bg-black/30"
+                      >
+                        <img
+                          src={image.url}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover"
+                        />
+                        <span className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-yellow-400 text-black">
+                          <Heart className="h-4 w-4 fill-current" />
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
           )}
         </section>
