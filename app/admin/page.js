@@ -949,7 +949,7 @@ export default function AdminPage() {
         setClientGalleries(previousGalleries);
         showMessage(
           missingWorkflowField
-            ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen."
+            ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen. Wichtig: Die letzte Zeile laedt den Supabase-Cache neu."
             : data.error || "Kundengalerie konnte nicht gespeichert werden.",
           "error"
         );

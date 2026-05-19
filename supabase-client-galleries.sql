@@ -106,3 +106,5 @@ alter table public.client_favorites enable row level security;
 drop policy if exists "Public can read active client galleries by code" on public.client_galleries;
 drop policy if exists "Public can read client gallery images" on public.client_gallery_images;
 drop policy if exists "Public can manage client favorites" on public.client_favorites;
+
+notify pgrst, 'reload schema';
