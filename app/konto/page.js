@@ -219,13 +219,13 @@ export default function AccountPage() {
                 Kundenkonto
               </p>
               <h1 className="mt-4 text-4xl font-black md:text-6xl">
-                Einloggen.
+                Dein Konto.
                 <br />
-                Galerien finden.
+                Deine Galerien.
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-8 text-neutral-300">
-                Erstelle ein Konto mit derselben E-Mail, die bei deiner Galerie
-                hinterlegt ist. Danach findest du deine Galerien direkt hier.
+                Melde dich an, um deine freigegebenen Galerien gesammelt an
+                einem Ort zu sehen.
               </p>
             </div>
 
@@ -295,9 +295,8 @@ export default function AccountPage() {
                   <div className="mt-5 grid gap-3">
                     {galleries.length === 0 && (
                       <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-6 text-neutral-300">
-                        Noch keine Galerie gefunden. Wichtig: Im Admin muss bei
-                        der Kundengalerie dieselbe Kunden-E-Mail eingetragen
-                        sein wie in diesem Konto.
+                        Noch keine Galerie gefunden. Sobald eine Galerie fuer
+                        dein Konto freigegeben ist, erscheint sie hier.
                       </div>
                     )}
 

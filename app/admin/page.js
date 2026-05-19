@@ -892,10 +892,23 @@ export default function AdminPage() {
 
   const copyText = async (text, successMessage) => {
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.setAttribute("readonly", "");
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
       showMessage(successMessage, "success");
     } catch {
-      showMessage("Kopieren ist in diesem Browser gerade nicht moeglich.", "error");
+      window.prompt("Text kopieren:", text);
+      showMessage("Einladung wurde zum Kopieren geoeffnet.", "success");
     }
   };
 
