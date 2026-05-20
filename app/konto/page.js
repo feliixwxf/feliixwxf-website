@@ -43,10 +43,19 @@ function getGalleryStatus(gallery) {
   };
 }
 
+function normalizeCode(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, "")
+    .slice(0, 32);
+}
+
 export default function AccountPage() {
   const [mode, setMode] = useState("login");
   const [user, setUser] = useState(null);
   const [galleries, setGalleries] = useState([]);
+  const [galleryCode, setGalleryCode] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -58,6 +67,7 @@ export default function AccountPage() {
   const [submitting, setSubmitting] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [linkingGallery, setLinkingGallery] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
@@ -278,6 +288,43 @@ export default function AccountPage() {
     setAvatarUploading(false);
   };
 
+  const linkGalleryByCode = async (event) => {
+    event.preventDefault();
+
+    const code = normalizeCode(galleryCode);
+
+    if (!code) {
+      showMessage("Bitte einen Galerie-Code eingeben.", "error");
+      return;
+    }
+
+    setLinkingGallery(true);
+    setMessage("");
+
+    const response = await fetch("/api/account/galleries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessCode: code }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(data.error || "Galerie konnte nicht verknüpft werden.", "error");
+      setLinkingGallery(false);
+      return;
+    }
+
+    setGalleryCode("");
+    await loadGalleries();
+    showMessage(
+      data.alreadyLinked
+        ? "Diese Galerie ist bereits mit deinem Konto verknüpft."
+        : "Galerie wurde deinem Konto hinzugefügt.",
+      "success"
+    );
+    setLinkingGallery(false);
+  };
+
   const openGallery = (gallery) => {
     localStorage.setItem("feliix-client-gallery-code", gallery.access_code);
     window.location.href = `/kunden?code=${encodeURIComponent(
@@ -457,13 +504,52 @@ export default function AccountPage() {
                     </div>
                   )}
 
+                  <form
+                    onSubmit={linkGalleryByCode}
+                    className="mt-5 rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                  >
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                      <label className="min-w-0 flex-1">
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                          Galerie-Code hinzufügen
+                        </span>
+                        <input
+                          value={galleryCode}
+                          onChange={(event) => {
+                            setGalleryCode(normalizeCode(event.target.value));
+                            setMessage("");
+                          }}
+                          placeholder="z. B. GAL-ABC123"
+                          className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-3 text-sm font-black tracking-[0.12em] text-neutral-950 outline-none focus:border-yellow-400"
+                        />
+                      </label>
+
+                      <button
+                        type="submit"
+                        disabled={linkingGallery}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60"
+                      >
+                        {linkingGallery ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <KeyRound className="h-4 w-4" />
+                        )}
+                        Verknüpfen
+                      </button>
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-neutral-400">
+                      Wenn du einen QR-Code oder Galerie-Code bekommen hast,
+                      kannst du ihn hier direkt deinem Konto hinzufügen.
+                    </p>
+                  </form>
+
                   <div className="mt-5 grid gap-3">
                     {galleries.length === 0 && (
                       <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-6 text-neutral-300">
                         Noch keine Galerie gefunden. Wichtig: Die Galerie muss
                         im Admin mit genau deiner Konto-E-Mail verknüpft sein.
-                        Alternativ kannst du eine Galerie weiterhin per Code
-                        öffnen.
+                        Alternativ kannst du oben einen Galerie-Code direkt
+                        hinzufügen.
                         <Link
                           href="/kunden"
                           className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5"
