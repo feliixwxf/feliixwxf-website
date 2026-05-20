@@ -424,6 +424,7 @@ export default function AdminPage() {
   const [clientGalleryStatusFilter, setClientGalleryStatusFilter] =
     useState("all");
   const [clientGallerySortMode, setClientGallerySortMode] = useState("newest");
+  const [activeClientPanel, setActiveClientPanel] = useState("overview");
   const [clientGalleryFile, setClientGalleryFile] = useState(null);
   const [imageCategory, setImageCategory] = useState("car");
   const [imageFile, setImageFile] = useState(null);
@@ -592,6 +593,7 @@ export default function AdminPage() {
     clientGalleries[0];
   const activeClientChecklistDone = getClientChecklistDone(activeClientGallery);
   const activeClientProjectStep = getClientProjectStep(activeClientGallery);
+  const activeClientImages = activeClientGallery?.images || [];
   const activeClientFavoriteImages = activeClientGallery
     ? (activeClientGallery.favorites || [])
         .map((favorite) => {
@@ -613,6 +615,32 @@ export default function AdminPage() {
             new Date(a.favorite_created_at || 0)
         )
     : [];
+  const clientDetailPanels = [
+    {
+      value: "overview",
+      label: "Übersicht",
+      helper: `${activeClientChecklistDone}/${CLIENT_GALLERY_CHECKLIST.length} erledigt`,
+      icon: LayoutDashboard,
+    },
+    {
+      value: "upload",
+      label: "Upload",
+      helper: "Bilder hinzufügen",
+      icon: Upload,
+    },
+    {
+      value: "favorites",
+      label: "Favoriten",
+      helper: `${activeClientFavoriteImages.length} markiert`,
+      icon: Heart,
+    },
+    {
+      value: "images",
+      label: "Bilder",
+      helper: `${activeClientImages.length} Dateien`,
+      icon: Images,
+    },
+  ];
   const clientGalleryStats = {
     active: clientGalleries.filter(
       (gallery) => getClientGalleryStatus(gallery) === "active"
@@ -3220,6 +3248,45 @@ export default function AdminPage() {
                           </div>
                         </div>
 
+                        <div className="mt-6 grid gap-2 rounded-2xl border border-white/10 bg-black/20 p-2 sm:grid-cols-2 xl:grid-cols-4">
+                          {clientDetailPanels.map((panel) => {
+                            const Icon = panel.icon;
+                            const active = activeClientPanel === panel.value;
+
+                            return (
+                              <button
+                                key={panel.value}
+                                type="button"
+                                onClick={() => setActiveClientPanel(panel.value)}
+                                className={`flex min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                                  active
+                                    ? "bg-white text-neutral-950"
+                                    : "text-neutral-300 hover:bg-white/10 hover:text-white"
+                                }`}
+                              >
+                                <span
+                                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                                    active
+                                      ? "bg-neutral-950 text-white"
+                                      : "bg-white/10"
+                                  }`}
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block truncate text-sm font-black">
+                                    {panel.label}
+                                  </span>
+                                  <span className="mt-0.5 block truncate text-xs opacity-70">
+                                    {panel.helper}
+                                  </span>
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {activeClientPanel === "overview" && (
                         <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
                           <div className="rounded-2xl border border-white/10 bg-black/20 p-4 lg:col-span-2">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -3390,7 +3457,9 @@ export default function AdminPage() {
                             </div>
                           </div>
                         </section>
+                        )}
 
+                        {activeClientPanel === "upload" && (
                         <form
                           onSubmit={uploadClientGalleryImage}
                           className="mt-6 grid gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end"
@@ -3455,7 +3524,9 @@ export default function AdminPage() {
                             </div>
                           )}
                         </form>
+                        )}
 
+                        {activeClientPanel === "favorites" && (
                         <section className="mt-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
                           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                             <div className="min-w-0">
@@ -3548,15 +3619,17 @@ export default function AdminPage() {
                             </div>
                           )}
                         </section>
+                        )}
 
+                        {activeClientPanel === "images" && (
                         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                          {(activeClientGallery.images || []).length === 0 && (
+                          {activeClientImages.length === 0 && (
                             <div className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-neutral-400 sm:col-span-2 lg:col-span-3">
                               Noch keine Bilder in dieser Kundengalerie.
                             </div>
                           )}
 
-                          {(activeClientGallery.images || []).map((image) => {
+                          {activeClientImages.map((image) => {
                             const favoriteCount = (
                               activeClientGallery.favorites || []
                             ).filter(
@@ -3620,6 +3693,7 @@ export default function AdminPage() {
                             );
                           })}
                         </div>
+                        )}
                       </>
                     )}
                   </section>
