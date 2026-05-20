@@ -21,6 +21,7 @@ import {
   Mail,
   MessageSquare,
   Phone,
+  QrCode,
   RefreshCw,
   Save,
   Search,
@@ -33,6 +34,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import QRCode from "qrcode";
 
 const CATEGORIES = [
   { value: "car", label: "Car" },
@@ -425,6 +427,8 @@ export default function AdminPage() {
     useState("all");
   const [clientGallerySortMode, setClientGallerySortMode] = useState("newest");
   const [activeClientPanel, setActiveClientPanel] = useState("overview");
+  const [publicOrigin, setPublicOrigin] = useState("");
+  const [activeClientGalleryQrUrl, setActiveClientGalleryQrUrl] = useState("");
   const [clientGalleryFile, setClientGalleryFile] = useState(null);
   const [imageCategory, setImageCategory] = useState("car");
   const [imageFile, setImageFile] = useState(null);
@@ -594,6 +598,12 @@ export default function AdminPage() {
   const activeClientChecklistDone = getClientChecklistDone(activeClientGallery);
   const activeClientProjectStep = getClientProjectStep(activeClientGallery);
   const activeClientImages = activeClientGallery?.images || [];
+  const activeClientGalleryUrl =
+    activeClientGallery && publicOrigin
+      ? `${publicOrigin}/kunden?code=${encodeURIComponent(
+          activeClientGallery.access_code
+        )}`
+      : "";
   const activeClientFavoriteImages = activeClientGallery
     ? (activeClientGallery.favorites || [])
         .map((favorite) => {
@@ -621,6 +631,12 @@ export default function AdminPage() {
       label: "Übersicht",
       helper: `${activeClientChecklistDone}/${CLIENT_GALLERY_CHECKLIST.length} erledigt`,
       icon: LayoutDashboard,
+    },
+    {
+      value: "share",
+      label: "Teilen",
+      helper: "Code, Link, QR",
+      icon: QrCode,
     },
     {
       value: "upload",
@@ -870,6 +886,39 @@ export default function AdminPage() {
     ]);
     showMessage("Admin-Daten wurden neu geladen.", "success");
   };
+
+  useEffect(() => {
+    setPublicOrigin(window.location.origin);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!activeClientGalleryUrl) {
+      setActiveClientGalleryQrUrl("");
+      return;
+    }
+
+    QRCode.toDataURL(activeClientGalleryUrl, {
+      errorCorrectionLevel: "M",
+      margin: 2,
+      width: 640,
+      color: {
+        dark: "#0a0a0a",
+        light: "#ffffff",
+      },
+    })
+      .then((url) => {
+        if (!cancelled) setActiveClientGalleryQrUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) setActiveClientGalleryQrUrl("");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeClientGalleryUrl]);
 
   useEffect(() => {
     fetch("/api/admin/session", { cache: "no-store" })
@@ -1369,10 +1418,11 @@ export default function AdminPage() {
     }
 
     const customerName = activeClientGallery.client_name?.trim();
-    const galleryUrl = `${window.location.origin}/kunden?code=${encodeURIComponent(
+    const origin = publicOrigin || window.location.origin;
+    const galleryUrl = `${origin}/kunden?code=${encodeURIComponent(
       activeClientGallery.access_code
     )}`;
-    const accountUrl = `${window.location.origin}/konto`;
+    const accountUrl = `${origin}/konto`;
     const inviteText = [
       `Hallo${customerName ? ` ${customerName}` : ""},`,
       "",
@@ -3116,43 +3166,11 @@ export default function AdminPage() {
                             </div>
                           </div>
 
-                          <div className="flex min-w-0 flex-wrap gap-2 lg:justify-end">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                copyText(
-                                  activeClientGallery.access_code,
-                                  "Galerie-Code wurde kopiert."
-                                )
-                              }
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
-                            >
-                              <Copy className="h-4 w-4" />
-                              Code
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                copyText(
-                                  `${window.location.origin}/kunden?code=${encodeURIComponent(
-                                    activeClientGallery.access_code
-                                  )}`,
-                                  "Direktlink wurde kopiert."
-                                )
-                              }
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Link
-                            </button>
-                            <button
-                              type="button"
-                              onClick={copyClientGalleryInvite}
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
-                            >
-                              <Mail className="h-4 w-4" />
-                              Einladung
-                            </button>
+                          <div className="flex min-w-0 flex-col gap-2 lg:items-end">
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
+                              Verwaltung
+                            </p>
+                            <div className="flex min-w-0 flex-wrap gap-2 lg:justify-end">
                             <button
                               type="button"
                               onClick={() =>
@@ -3245,10 +3263,11 @@ export default function AdminPage() {
                               <Trash2 className="h-4 w-4" />
                               Löschen
                             </button>
+                            </div>
                           </div>
                         </div>
 
-                        <div className="mt-6 grid gap-2 rounded-2xl border border-white/10 bg-black/20 p-2 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="mt-6 grid gap-2 rounded-2xl border border-white/10 bg-black/20 p-2 sm:grid-cols-2 xl:grid-cols-5">
                           {clientDetailPanels.map((panel) => {
                             const Icon = panel.icon;
                             const active = activeClientPanel === panel.value;
@@ -3285,6 +3304,140 @@ export default function AdminPage() {
                             );
                           })}
                         </div>
+
+                        {activeClientPanel === "share" && (
+                          <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                              <div className="flex items-start gap-3">
+                                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white">
+                                  <ExternalLink className="h-5 w-5" />
+                                </span>
+                                <div className="min-w-0">
+                                  <h4 className="font-black">
+                                    Galerie teilen
+                                  </h4>
+                                  <p className="mt-1 text-sm leading-6 text-neutral-500">
+                                    Gib dem Kunden den Code oder sende direkt den
+                                    Link. Der QR-Code führt zur gleichen
+                                    Kundengalerie.
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="mt-5 grid gap-3">
+                                <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                                  <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                                    Galerie-Code
+                                  </p>
+                                  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <code className="break-all rounded-xl bg-black/30 px-3 py-2 text-sm font-black text-white">
+                                      {activeClientGallery.access_code}
+                                    </code>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        copyText(
+                                          activeClientGallery.access_code,
+                                          "Galerie-Code wurde kopiert."
+                                        )
+                                      }
+                                      className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                      Code kopieren
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                                  <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                                    Direktlink
+                                  </p>
+                                  <p className="mt-3 break-all rounded-xl bg-black/30 px-3 py-2 text-sm text-neutral-200">
+                                    {activeClientGalleryUrl}
+                                  </p>
+                                  <div className="mt-3 flex flex-wrap gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        copyText(
+                                          activeClientGalleryUrl,
+                                          "Direktlink wurde kopiert."
+                                        )
+                                      }
+                                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                      Link kopieren
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={copyClientGalleryInvite}
+                                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                                    >
+                                      <Mail className="h-4 w-4" />
+                                      Einladung kopieren
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
+                              <div className="flex items-center gap-3">
+                                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white">
+                                  <QrCode className="h-5 w-5" />
+                                </span>
+                                <div>
+                                  <h4 className="font-black">QR-Code</h4>
+                                  <p className="mt-1 text-sm text-neutral-500">
+                                    Zum Scannen für den Kunden.
+                                  </p>
+                                </div>
+                              </div>
+
+                              {activeClientGalleryQrUrl ? (
+                                <>
+                                  <div className="mt-5 rounded-2xl bg-white p-4">
+                                    <img
+                                      src={activeClientGalleryQrUrl}
+                                      alt={`QR-Code für ${activeClientGallery.title}`}
+                                      className="mx-auto aspect-square w-full max-w-[220px]"
+                                    />
+                                  </div>
+                                  <div className="mt-4 grid gap-2">
+                                    <a
+                                      href={activeClientGalleryQrUrl}
+                                      download={`qr-${activeClientGallery.access_code}.png`}
+                                      className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                                    >
+                                      <ExternalLink className="h-4 w-4" />
+                                      QR herunterladen
+                                    </a>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        copyText(
+                                          activeClientGalleryUrl,
+                                          "QR-Ziel wurde kopiert."
+                                        )
+                                      }
+                                      className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                      Ziel-Link kopieren
+                                    </button>
+                                  </div>
+                                </>
+                              ) : (
+                                <p className="mt-5 rounded-2xl border border-white/10 bg-white/[0.06] p-4 text-sm text-neutral-400">
+                                  QR-Code wird geladen, sobald die Website-URL
+                                  verfügbar ist.
+                                </p>
+                              )}
+                            </div>
+                          </section>
+                        )}
 
                         {activeClientPanel === "overview" && (
                         <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
