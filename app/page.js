@@ -918,13 +918,12 @@ export default function FeliixWxfPhotography() {
                       required
                       value={reviewName}
                       onChange={(event) => setReviewName(event.target.value)}
-                      readOnly={Boolean(currentCustomer?.name)}
                       placeholder={
                         currentCustomer?.name
-                          ? "Nutzername aus deinem Konto"
+                          ? "Nutzername aus deinem Konto, aenderbar"
                           : "Dein Name"
                       }
-                      className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400 read-only:bg-white/70"
+                      className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400"
                     />
 
                     <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4">
