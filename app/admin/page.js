@@ -3163,160 +3163,90 @@ export default function AdminPage() {
                       </div>
                     ) : (
                       <>
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                          <div>
-                            <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
-                              Aktive Galerie
-                            </p>
-                            <h3 className="mt-2 text-2xl font-black">
-                              {activeClientGallery.title}
-                            </h3>
-                            <p className="mt-2 text-sm text-neutral-400">
-                              {activeClientGallery.client_name ||
-                                "Kein Kundenname hinterlegt"}
-                            </p>
-                            {activeClientGallery.client_email && (
-                              <p className="mt-1 break-all text-sm text-neutral-500">
-                                {activeClientGallery.client_email}
+                        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="min-w-0">
+                              <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                                Aktive Galerie
                               </p>
-                            )}
-                            <span
-                              className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-black ${
-                                CLIENT_GALLERY_STATUSES[
-                                  getClientGalleryStatus(activeClientGallery)
-                                ].badge
-                              }`}
-                            >
-                              {
-                                CLIENT_GALLERY_STATUSES[
-                                  getClientGalleryStatus(activeClientGallery)
-                                ].label
-                              }
-                            </span>
-                            <div
-                              className={`mt-3 max-w-xl rounded-2xl border px-4 py-3 text-sm ${activeClientProjectStep.tone}`}
-                            >
-                              <p className="font-black">
-                                Nächster Schritt: {activeClientProjectStep.label}
+                              <h3 className="mt-2 text-2xl font-black">
+                                {activeClientGallery.title}
+                              </h3>
+                              <p className="mt-2 text-sm text-neutral-400">
+                                {activeClientGallery.client_name ||
+                                  "Kein Kundenname hinterlegt"}
                               </p>
-                              <p className="mt-1 text-xs opacity-80">
-                                {activeClientProjectStep.helper}
-                              </p>
+                              {activeClientGallery.client_email && (
+                                <p className="mt-1 break-all text-sm text-neutral-500">
+                                  {activeClientGallery.client_email}
+                                </p>
+                              )}
                             </div>
-                            <div
-                              className={`mt-3 max-w-xl rounded-2xl border px-4 py-3 text-sm ${activeClientAccountState.tone}`}
-                            >
-                              <p className="font-black">
-                                {activeClientAccountState.label}
-                              </p>
-                              <p className="mt-1 text-xs opacity-80">
-                                {activeClientAccountState.helper}
-                              </p>
+
+                            <div className="flex flex-wrap gap-2 lg:justify-end">
+                              <button
+                                type="button"
+                                onClick={() => setActiveClientPanel("share")}
+                                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                              >
+                                <QrCode className="h-4 w-4" />
+                                Teilen
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setActiveClientPanel("upload")}
+                                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                              >
+                                <Upload className="h-4 w-4" />
+                                Bilder hochladen
+                              </button>
                             </div>
                           </div>
 
-                          <div className="flex min-w-0 flex-col gap-2 lg:items-end">
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
-                              Verwaltung
-                            </p>
-                            <div className="flex min-w-0 flex-wrap gap-2 lg:justify-end">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateClientGallery(
-                                  activeClientGallery,
-                                  {
-                                    is_active: !activeClientGallery.is_active,
-                                    status: activeClientGallery.is_active
-                                      ? "paused"
-                                      : "active",
-                                  },
-                                  activeClientGallery.is_active
-                                    ? "Kundengalerie wurde pausiert."
-                                    : "Kundengalerie wurde aktiviert."
-                                )
-                              }
-                              disabled={
-                                busyClientGalleryId === activeClientGallery.id
-                              }
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60"
+                          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                            <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
+                              <p className="text-xs text-neutral-500">Status</p>
+                              <span
+                                className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-black ${
+                                  CLIENT_GALLERY_STATUSES[
+                                    getClientGalleryStatus(activeClientGallery)
+                                  ].badge
+                                }`}
+                              >
+                                {
+                                  CLIENT_GALLERY_STATUSES[
+                                    getClientGalleryStatus(activeClientGallery)
+                                  ].label
+                                }
+                              </span>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
+                              <p className="text-xs text-neutral-500">Inhalt</p>
+                              <p className="mt-2 text-sm font-black">
+                                {activeClientImages.length} Bilder ·{" "}
+                                {activeClientFavoriteImages.length} Favoriten
+                              </p>
+                            </div>
+                            <div
+                              className={`rounded-xl border px-3 py-3 text-sm ${activeClientProjectStep.tone}`}
                             >
-                              {activeClientGallery.is_active ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                              {activeClientGallery.is_active
-                                ? "Pausieren"
-                                : "Aktivieren"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateClientGallery(
-                                  activeClientGallery,
-                                  getClientGalleryStatus(activeClientGallery) ===
-                                    "completed"
-                                    ? { status: "active", is_active: true }
-                                    : { status: "completed", is_active: true },
-                                  getClientGalleryStatus(activeClientGallery) ===
-                                    "completed"
-                                    ? "Kundengalerie ist wieder aktiv."
-                                    : "Kundengalerie wurde abgeschlossen."
-                                )
-                              }
-                              disabled={
-                                busyClientGalleryId === activeClientGallery.id
-                              }
-                              className="inline-flex items-center gap-2 rounded-full border border-sky-300/30 bg-sky-300/10 px-4 py-2 text-sm font-bold text-sky-100 transition hover:bg-sky-300/20 disabled:opacity-60"
+                              <p className="text-xs opacity-75">Nächster Schritt</p>
+                              <p className="mt-2 font-black">
+                                {activeClientProjectStep.label}
+                              </p>
+                            </div>
+                            <div
+                              className={`rounded-xl border px-3 py-3 text-sm ${activeClientAccountState.tone}`}
                             >
-                              <CheckCircle2 className="h-4 w-4" />
-                              {getClientGalleryStatus(activeClientGallery) ===
-                              "completed"
-                                ? "Wieder aktiv"
-                                : "Abschließen"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateClientGallery(
-                                  activeClientGallery,
-                                  {
-                                    downloads_enabled:
-                                      !activeClientGallery.downloads_enabled,
-                                  },
-                                  activeClientGallery.downloads_enabled
-                                    ? "Downloads wurden deaktiviert."
-                                    : "Downloads wurden aktiviert."
-                                )
-                              }
-                              disabled={
-                                busyClientGalleryId === activeClientGallery.id
-                              }
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60"
-                            >
-                              {activeClientGallery.downloads_enabled
-                                ? "Downloads aus"
-                                : "Downloads an"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                deleteClientGallery(activeClientGallery)
-                              }
-                              disabled={
-                                busyClientGalleryId === activeClientGallery.id
-                              }
-                              className="inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Löschen
-                            </button>
+                              <p className="text-xs opacity-75">Kundenkonto</p>
+                              <p className="mt-2 font-black">
+                                {activeClientAccountState.label}
+                              </p>
                             </div>
                           </div>
                         </div>
 
-                        <div className="mt-6 grid gap-2 rounded-2xl border border-white/10 bg-black/20 p-2 sm:grid-cols-2 xl:grid-cols-5">
+                        <div className="mt-4 grid gap-1 rounded-2xl border border-white/10 bg-black/20 p-1.5 sm:grid-cols-2 xl:grid-cols-5">
                           {clientDetailPanels.map((panel) => {
                             const Icon = panel.icon;
                             const active = activeClientPanel === panel.value;
@@ -3326,7 +3256,7 @@ export default function AdminPage() {
                                 key={panel.value}
                                 type="button"
                                 onClick={() => setActiveClientPanel(panel.value)}
-                                className={`flex min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                                className={`flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5 text-left transition ${
                                   active
                                     ? "bg-white text-neutral-950"
                                     : "text-neutral-300 hover:bg-white/10 hover:text-white"
@@ -3345,7 +3275,7 @@ export default function AdminPage() {
                                   <span className="block truncate text-sm font-black">
                                     {panel.label}
                                   </span>
-                                  <span className="mt-0.5 block truncate text-xs opacity-70">
+                                  <span className="mt-0.5 block truncate text-xs opacity-60">
                                     {panel.helper}
                                   </span>
                                 </span>
@@ -3559,6 +3489,130 @@ export default function AdminPage() {
                           </div>
 
                           <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <h4 className="font-black">Status & Freigaben</h4>
+                                <p className="mt-1 text-sm text-neutral-500">
+                                  Sichtbarkeit, Downloads und Abschluss.
+                                </p>
+                              </div>
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-black ${
+                                  CLIENT_GALLERY_STATUSES[
+                                    getClientGalleryStatus(activeClientGallery)
+                                  ].badge
+                                }`}
+                              >
+                                {
+                                  CLIENT_GALLERY_STATUSES[
+                                    getClientGalleryStatus(activeClientGallery)
+                                  ].label
+                                }
+                              </span>
+                            </div>
+
+                            <div className="mt-4 grid gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateClientGallery(
+                                    activeClientGallery,
+                                    {
+                                      is_active: !activeClientGallery.is_active,
+                                      status: activeClientGallery.is_active
+                                        ? "paused"
+                                        : "active",
+                                    },
+                                    activeClientGallery.is_active
+                                      ? "Kundengalerie wurde pausiert."
+                                      : "Kundengalerie wurde aktiviert."
+                                  )
+                                }
+                                disabled={
+                                  busyClientGalleryId === activeClientGallery.id
+                                }
+                                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-bold transition hover:bg-white/10 disabled:opacity-60"
+                              >
+                                <span>
+                                  {activeClientGallery.is_active
+                                    ? "Galerie pausieren"
+                                    : "Galerie aktivieren"}
+                                </span>
+                                {activeClientGallery.is_active ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateClientGallery(
+                                    activeClientGallery,
+                                    {
+                                      downloads_enabled:
+                                        !activeClientGallery.downloads_enabled,
+                                    },
+                                    activeClientGallery.downloads_enabled
+                                      ? "Downloads wurden deaktiviert."
+                                      : "Downloads wurden aktiviert."
+                                  )
+                                }
+                                disabled={
+                                  busyClientGalleryId === activeClientGallery.id
+                                }
+                                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-bold transition hover:bg-white/10 disabled:opacity-60"
+                              >
+                                <span>
+                                  Downloads{" "}
+                                  {activeClientGallery.downloads_enabled
+                                    ? "deaktivieren"
+                                    : "aktivieren"}
+                                </span>
+                                <span
+                                  className={`rounded-full px-2 py-1 text-xs ${
+                                    activeClientGallery.downloads_enabled
+                                      ? "bg-emerald-400 text-neutral-950"
+                                      : "bg-neutral-700 text-neutral-200"
+                                  }`}
+                                >
+                                  {activeClientGallery.downloads_enabled
+                                    ? "An"
+                                    : "Aus"}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateClientGallery(
+                                    activeClientGallery,
+                                    getClientGalleryStatus(activeClientGallery) ===
+                                      "completed"
+                                      ? { status: "active", is_active: true }
+                                      : { status: "completed", is_active: true },
+                                    getClientGalleryStatus(activeClientGallery) ===
+                                      "completed"
+                                      ? "Kundengalerie ist wieder aktiv."
+                                      : "Kundengalerie wurde abgeschlossen."
+                                  )
+                                }
+                                disabled={
+                                  busyClientGalleryId === activeClientGallery.id
+                                }
+                                className="flex items-center justify-between rounded-xl border border-sky-300/25 bg-sky-300/10 px-3 py-3 text-sm font-bold text-sky-100 transition hover:bg-sky-300/20 disabled:opacity-60"
+                              >
+                                <span>
+                                  {getClientGalleryStatus(activeClientGallery) ===
+                                  "completed"
+                                    ? "Wieder aktiv setzen"
+                                    : "Als abgeschlossen markieren"}
+                                </span>
+                                <CheckCircle2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <div>
                                 <h4 className="font-black">Interne Notiz</h4>
@@ -3657,6 +3711,29 @@ export default function AdminPage() {
                                 );
                               })}
                             </div>
+                          </div>
+
+                          <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
+                            <h4 className="font-black text-red-100">
+                              Gefährliche Aktion
+                            </h4>
+                            <p className="mt-1 text-sm leading-6 text-red-100/65">
+                              Löschen entfernt die Kundengalerie aus dem Admin.
+                              Nutze das nur, wenn das Projekt wirklich weg kann.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                deleteClientGallery(activeClientGallery)
+                              }
+                              disabled={
+                                busyClientGalleryId === activeClientGallery.id
+                              }
+                              className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/15 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/25 disabled:opacity-60"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Galerie löschen
+                            </button>
                           </div>
                         </section>
                         )}
