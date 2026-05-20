@@ -513,56 +513,77 @@ export default function AdminPage() {
     {
       value: "dashboard",
       label: "Start",
-      description: "Uebersicht und Schnellzugriff",
+      description: "Was jetzt wichtig ist",
       icon: LayoutDashboard,
     },
     {
       value: "portfolio",
       label: "Portfolio",
-      description: "Galerie-Uploads und Reihenfolge",
+      description: "Galerie-Bilder",
       count: images.length,
       icon: Images,
     },
     {
       value: "covers",
       label: "Titelbilder",
-      description: "Startseite und Portfolio-Kacheln",
+      description: "Startseite & Kacheln",
       icon: ImageIcon,
     },
     {
       value: "clients",
       label: "Kunden",
-      description: "Private Galerien und Codes",
+      description: "Galerien & Codes",
       count: clientGalleries.length,
       icon: Users,
     },
     {
       value: "texts",
       label: "Texte",
-      description: "Startseite, Info und Bewertung",
+      description: "Website-Texte",
       icon: Type,
     },
     {
       value: "contact",
       label: "Kontakt",
-      description: "E-Mail, Telefon und Links",
+      description: "Daten & Links",
       icon: Mail,
     },
     {
       value: "reviews",
       label: "Bewertungen",
-      description: "Freigeben, ausblenden, loeschen",
+      description: "Moderation",
       count: pendingReviews.length,
       icon: MessageSquare,
     },
     {
       value: "settings",
       label: "Einstellungen",
-      description: "Status und naechste Schritte",
+      description: "Status & Hilfe",
       icon: ShieldCheck,
     },
   ];
-  const latestReview = reviews[0];
+  const tabGroups = [
+    {
+      title: "Alltag",
+      description: "Das brauchst du am haeufigsten.",
+      values: ["dashboard", "clients", "reviews"],
+    },
+    {
+      title: "Website",
+      description: "Alles, was Besucher direkt sehen.",
+      values: ["portfolio", "covers", "texts", "contact"],
+    },
+    {
+      title: "System",
+      description: "Kontrolle und Hinweise.",
+      values: ["settings"],
+    },
+  ].map((group) => ({
+    ...group,
+    tabs: group.values
+      .map((value) => tabs.find((tab) => tab.value === value))
+      .filter(Boolean),
+  }));
   const latestImage = [...images].sort(
     (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
   )[0];
@@ -1803,98 +1824,134 @@ export default function AdminPage() {
             <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
               <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
                 <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
-                  Uebersicht
+                  Heute wichtig
                 </p>
-                <div className="mt-5 grid gap-3">
-                  <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <p className="text-sm text-neutral-400">Portfolio-Bilder</p>
-                      <Images className="h-5 w-5 text-neutral-300" />
-                    </div>
-                    <p className="mt-2 text-3xl font-black">{images.length}</p>
-                    <p className="mt-2 line-clamp-1 text-xs text-neutral-500">
-                      {latestImage
-                        ? `Zuletzt: ${formatDate(latestImage.created_at)}`
-                        : "Noch keine Uploads"}
-                    </p>
-                  </div>
+                <div className="mt-4 grid gap-2">
+                  {[
+                    {
+                      label: "Kunden",
+                      value: clientGalleries.length,
+                      helper: `${clientProjectsNeedingReview.length} mit Favoriten`,
+                      icon: Users,
+                    },
+                    {
+                      label: "Offene Bewertungen",
+                      value: pendingReviews.length,
+                      helper: "warten auf Freigabe",
+                      icon: Clock,
+                      highlight: pendingReviews.length > 0,
+                    },
+                    {
+                      label: "Portfolio",
+                      value: images.length,
+                      helper: latestImage
+                        ? `neu: ${formatDate(latestImage.created_at)}`
+                        : "noch keine Uploads",
+                      icon: Images,
+                    },
+                  ].map((item) => {
+                    const Icon = item.icon;
 
-                  <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <p className="text-sm text-yellow-100">Offen</p>
-                      <Clock className="h-5 w-5 text-yellow-100" />
-                    </div>
-                    <p className="mt-2 text-3xl font-black">
-                      {pendingReviews.length}
-                    </p>
-                    <p className="mt-2 text-xs text-yellow-100/70">
-                      Bewertungen warten auf Freigabe.
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <p className="text-sm text-emerald-100">Sichtbar</p>
-                      <MessageSquare className="h-5 w-5 text-emerald-100" />
-                    </div>
-                    <p className="mt-2 text-3xl font-black">
-                      {approvedReviews.length}
-                    </p>
-                    <p className="mt-2 line-clamp-1 text-xs text-emerald-100/70">
-                      {latestReview
-                        ? `Neueste: ${latestReview.name}`
-                        : "Noch keine Bewertungen"}
-                    </p>
-                  </div>
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => {
+                          if (item.label === "Kunden") setActiveTab("clients");
+                          if (item.label === "Offene Bewertungen") {
+                            setActiveTab("reviews");
+                            setReviewFilter("pending");
+                          }
+                          if (item.label === "Portfolio") setActiveTab("portfolio");
+                        }}
+                        className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition hover:bg-white/10 ${
+                          item.highlight
+                            ? "border-yellow-400/25 bg-yellow-400/10"
+                            : "border-white/10 bg-black/20"
+                        }`}
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10">
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center justify-between gap-2">
+                            <span className="truncate text-sm font-bold">
+                              {item.label}
+                            </span>
+                            <span className="text-xl font-black">
+                              {item.value}
+                            </span>
+                          </span>
+                          <span className="mt-0.5 block truncate text-xs text-neutral-500">
+                            {item.helper}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <nav className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-2">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
+              <nav className="space-y-3 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-3">
+                {tabGroups.map((group) => (
+                  <div key={group.title}>
+                    <div className="px-2 pb-2">
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                        {group.title}
+                      </p>
+                      <p className="mt-1 text-xs text-neutral-600">
+                        {group.description}
+                      </p>
+                    </div>
+                    <div className="grid gap-1">
+                      {group.tabs.map((tab) => {
+                        const Icon = tab.icon;
 
-                  return (
-                    <button
-                      key={tab.value}
-                      type="button"
-                      onClick={() => setActiveTab(tab.value)}
-                      className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${
-                        activeTab === tab.value
-                          ? "bg-white text-neutral-950"
-                          : "text-neutral-300 hover:bg-white/10 hover:text-white"
-                      }`}
-                    >
-                      <span
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-                          activeTab === tab.value
-                            ? "bg-neutral-950 text-white"
-                            : "bg-white/10"
-                        }`}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2 font-bold">
-                          {tab.label}
-                          {typeof tab.count === "number" && (
+                        return (
+                          <button
+                            key={tab.value}
+                            type="button"
+                            onClick={() => setActiveTab(tab.value)}
+                            className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${
+                              activeTab === tab.value
+                                ? "bg-white text-neutral-950"
+                                : "text-neutral-300 hover:bg-white/10 hover:text-white"
+                            }`}
+                          >
                             <span
-                              className={`rounded-full px-2 py-0.5 text-xs ${
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
                                 activeTab === tab.value
                                   ? "bg-neutral-950 text-white"
-                                  : "bg-white/10 text-neutral-200"
+                                  : "bg-white/10"
                               }`}
                             >
-                              {tab.count}
+                              <Icon className="h-4 w-4" />
                             </span>
-                          )}
-                        </span>
-                        <span className="mt-0.5 block text-xs opacity-70">
-                          {tab.description}
-                        </span>
-                      </span>
-                    </button>
-                  );
-                })}
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center gap-2 font-bold">
+                                {tab.label}
+                                {typeof tab.count === "number" && (
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-xs ${
+                                      activeTab === tab.value
+                                        ? "bg-neutral-950 text-white"
+                                        : "bg-white/10 text-neutral-200"
+                                    }`}
+                                  >
+                                    {tab.count}
+                                  </span>
+                                )}
+                              </span>
+                              <span className="mt-0.5 block text-xs opacity-70">
+                                {tab.description}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </nav>
             </aside>
 
