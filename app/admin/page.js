@@ -1727,8 +1727,12 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.11),transparent_28%),linear-gradient(135deg,#070707,#141416,#242427)] px-5 py-8 text-white">
-      <div className="mx-auto max-w-[1600px]">
+    <main
+      className={`min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.11),transparent_28%),linear-gradient(135deg,#070707,#141416,#242427)] px-5 py-8 text-white ${
+        authenticated ? "xl:h-screen xl:overflow-hidden" : ""
+      }`}
+    >
+      <div className="mx-auto flex max-w-[1600px] flex-col xl:h-full">
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur-xl">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -1820,8 +1824,8 @@ export default function AdminPage() {
             </button>
           </form>
         ) : (
-          <section className="mt-10 grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-            <aside className="space-y-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-2">
+          <section className="mt-10 grid gap-6 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[280px_minmax(0,1fr)]">
+            <aside className="space-y-4 xl:min-h-0 xl:overflow-y-auto xl:pr-2">
               <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
                 <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
                   Heute wichtig
@@ -1955,7 +1959,7 @@ export default function AdminPage() {
               </nav>
             </aside>
 
-            <div className="min-w-0 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 shadow-2xl backdrop-blur-xl md:p-6">
+            <div className="min-w-0 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 shadow-2xl backdrop-blur-xl md:p-6 xl:min-h-0 xl:overflow-y-auto">
 
             {activeTab === "dashboard" && (
               <div>
