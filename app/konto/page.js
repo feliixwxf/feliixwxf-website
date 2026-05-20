@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
-  CheckCircle2,
   Download,
   Eye,
   EyeOff,
@@ -481,9 +480,34 @@ export default function AccountPage() {
                       return (
                       <article
                         key={gallery.id}
-                        className="rounded-2xl border border-white/10 bg-white/[0.06] p-5"
+                        className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]"
                       >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="grid gap-0 sm:grid-cols-[150px_minmax(0,1fr)]">
+                          <button
+                            type="button"
+                            onClick={() => openGallery(gallery)}
+                            className="relative aspect-[4/3] overflow-hidden bg-black/30 sm:aspect-auto"
+                            aria-label="Galerie öffnen"
+                          >
+                            {gallery.cover_url ? (
+                              <img
+                                src={gallery.cover_url}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
+                              />
+                            ) : (
+                              <div className="flex h-full min-h-32 items-center justify-center">
+                                <ImageIcon className="h-8 w-8 text-neutral-500" />
+                              </div>
+                            )}
+                            <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-black text-white backdrop-blur">
+                              Code {gallery.access_code}
+                            </span>
+                          </button>
+
+                          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
                               <span
@@ -498,7 +522,7 @@ export default function AccountPage() {
                                 </span>
                               )}
                             </div>
-                            <h4 className="text-lg font-black">
+                            <h4 className="mt-3 text-lg font-black">
                               {gallery.title}
                             </h4>
                             <p className="mt-1 text-sm text-neutral-400">
@@ -518,10 +542,6 @@ export default function AccountPage() {
                                 <Heart className="h-3.5 w-3.5" />
                                 {gallery.favorite_count || 0} Favoriten
                               </span>
-                              <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-3 py-1">
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                Code {gallery.access_code}
-                              </span>
                             </div>
                           </div>
                           <button
@@ -532,6 +552,7 @@ export default function AccountPage() {
                             <ImageIcon className="h-4 w-4" />
                             Öffnen
                           </button>
+                          </div>
                         </div>
                       </article>
                       );

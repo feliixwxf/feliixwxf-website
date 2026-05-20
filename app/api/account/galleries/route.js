@@ -30,6 +30,16 @@ function countByGalleryId(items) {
   }, {});
 }
 
+function getCoverImagesByGalleryId(items) {
+  return items.reduce((covers, item) => {
+    if (!covers[item.gallery_id]) {
+      covers[item.gallery_id] = item.url;
+    }
+
+    return covers;
+  }, {});
+}
+
 export async function GET(request) {
   if (!requireAccountConfig()) return accountConfigMissing();
 
@@ -82,7 +92,7 @@ export async function GET(request) {
 
   const [imagesResponse, favoritesResponse] = await Promise.all([
     fetch(
-      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=gallery_id&gallery_id=in.(${galleryIdFilter})`,
+      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=gallery_id,url,sort_order,created_at&gallery_id=in.(${galleryIdFilter})&order=sort_order.asc&order=created_at.desc`,
       {
         headers: supabaseServiceHeaders,
         cache: "no-store",
@@ -97,9 +107,9 @@ export async function GET(request) {
     ),
   ]);
 
-  const imageCounts = imagesResponse.ok
-    ? countByGalleryId(await imagesResponse.json())
-    : {};
+  const galleryImages = imagesResponse.ok ? await imagesResponse.json() : [];
+  const imageCounts = countByGalleryId(galleryImages);
+  const coverImages = getCoverImagesByGalleryId(galleryImages);
   const favoriteCounts = favoritesResponse.ok
     ? countByGalleryId(await favoritesResponse.json())
     : {};
@@ -109,6 +119,7 @@ export async function GET(request) {
       ...gallery,
       image_count: imageCounts[gallery.id] || 0,
       favorite_count: favoriteCounts[gallery.id] || 0,
+      cover_url: coverImages[gallery.id] || "",
     })),
   });
 

@@ -231,6 +231,15 @@ export default function CustomerGalleryPage() {
             Zur Website
           </Link>
 
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/konto"
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Kundenkonto
+            </Link>
+
           {gallery && (
             <button
               type="button"
@@ -241,6 +250,7 @@ export default function CustomerGalleryPage() {
               Andere Galerie öffnen
             </button>
           )}
+          </div>
         </div>
 
         <section className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.08] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
@@ -262,6 +272,24 @@ export default function CustomerGalleryPage() {
                   Gib den Code ein, den du von feliix.wxf bekommen hast. Danach
                   siehst du deine private Auswahl.
                 </p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                  {[
+                    ["Privat", "Nur mit deinem Code sichtbar."],
+                    ["Auswahl", "Favoriten werden gespeichert."],
+                    ["Download", "Sobald Downloads freigegeben sind."],
+                  ].map(([title, text]) => (
+                    <div
+                      key={title}
+                      className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                    >
+                      <p className="text-sm font-black">{title}</p>
+                      <p className="mt-2 text-xs leading-5 text-neutral-400">
+                        {text}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <form
@@ -352,8 +380,14 @@ export default function CustomerGalleryPage() {
                       <p className="mt-1 text-xs">Favoriten</p>
                     </div>
                     <div className="rounded-2xl bg-white/[0.08] p-3 text-center">
-                      <p className="text-sm font-black">
-                        {gallery.downloads_enabled ? "An" : "Aus"}
+                      <p
+                        className={`text-sm font-black ${
+                          gallery.downloads_enabled
+                            ? "text-emerald-200"
+                            : "text-neutral-200"
+                        }`}
+                      >
+                        {gallery.downloads_enabled ? "Frei" : "Gesperrt"}
                       </p>
                       <p className="mt-1 text-xs text-neutral-400">Download</p>
                     </div>
@@ -390,15 +424,20 @@ export default function CustomerGalleryPage() {
                     </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={loadGallery}
-                    disabled={loading}
-                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 disabled:opacity-60"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                    Neu laden
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-white/[0.08] px-4 py-2 text-sm font-bold text-neutral-300">
+                      {visibleImages.length} von {images.length} Bildern
+                    </span>
+                    <button
+                      type="button"
+                      onClick={loadGallery}
+                      disabled={loading}
+                      className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 disabled:opacity-60"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                      Neu laden
+                    </button>
+                  </div>
                 </div>
 
                 {message && (
@@ -499,7 +538,8 @@ export default function CustomerGalleryPage() {
                 </div>
 
                 <section className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5">
-                  <div className="flex items-start gap-3">
+                  <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-neutral-950">
                       <ShieldCheck className="h-5 w-5" />
                     </span>
@@ -511,6 +551,13 @@ export default function CustomerGalleryPage() {
                         öffnen und weiter auswählen.
                       </p>
                     </div>
+                    </div>
+
+                    {!gallery.downloads_enabled && (
+                      <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 px-4 py-3 text-sm font-bold text-yellow-100">
+                        Downloads werden vom Admin freigeschaltet.
+                      </div>
+                    )}
                   </div>
                 </section>
               </div>
