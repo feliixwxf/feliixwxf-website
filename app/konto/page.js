@@ -3,8 +3,11 @@
 import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  CheckCircle2,
+  Download,
   Eye,
   EyeOff,
+  Heart,
   Image as ImageIcon,
   KeyRound,
   Lock,
@@ -25,6 +28,20 @@ function formatDate(value) {
     month: "2-digit",
     year: "numeric",
   });
+}
+
+function getGalleryStatus(gallery) {
+  if (gallery?.status === "completed") {
+    return {
+      label: "Abgeschlossen",
+      className: "bg-sky-300 text-neutral-950",
+    };
+  }
+
+  return {
+    label: "Aktiv",
+    className: "bg-emerald-400 text-neutral-950",
+  };
 }
 
 export default function AccountPage() {
@@ -368,23 +385,82 @@ export default function AccountPage() {
                     </button>
                   </div>
 
+                  {galleries.length > 0 && (
+                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+                        <p className="text-2xl font-black">
+                          {galleries.reduce(
+                            (sum, gallery) => sum + (gallery.image_count || 0),
+                            0
+                          )}
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-400">Bilder</p>
+                      </div>
+                      <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-100">
+                        <p className="text-2xl font-black">
+                          {galleries.reduce(
+                            (sum, gallery) =>
+                              sum + (gallery.favorite_count || 0),
+                            0
+                          )}
+                        </p>
+                        <p className="mt-1 text-xs">Favoriten</p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+                        <p className="text-2xl font-black">
+                          {
+                            galleries.filter(
+                              (gallery) => gallery.downloads_enabled
+                            ).length
+                          }
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-400">
+                          Downloads
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mt-5 grid gap-3">
                     {galleries.length === 0 && (
                       <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-6 text-neutral-300">
-                        Noch keine Galerie gefunden. Sobald eine Galerie für
-                        dein Konto freigegeben ist, erscheint sie hier.
+                        Noch keine Galerie gefunden. Wichtig: Die Galerie muss
+                        im Admin mit genau deiner Konto-E-Mail verknüpft sein.
+                        Alternativ kannst du eine Galerie weiterhin per Code
+                        öffnen.
+                        <Link
+                          href="/kunden"
+                          className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                          Galerie-Code eingeben
+                        </Link>
                       </div>
                     )}
 
-                    {galleries.map((gallery) => (
-                      <button
+                    {galleries.map((gallery) => {
+                      const status = getGalleryStatus(gallery);
+
+                      return (
+                      <article
                         key={gallery.id}
-                        type="button"
-                        onClick={() => openGallery(gallery)}
-                        className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-left transition hover:-translate-y-0.5 hover:bg-white/10"
+                        className="rounded-2xl border border-white/10 bg-white/[0.06] p-5"
                       >
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-black ${status.className}`}
+                              >
+                                {status.label}
+                              </span>
+                              {gallery.downloads_enabled && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-100">
+                                  <Download className="h-3.5 w-3.5" />
+                                  Downloads
+                                </span>
+                              )}
+                            </div>
                             <h4 className="text-lg font-black">
                               {gallery.title}
                             </h4>
@@ -396,14 +472,33 @@ export default function AccountPage() {
                                 bis {formatDate(gallery.expires_at)}
                               </p>
                             )}
+                            <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-neutral-300">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-3 py-1">
+                                <ImageIcon className="h-3.5 w-3.5" />
+                                {gallery.image_count || 0} Bilder
+                              </span>
+                              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-3 py-1 text-yellow-100">
+                                <Heart className="h-3.5 w-3.5" />
+                                {gallery.favorite_count || 0} Favoriten
+                              </span>
+                              <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-3 py-1">
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                Code {gallery.access_code}
+                              </span>
+                            </div>
                           </div>
-                          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black text-neutral-950">
+                          <button
+                            type="button"
+                            onClick={() => openGallery(gallery)}
+                            className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                          >
                             <ImageIcon className="h-4 w-4" />
                             Öffnen
-                          </span>
+                          </button>
                         </div>
-                      </button>
-                    ))}
+                      </article>
+                      );
+                    })}
                   </div>
                 </div>
               ) : (

@@ -13,6 +13,13 @@ import {
 const GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,expires_at,created_at";
 
+function countByGalleryId(items) {
+  return items.reduce((counts, item) => {
+    counts[item.gallery_id] = (counts[item.gallery_id] || 0) + 1;
+    return counts;
+  }, {});
+}
+
 export async function GET(request) {
   if (!requireAccountConfig()) return accountConfigMissing();
 
@@ -28,7 +35,7 @@ export async function GET(request) {
   }
 
   const response = await fetch(
-    `${supabaseBaseUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&client_email=eq.${encodeURIComponent(
+    `${supabaseBaseUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&client_email=ilike.${encodeURIComponent(
       user.email.toLowerCase()
     )}&order=created_at.desc&limit=50`,
     {
@@ -50,11 +57,49 @@ export async function GET(request) {
   }
 
   const galleries = await response.json();
+  const visibleGalleries = galleries.filter(
+    (gallery) => gallery.is_active !== false && gallery.status !== "paused"
+  );
+
+  if (visibleGalleries.length === 0) {
+    const result = NextResponse.json({ galleries: [] });
+    return applyCustomerSessionCookies(result, customerSession);
+  }
+
+  const galleryIdFilter = visibleGalleries
+    .map((gallery) => encodeURIComponent(gallery.id))
+    .join(",");
+
+  const [imagesResponse, favoritesResponse] = await Promise.all([
+    fetch(
+      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=gallery_id&gallery_id=in.(${galleryIdFilter})`,
+      {
+        headers: supabaseServiceHeaders,
+        cache: "no-store",
+      }
+    ),
+    fetch(
+      `${supabaseBaseUrl}/rest/v1/client_favorites?select=gallery_id&gallery_id=in.(${galleryIdFilter})`,
+      {
+        headers: supabaseServiceHeaders,
+        cache: "no-store",
+      }
+    ),
+  ]);
+
+  const imageCounts = imagesResponse.ok
+    ? countByGalleryId(await imagesResponse.json())
+    : {};
+  const favoriteCounts = favoritesResponse.ok
+    ? countByGalleryId(await favoritesResponse.json())
+    : {};
 
   const result = NextResponse.json({
-    galleries: galleries.filter(
-      (gallery) => gallery.is_active !== false && gallery.status !== "paused"
-    ),
+    galleries: visibleGalleries.map((gallery) => ({
+      ...gallery,
+      image_count: imageCounts[gallery.id] || 0,
+      favorite_count: favoriteCounts[gallery.id] || 0,
+    })),
   });
 
   return applyCustomerSessionCookies(result, customerSession);
