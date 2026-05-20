@@ -12,6 +12,16 @@ import {
 
 const GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,expires_at,created_at";
+const LINK_GALLERY_SELECT =
+  "id,title,client_email,access_code,is_active,status,expires_at";
+
+function normalizeCode(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, "")
+    .slice(0, 32);
+}
 
 function countByGalleryId(items) {
   return items.reduce((counts, item) => {
@@ -103,4 +113,120 @@ export async function GET(request) {
   });
 
   return applyCustomerSessionCookies(result, customerSession);
+}
+
+export async function POST(request) {
+  if (!requireAccountConfig()) return accountConfigMissing();
+
+  const customerSession = await getCustomerSession(request);
+  const user = customerSession.user;
+
+  if (!user?.email) {
+    const response = NextResponse.json(
+      { error: "Bitte zuerst einloggen." },
+      { status: 401 }
+    );
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
+  const body = await request.json().catch(() => ({}));
+  const code = normalizeCode(body.accessCode);
+  const email = user.email.toLowerCase();
+
+  if (!code) {
+    const response = NextResponse.json(
+      { error: "Galerie-Code fehlt." },
+      { status: 400 }
+    );
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
+  const galleryResponse = await fetch(
+    `${supabaseBaseUrl}/rest/v1/client_galleries?select=${LINK_GALLERY_SELECT}&access_code=eq.${encodeURIComponent(
+      code
+    )}&limit=1`,
+    {
+      headers: supabaseServiceHeaders,
+      cache: "no-store",
+    }
+  );
+
+  if (!galleryResponse.ok) {
+    const response = NextResponse.json(
+      { error: "Galerie konnte nicht geprüft werden." },
+      { status: 500 }
+    );
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
+  const [gallery] = await galleryResponse.json();
+
+  if (!gallery || gallery.is_active === false || gallery.status === "paused") {
+    const response = NextResponse.json(
+      { error: "Galerie-Code wurde nicht gefunden oder ist nicht aktiv." },
+      { status: 404 }
+    );
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
+  if (gallery.expires_at && new Date(gallery.expires_at) <= new Date()) {
+    const response = NextResponse.json(
+      { error: "Diese Galerie ist abgelaufen." },
+      { status: 410 }
+    );
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
+  const existingEmail = String(gallery.client_email || "").trim().toLowerCase();
+
+  if (existingEmail && existingEmail !== email) {
+    const response = NextResponse.json(
+      {
+        error:
+          "Diese Galerie ist bereits mit einer anderen Kunden-E-Mail verknüpft.",
+      },
+      { status: 409 }
+    );
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
+  if (existingEmail === email) {
+    const response = NextResponse.json({
+      gallery,
+      linked: false,
+      alreadyLinked: true,
+    });
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
+  const updateResponse = await fetch(
+    `${supabaseBaseUrl}/rest/v1/client_galleries?id=eq.${encodeURIComponent(
+      gallery.id
+    )}`,
+    {
+      method: "PATCH",
+      headers: {
+        ...supabaseServiceHeaders,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({ client_email: email }),
+    }
+  );
+
+  if (!updateResponse.ok) {
+    const response = NextResponse.json(
+      { error: "Galerie konnte nicht mit deinem Konto verknüpft werden." },
+      { status: 500 }
+    );
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
+  const [updatedGallery] = await updateResponse.json();
+  const response = NextResponse.json({
+    gallery: updatedGallery,
+    linked: true,
+    alreadyLinked: false,
+  });
+
+  return applyCustomerSessionCookies(response, customerSession);
 }

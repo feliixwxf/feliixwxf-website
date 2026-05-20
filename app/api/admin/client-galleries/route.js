@@ -31,6 +31,31 @@ function createCode() {
   return `GAL-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
+async function loadCustomerAccountEmails() {
+  try {
+    const response = await fetch(
+      `${supabaseRestUrl}/auth/v1/admin/users?per_page=1000`,
+      {
+        headers: supabaseServiceHeaders,
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) return new Set();
+
+    const data = await response.json();
+    const users = Array.isArray(data.users) ? data.users : [];
+
+    return new Set(
+      users
+        .map((user) => String(user.email || "").trim().toLowerCase())
+        .filter(Boolean)
+    );
+  } catch {
+    return new Set();
+  }
+}
+
 async function loadGalleries() {
   let galleryResponse = await fetch(
     `${supabaseRestUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&order=created_at.desc&limit=100`,
@@ -98,6 +123,7 @@ async function loadGalleries() {
   const galleries = await finalGalleryResponse.json();
   const images = await imageResponse.json();
   const favorites = await favoriteResponse.json();
+  const customerAccountEmails = await loadCustomerAccountEmails();
 
   return {
     galleries: galleries.map((gallery) => {
@@ -107,6 +133,15 @@ async function loadGalleries() {
       const galleryFavorites = favorites.filter(
         (favorite) => favorite.gallery_id === gallery.id
       );
+      const clientEmail = String(gallery.client_email || "").trim().toLowerCase();
+      const favoriteLastAt = galleryFavorites.reduce((latest, favorite) => {
+        if (!favorite.created_at) return latest;
+        if (!latest) return favorite.created_at;
+
+        return new Date(favorite.created_at) > new Date(latest)
+          ? favorite.created_at
+          : latest;
+      }, "");
 
       return {
         ...gallery,
@@ -114,6 +149,15 @@ async function loadGalleries() {
         favorites: galleryFavorites,
         image_count: galleryImages.length,
         favorite_count: galleryFavorites.length,
+        favorite_last_at: favoriteLastAt,
+        account_exists: clientEmail
+          ? customerAccountEmails.has(clientEmail)
+          : false,
+        account_status: clientEmail
+          ? customerAccountEmails.has(clientEmail)
+            ? "linked"
+            : "email_set"
+          : "missing_email",
       };
     }),
   };

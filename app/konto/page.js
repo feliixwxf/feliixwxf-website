@@ -80,6 +80,39 @@ export default function AccountPage() {
     setMessage("");
   };
 
+  const linkSavedGalleryCode = async () => {
+    const savedCode = localStorage.getItem("feliix-client-gallery-code");
+
+    if (!savedCode) return false;
+
+    const response = await fetch("/api/account/galleries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessCode: savedCode }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok) {
+      localStorage.removeItem("feliix-client-gallery-code");
+
+      if (data.linked) {
+        showMessage(
+          "Galerie wurde automatisch deinem Konto hinzugefügt.",
+          "success"
+        );
+        return true;
+      }
+
+      return false;
+    }
+
+    if (!response.ok && response.status === 409) {
+      showMessage(data.error || "Galerie ist bereits anders verknüpft.", "error");
+    }
+
+    return false;
+  };
+
   const loadGalleries = async () => {
     const response = await fetch("/api/account/galleries", {
       cache: "no-store",
@@ -106,6 +139,7 @@ export default function AccountPage() {
       setUser(data.user);
       setProfileName(data.user?.name || "");
       setAvatarPreview(data.user?.avatar_url || "");
+      await linkSavedGalleryCode();
       await loadGalleries();
     } else {
       setUser(null);
@@ -166,10 +200,13 @@ export default function AccountPage() {
     setUser(data.user);
     setProfileName(data.user?.name || form.name || "");
     setAvatarPreview(data.user?.avatar_url || "");
-    showMessage(
-      mode === "register" ? "Konto wurde erstellt." : "Du bist eingeloggt.",
-      "success"
-    );
+    const linkedGallery = await linkSavedGalleryCode();
+    if (!linkedGallery) {
+      showMessage(
+        mode === "register" ? "Konto wurde erstellt." : "Du bist eingeloggt.",
+        "success"
+      );
+    }
     await loadGalleries();
     setSubmitting(false);
   };

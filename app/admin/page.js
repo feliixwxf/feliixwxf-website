@@ -408,6 +408,31 @@ function getClientProjectStep(gallery) {
   };
 }
 
+function getClientAccountState(gallery) {
+  if (gallery?.account_status === "linked" || gallery?.account_exists) {
+    return {
+      label: "Kundenkonto verknüpft",
+      helper: "Kunde kann die Galerie im Konto sehen.",
+      tone: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+    };
+  }
+
+  if (gallery?.client_email) {
+    return {
+      label: "E-Mail hinterlegt",
+      helper:
+        "Galerie erscheint automatisch, sobald sich der Kunde mit dieser E-Mail anmeldet.",
+      tone: "border-sky-300/25 bg-sky-300/10 text-sky-100",
+    };
+  }
+
+  return {
+    label: "Noch nicht verknüpft",
+    helper: "Kunde kann die Galerie nach QR-Scan und Login automatisch verbinden.",
+    tone: "border-yellow-400/25 bg-yellow-400/10 text-yellow-100",
+  };
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -597,6 +622,7 @@ export default function AdminPage() {
     clientGalleries[0];
   const activeClientChecklistDone = getClientChecklistDone(activeClientGallery);
   const activeClientProjectStep = getClientProjectStep(activeClientGallery);
+  const activeClientAccountState = getClientAccountState(activeClientGallery);
   const activeClientImages = activeClientGallery?.images || [];
   const activeClientGalleryUrl =
     activeClientGallery && publicOrigin
@@ -1161,6 +1187,14 @@ export default function AdminPage() {
           ? {
               ...item,
               ...updates,
+              ...(updates.client_email !== undefined
+                ? {
+                    account_exists: false,
+                    account_status: updates.client_email
+                      ? "email_set"
+                      : "missing_email",
+                  }
+                : {}),
             }
           : item
       )
@@ -1202,6 +1236,14 @@ export default function AdminPage() {
                 ...item,
                 ...updates,
                 ...(data.gallery || {}),
+                ...(updates.client_email !== undefined
+                  ? {
+                      account_exists: false,
+                      account_status: updates.client_email
+                        ? "email_set"
+                        : "missing_email",
+                    }
+                  : {}),
                 images: item.images || [],
                 favorites: item.favorites || [],
                 image_count: item.image_count || 0,
@@ -1423,23 +1465,23 @@ export default function AdminPage() {
       activeClientGallery.access_code
     )}`;
     const accountUrl = `${origin}/konto`;
+    const accountHint = activeClientGallery.client_email
+      ? "Wenn du dir ein Kundenkonto mit dieser E-Mail erstellst oder dich damit einloggst, wird die Galerie automatisch dort angezeigt."
+      : "Wenn du nach dem Öffnen ein Kundenkonto erstellst oder dich einloggst, kann die Galerie automatisch mit deinem Konto verknüpft werden.";
     const inviteText = [
       `Hallo${customerName ? ` ${customerName}` : ""},`,
       "",
       `deine Galerie "${activeClientGallery.title}" ist bereit.`,
       "",
       `Direktlink: ${galleryUrl}`,
-      `Code: ${activeClientGallery.access_code}`,
-      activeClientGallery.client_email
-        ? `Kundenkonto: ${accountUrl}`
-        : "",
+      `Galerie-Code: ${activeClientGallery.access_code}`,
+      `Kundenkonto: ${accountUrl}`,
+      "",
+      accountHint,
       "",
       activeClientGallery.downloads_enabled
         ? "Downloads sind freigeschaltet, du kannst deine Bilder direkt herunterladen."
         : "Du kannst deine Favoriten markieren, damit ich die Auswahl sehen kann.",
-      activeClientGallery.client_email
-        ? "Wenn du dich mit derselben E-Mail im Kundenkonto anmeldest, findest du die Galerie dort ebenfalls."
-        : "",
       "",
       "Liebe Grüße",
       "Felix",
@@ -2245,6 +2287,7 @@ export default function AdminPage() {
                     ) : (
                       clientProjectFocus.map((gallery) => {
                         const step = getClientProjectStep(gallery);
+                        const accountState = getClientAccountState(gallery);
 
                         return (
                           <button
@@ -2266,10 +2309,17 @@ export default function AdminPage() {
                                 {gallery.favorite_count || 0} Favoriten
                               </span>
                             </span>
-                            <span
-                              className={`w-fit rounded-full border px-3 py-1 text-xs font-black ${step.tone}`}
-                            >
-                              {step.label}
+                            <span className="flex flex-wrap gap-2 md:justify-end">
+                              <span
+                                className={`w-fit rounded-full border px-3 py-1 text-xs font-black ${step.tone}`}
+                              >
+                                {step.label}
+                              </span>
+                              <span
+                                className={`w-fit rounded-full border px-3 py-1 text-xs font-black ${accountState.tone}`}
+                              >
+                                {accountState.label}
+                              </span>
                             </span>
                           </button>
                         );
@@ -3059,6 +3109,7 @@ export default function AdminPage() {
 
                       {visibleClientGalleries.map((gallery) => {
                         const step = getClientProjectStep(gallery);
+                        const accountState = getClientAccountState(gallery);
 
                         return (
                           <button
@@ -3110,6 +3161,16 @@ export default function AdminPage() {
                               >
                                 {step.label}
                               </span>
+                              <span
+                                className={`rounded-full border px-3 py-1 font-bold ${accountState.tone}`}
+                              >
+                                {accountState.label}
+                              </span>
+                              {gallery.favorite_last_at && (
+                                <span className="rounded-full bg-yellow-400/10 px-3 py-1 text-yellow-100">
+                                  Zuletzt: {formatDate(gallery.favorite_last_at)}
+                                </span>
+                              )}
                             </div>
                           </button>
                         );
@@ -3162,6 +3223,16 @@ export default function AdminPage() {
                               </p>
                               <p className="mt-1 text-xs opacity-80">
                                 {activeClientProjectStep.helper}
+                              </p>
+                            </div>
+                            <div
+                              className={`mt-3 max-w-xl rounded-2xl border px-4 py-3 text-sm ${activeClientAccountState.tone}`}
+                            >
+                              <p className="font-black">
+                                {activeClientAccountState.label}
+                              </p>
+                              <p className="mt-1 text-xs opacity-80">
+                                {activeClientAccountState.helper}
                               </p>
                             </div>
                           </div>
@@ -3696,6 +3767,12 @@ export default function AdminPage() {
                               <p className="mt-1 text-sm leading-6 text-yellow-100/70">
                                 Hier siehst du nur die Bilder, die der Kunde in
                                 seiner Galerie markiert hat.
+                              </p>
+                              <p className="mt-2 text-xs text-yellow-100/55">
+                                Zuletzt markiert:{" "}
+                                {activeClientGallery.favorite_last_at
+                                  ? formatDate(activeClientGallery.favorite_last_at)
+                                  : "Noch keine Favoriten"}
                               </p>
                             </div>
 
