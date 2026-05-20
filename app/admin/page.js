@@ -1320,21 +1320,33 @@ export default function AdminPage() {
     }
 
     const customerName = activeClientGallery.client_name?.trim();
+    const galleryUrl = `${window.location.origin}/kunden?code=${encodeURIComponent(
+      activeClientGallery.access_code
+    )}`;
+    const accountUrl = `${window.location.origin}/konto`;
     const inviteText = [
       `Hallo${customerName ? ` ${customerName}` : ""},`,
       "",
       `deine Galerie "${activeClientGallery.title}" ist bereit.`,
       "",
-      `Link: ${window.location.origin}/kunden`,
+      `Direktlink: ${galleryUrl}`,
       `Code: ${activeClientGallery.access_code}`,
+      activeClientGallery.client_email
+        ? `Kundenkonto: ${accountUrl}`
+        : "",
       "",
       activeClientGallery.downloads_enabled
         ? "Downloads sind freigeschaltet, du kannst deine Bilder direkt herunterladen."
         : "Du kannst deine Favoriten markieren, damit ich die Auswahl sehen kann.",
+      activeClientGallery.client_email
+        ? "Wenn du dich mit derselben E-Mail im Kundenkonto anmeldest, findest du die Galerie dort ebenfalls."
+        : "",
       "",
       "Liebe Gruesse",
       "Felix",
-    ].join("\n");
+    ]
+      .filter((line, index, lines) => line || lines[index - 1])
+      .join("\n");
 
     copyText(inviteText, "Kunden-Einladung wurde kopiert.");
   };
@@ -3033,8 +3045,10 @@ export default function AdminPage() {
                               type="button"
                               onClick={() =>
                                 copyText(
-                                  `${window.location.origin}/kunden`,
-                                  "Kundenseite wurde kopiert."
+                                  `${window.location.origin}/kunden?code=${encodeURIComponent(
+                                    activeClientGallery.access_code
+                                  )}`,
+                                  "Direktlink wurde kopiert."
                                 )
                               }
                               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"

@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { getCustomerUser } from "../_lib/auth";
+import {
+  applyCustomerSessionCookies,
+  getCustomerSession,
+} from "../_lib/auth";
 
 export async function GET(request) {
-  const user = await getCustomerUser(request);
+  const customerSession = await getCustomerSession(request);
 
-  return NextResponse.json({
-    authenticated: Boolean(user),
-    user,
+  const response = NextResponse.json({
+    authenticated: Boolean(customerSession.user),
+    user: customerSession.user,
   });
+
+  return applyCustomerSessionCookies(response, customerSession);
 }

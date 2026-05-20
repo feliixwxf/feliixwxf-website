@@ -56,12 +56,7 @@ export function clearCustomerCookies(response) {
   return response;
 }
 
-export async function getCustomerUser(request) {
-  if (!requireAccountConfig()) return null;
-
-  const token = request.cookies.get(CUSTOMER_ACCESS_COOKIE)?.value;
-  if (!token) return null;
-
+async function readCustomerUser(token) {
   const response = await fetch(`${supabaseBaseUrl}/auth/v1/user`, {
     headers: {
       ...supabaseHeaders,
@@ -78,4 +73,107 @@ export async function getCustomerUser(request) {
     email: user.email,
     name: user.user_metadata?.name || "",
   };
+}
+
+async function refreshCustomerSession(refreshToken) {
+  const response = await fetch(
+    `${supabaseBaseUrl}/auth/v1/token?grant_type=refresh_token`,
+    {
+      method: "POST",
+      headers: supabaseHeaders,
+      body: JSON.stringify({ refresh_token: refreshToken }),
+      cache: "no-store",
+    }
+  );
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || !data?.access_token) {
+    return null;
+  }
+
+  return data;
+}
+
+export async function getCustomerSession(request) {
+  if (!requireAccountConfig()) {
+    return { user: null, accessToken: "", session: null, shouldClearCookies: false };
+  }
+
+  const accessToken = request.cookies.get(CUSTOMER_ACCESS_COOKIE)?.value || "";
+  const refreshToken = request.cookies.get(CUSTOMER_REFRESH_COOKIE)?.value || "";
+
+  if (accessToken) {
+    const user = await readCustomerUser(accessToken);
+    if (user) {
+      return {
+        user,
+        accessToken,
+        session: null,
+        shouldClearCookies: false,
+      };
+    }
+  }
+
+  if (!refreshToken) {
+    return {
+      user: null,
+      accessToken: "",
+      session: null,
+      shouldClearCookies: Boolean(accessToken),
+    };
+  }
+
+  const session = await refreshCustomerSession(refreshToken);
+
+  if (!session) {
+    return {
+      user: null,
+      accessToken: "",
+      session: null,
+      shouldClearCookies: true,
+    };
+  }
+
+  const user =
+    session.user && session.user.id
+      ? {
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.name || "",
+        }
+      : await readCustomerUser(session.access_token);
+
+  if (!user) {
+    return {
+      user: null,
+      accessToken: "",
+      session: null,
+      shouldClearCookies: true,
+    };
+  }
+
+  return {
+    user,
+    accessToken: session.access_token,
+    session,
+    shouldClearCookies: false,
+  };
+}
+
+export function applyCustomerSessionCookies(response, customerSession) {
+  if (customerSession?.session) {
+    return setCustomerCookies(response, customerSession.session);
+  }
+
+  if (customerSession?.shouldClearCookies) {
+    return clearCustomerCookies(response);
+  }
+
+  return response;
+}
+
+export async function getCustomerUser(request) {
+  const customerSession = await getCustomerSession(request);
+  return customerSession.user;
 }

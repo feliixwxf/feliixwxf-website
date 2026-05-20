@@ -2,22 +2,24 @@ import { NextResponse } from "next/server";
 import { supabaseBaseUrl, supabaseHeaders } from "../../_lib/supabase";
 import {
   accountConfigMissing,
-  CUSTOMER_ACCESS_COOKIE,
-  getCustomerUser,
+  applyCustomerSessionCookies,
+  getCustomerSession,
   requireAccountConfig,
 } from "../_lib/auth";
 
 export async function PATCH(request) {
   if (!requireAccountConfig()) return accountConfigMissing();
 
-  const token = request.cookies.get(CUSTOMER_ACCESS_COOKIE)?.value;
-  const currentUser = await getCustomerUser(request);
+  const customerSession = await getCustomerSession(request);
+  const token = customerSession.accessToken;
+  const currentUser = customerSession.user;
 
   if (!token || !currentUser) {
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: "Bitte zuerst einloggen." },
       { status: 401 }
     );
+    return applyCustomerSessionCookies(response, customerSession);
   }
 
   const body = await request.json().catch(() => ({}));
@@ -43,7 +45,7 @@ export async function PATCH(request) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    return NextResponse.json(
+    const result = NextResponse.json(
       {
         error:
           data.msg ||
@@ -52,13 +54,16 @@ export async function PATCH(request) {
       },
       { status: 400 }
     );
+    return applyCustomerSessionCookies(result, customerSession);
   }
 
-  return NextResponse.json({
+  const result = NextResponse.json({
     user: {
       id: data.id || currentUser.id,
       email: data.email || currentUser.email,
       name: data.user_metadata?.name || name,
     },
   });
+
+  return applyCustomerSessionCookies(result, customerSession);
 }

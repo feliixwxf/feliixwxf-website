@@ -5,7 +5,8 @@ import {
 } from "../../_lib/supabase";
 import {
   accountConfigMissing,
-  getCustomerUser,
+  applyCustomerSessionCookies,
+  getCustomerSession,
   requireAccountConfig,
 } from "../_lib/auth";
 
@@ -15,13 +16,15 @@ const GALLERY_SELECT =
 export async function GET(request) {
   if (!requireAccountConfig()) return accountConfigMissing();
 
-  const user = await getCustomerUser(request);
+  const customerSession = await getCustomerSession(request);
+  const user = customerSession.user;
 
   if (!user?.email) {
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: "Bitte zuerst einloggen." },
       { status: 401 }
     );
+    return applyCustomerSessionCookies(response, customerSession);
   }
 
   const response = await fetch(
@@ -35,7 +38,7 @@ export async function GET(request) {
   );
 
   if (!response.ok) {
-    return NextResponse.json(
+    const result = NextResponse.json(
       {
         error:
           "Galerien konnten nicht geladen werden. Ist die Kunden-E-Mail-Spalte in Supabase angelegt?",
@@ -43,13 +46,16 @@ export async function GET(request) {
       },
       { status: 500 }
     );
+    return applyCustomerSessionCookies(result, customerSession);
   }
 
   const galleries = await response.json();
 
-  return NextResponse.json({
+  const result = NextResponse.json({
     galleries: galleries.filter(
       (gallery) => gallery.is_active !== false && gallery.status !== "paused"
     ),
   });
+
+  return applyCustomerSessionCookies(result, customerSession);
 }
