@@ -21,6 +21,7 @@ import {
   Mail,
   MessageSquare,
   Phone,
+  Plus,
   QrCode,
   RefreshCw,
   Save,
@@ -446,6 +447,7 @@ export default function AdminPage() {
   const [clientGalleryForm, setClientGalleryForm] = useState(
     DEFAULT_CLIENT_GALLERY_FORM
   );
+  const [showClientGalleryForm, setShowClientGalleryForm] = useState(false);
   const [activeClientGalleryId, setActiveClientGalleryId] = useState("");
   const [clientGallerySearch, setClientGallerySearch] = useState("");
   const [clientGalleryStatusFilter, setClientGalleryStatusFilter] =
@@ -1173,6 +1175,7 @@ export default function AdminPage() {
     setClientGalleries((current) => [data.gallery, ...current]);
     setActiveClientGalleryId(data.gallery.id);
     setClientGalleryForm(DEFAULT_CLIENT_GALLERY_FORM);
+    setShowClientGalleryForm(false);
     showMessage("Kundengalerie wurde erstellt.", "success");
   };
 
@@ -1863,12 +1866,11 @@ export default function AdminPage() {
               <ArrowLeft className="h-4 w-4" />
               Zur Website
             </Link>
-            <h1 className="mt-6 text-4xl font-black md:text-5xl">
+            <h1 className="mt-5 text-3xl font-black md:text-4xl">
               Admin Bereich
             </h1>
-            <p className="mt-3 max-w-xl text-neutral-300">
-              Hier verwaltest du Portfolio-Bilder, Bildreihenfolge und
-              Bewertungen für deine Website.
+            <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-300">
+              Alles Wichtige für Website, Kunden, Galerien und Bewertungen.
             </p>
           </div>
 
@@ -1944,87 +1946,51 @@ export default function AdminPage() {
             </button>
           </form>
         ) : (
-          <section className="mt-10 grid gap-6 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[280px_minmax(0,1fr)]">
-            <aside className="space-y-4 xl:min-h-0 xl:overflow-y-auto xl:pr-2">
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
-                <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
-                  Heute wichtig
-                </p>
-                <div className="mt-4 grid gap-2">
+          <section className="mt-10 grid gap-5 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[240px_minmax(0,1fr)]">
+            <aside className="xl:min-h-0 xl:overflow-y-auto xl:pr-1">
+              <nav className="rounded-[1.25rem] border border-white/10 bg-black/20 p-2">
+                <div className="grid grid-cols-3 gap-2 p-2">
                   {[
                     {
                       label: "Kunden",
                       value: clientGalleries.length,
-                      helper: `${clientProjectsNeedingReview.length} mit Favoriten`,
-                      icon: Users,
+                      tab: "clients",
                     },
                     {
-                      label: "Offene Bewertungen",
+                      label: "Offen",
                       value: pendingReviews.length,
-                      helper: "warten auf Freigabe",
-                      icon: Clock,
-                      highlight: pendingReviews.length > 0,
+                      tab: "reviews",
                     },
                     {
-                      label: "Portfolio",
+                      label: "Bilder",
                       value: images.length,
-                      helper: latestImage
-                        ? `neu: ${formatDate(latestImage.created_at)}`
-                        : "noch keine Uploads",
-                      icon: Images,
+                      tab: "portfolio",
                     },
-                  ].map((item) => {
-                    const Icon = item.icon;
-
-                    return (
-                      <button
-                        key={item.label}
-                        type="button"
-                        onClick={() => {
-                          if (item.label === "Kunden") setActiveTab("clients");
-                          if (item.label === "Offene Bewertungen") {
-                            setActiveTab("reviews");
-                            setReviewFilter("pending");
-                          }
-                          if (item.label === "Portfolio") setActiveTab("portfolio");
-                        }}
-                        className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition hover:bg-white/10 ${
-                          item.highlight
-                            ? "border-yellow-400/25 bg-yellow-400/10"
-                            : "border-white/10 bg-black/20"
-                        }`}
-                      >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10">
-                          <Icon className="h-5 w-5" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-center justify-between gap-2">
-                            <span className="truncate text-sm font-bold">
-                              {item.label}
-                            </span>
-                            <span className="text-xl font-black">
-                              {item.value}
-                            </span>
-                          </span>
-                          <span className="mt-0.5 block truncate text-xs text-neutral-500">
-                            {item.helper}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => {
+                        setActiveTab(item.tab);
+                        if (item.tab === "reviews") setReviewFilter("pending");
+                      }}
+                      className="rounded-2xl border border-white/10 bg-white/[0.06] px-2 py-3 text-center transition hover:bg-white/10"
+                    >
+                      <span className="block text-xl font-black">
+                        {item.value}
+                      </span>
+                      <span className="mt-1 block truncate text-[11px] font-bold text-neutral-500">
+                        {item.label}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-              </div>
 
-              <nav className="space-y-3 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-3">
                 {tabGroups.map((group) => (
-                  <div key={group.title}>
-                    <div className="px-2 pb-2">
+                  <div key={group.title} className="mt-2">
+                    <div className="px-3 py-2">
                       <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                         {group.title}
-                      </p>
-                      <p className="mt-1 text-xs text-neutral-600">
-                        {group.description}
                       </p>
                     </div>
                     <div className="grid gap-1">
@@ -2036,14 +2002,14 @@ export default function AdminPage() {
                             key={tab.value}
                             type="button"
                             onClick={() => setActiveTab(tab.value)}
-                            className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${
+                            className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition ${
                               activeTab === tab.value
                                 ? "bg-white text-neutral-950"
                                 : "text-neutral-300 hover:bg-white/10 hover:text-white"
                             }`}
                           >
                             <span
-                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                                 activeTab === tab.value
                                   ? "bg-neutral-950 text-white"
                                   : "bg-white/10"
@@ -2066,7 +2032,7 @@ export default function AdminPage() {
                                   </span>
                                 )}
                               </span>
-                              <span className="mt-0.5 block text-xs opacity-70">
+                              <span className="mt-0.5 block truncate text-xs opacity-60">
                                 {tab.description}
                               </span>
                             </span>
@@ -2227,7 +2193,7 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <section className="mt-8 rounded-[1.5rem] border border-white/10 bg-black/20 p-6">
+                <section className="hidden">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                       <p className="text-sm uppercase tracking-[0.28em] text-neutral-500">
@@ -2328,7 +2294,7 @@ export default function AdminPage() {
                   </div>
                 </section>
 
-                <div className="mt-8 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                <div className="hidden">
                   <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
                     <div className="flex items-center justify-between gap-4">
                       <div>
@@ -2896,6 +2862,16 @@ export default function AdminPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowClientGalleryForm((current) => !current)
+                      }
+                      className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                    >
+                      <Plus className="h-4 w-4" />
+                      {showClientGalleryForm ? "Formular schließen" : "Neue Galerie"}
+                    </button>
                     <a
                       href="/kunden"
                       target="_blank"
@@ -2916,6 +2892,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
+                {showClientGalleryForm && (
                 <form
                   onSubmit={createClientGallery}
                   className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
@@ -3023,6 +3000,7 @@ export default function AdminPage() {
                     </div>
                   </div>
                 </form>
+                )}
 
                 <div className="mt-8 grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
                   <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
