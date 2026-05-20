@@ -108,7 +108,7 @@ export default function AccountPage() {
       params.get("error_description") || hashParams.get("error_description");
 
     if (confirmed) {
-      showMessage("E-Mail wurde bestaetigt. Du kannst dich jetzt einloggen.", "success");
+      showMessage("E-Mail wurde bestätigt. Du kannst dich jetzt einloggen.", "success");
       window.history.replaceState(null, "", "/konto");
     } else if (error) {
       showMessage(decodeURIComponent(error).replace(/\+/g, " "), "error");
@@ -371,7 +371,7 @@ export default function AccountPage() {
                   <div className="mt-5 grid gap-3">
                     {galleries.length === 0 && (
                       <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-6 text-neutral-300">
-                        Noch keine Galerie gefunden. Sobald eine Galerie fuer
+                        Noch keine Galerie gefunden. Sobald eine Galerie für
                         dein Konto freigegeben ist, erscheint sie hier.
                       </div>
                     )}

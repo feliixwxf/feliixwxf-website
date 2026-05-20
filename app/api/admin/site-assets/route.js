@@ -92,14 +92,14 @@ export async function POST(request) {
 
   if (!ASSET_KEYS.has(key)) {
     return NextResponse.json(
-      { error: "Ungueltiges Bildfeld." },
+      { error: "Ungültiges Bildfeld." },
       { status: 400 }
     );
   }
 
   if (!file || typeof file === "string") {
     return NextResponse.json(
-      { error: "Bitte ein Bild auswaehlen." },
+      { error: "Bitte ein Bild auswählen." },
       { status: 400 }
     );
   }

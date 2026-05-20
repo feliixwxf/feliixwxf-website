@@ -91,14 +91,14 @@ export async function POST(request) {
 
   if (!CATEGORIES.has(category)) {
     return NextResponse.json(
-      { error: "Ungueltige Kategorie." },
+      { error: "Ungültige Kategorie." },
       { status: 400 }
     );
   }
 
   if (!file || typeof file === "string") {
     return NextResponse.json(
-      { error: "Bitte ein Bild auswaehlen." },
+      { error: "Bitte ein Bild auswählen." },
       { status: 400 }
     );
   }
@@ -234,7 +234,7 @@ export async function PATCH(request) {
       return NextResponse.json(
         {
           error:
-            "Bilddetails konnten nicht gespeichert werden. Fuehre vorher supabase-portfolio-metadata.sql in Supabase aus.",
+            "Bilddetails konnten nicht gespeichert werden. Führe vorher supabase-portfolio-metadata.sql in Supabase aus.",
           details,
         },
         { status: 500 }
@@ -349,7 +349,7 @@ export async function DELETE(request) {
 
     if (!missingStorageFile) {
       return NextResponse.json(
-        { error: "Bilddatei konnte nicht geloescht werden.", details },
+        { error: "Bilddatei konnte nicht gelöscht werden.", details },
         { status: 500 }
       );
     }
@@ -373,7 +373,7 @@ export async function DELETE(request) {
   if (!deleteResponse.ok) {
     const details = await deleteResponse.text();
     return NextResponse.json(
-      { error: "Bildeintrag konnte nicht geloescht werden.", details },
+      { error: "Bildeintrag konnte nicht gelöscht werden.", details },
       { status: 500 }
     );
   }

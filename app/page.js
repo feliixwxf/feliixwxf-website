@@ -920,7 +920,7 @@ export default function FeliixWxfPhotography() {
                       onChange={(event) => setReviewName(event.target.value)}
                       placeholder={
                         currentCustomer?.name
-                          ? "Nutzername aus deinem Konto, aenderbar"
+                          ? "Nutzername aus deinem Konto, änderbar"
                           : "Dein Name"
                       }
                       className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400"

@@ -37,7 +37,7 @@ export async function POST(request) {
           data.error_description ||
           data.msg ||
           data.message ||
-          "Login fehlgeschlagen. Bitte pruefe deine Daten.",
+          "Login fehlgeschlagen. Bitte prüfe deine Daten.",
       },
       { status: 401 }
     );

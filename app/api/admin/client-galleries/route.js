@@ -249,7 +249,7 @@ export async function PATCH(request) {
 
     if (!VALID_STATUSES.has(status)) {
       return NextResponse.json(
-        { error: "Ungueltiger Galerie-Status." },
+        { error: "Ungültiger Galerie-Status." },
         { status: 400 }
       );
     }
@@ -364,7 +364,7 @@ export async function DELETE(request) {
   if (!deleteResponse.ok) {
     const details = await deleteResponse.text();
     return NextResponse.json(
-      { error: "Kundengalerie konnte nicht geloescht werden.", details },
+      { error: "Kundengalerie konnte nicht gelöscht werden.", details },
       { status: 500 }
     );
   }

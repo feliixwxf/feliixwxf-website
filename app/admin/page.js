@@ -210,15 +210,15 @@ const TEXT_FIELD_GROUPS = [
 const CONTACT_FIELDS = [
   {
     key: "contact_heading",
-    label: "Kontakt-Ueberschrift",
-    helper: "Grosse Ueberschrift im Kontaktbereich.",
+    label: "Kontakt-Überschrift",
+    helper: "Große Überschrift im Kontaktbereich.",
     placeholder: "Lass uns dein Shooting planen.",
     icon: Type,
   },
   {
     key: "contact_intro",
     label: "Kontakt-Text",
-    helper: "Kurzer Satz direkt unter der Ueberschrift.",
+    helper: "Kurzer Satz direkt unter der Überschrift.",
     placeholder: "Schreib mir direkt über das Formular.",
     icon: MessageSquare,
     multiline: true,
@@ -240,7 +240,7 @@ const CONTACT_FIELDS = [
   {
     key: "instagram_url",
     label: "Instagram-Link",
-    helper: "Vollstaendiger Link zum Profil.",
+    helper: "Vollständiger Link zum Profil.",
     placeholder: "https://www.instagram.com/feliix.wxf",
     icon: ExternalLink,
   },
@@ -254,7 +254,7 @@ const CONTACT_FIELDS = [
   {
     key: "form_action",
     label: "Formular-Ziel",
-    helper: "Formspree-Link fuer das Kontaktformular.",
+    helper: "Formspree-Link für das Kontaktformular.",
     placeholder: "https://formspree.io/f/...",
     icon: ExternalLink,
   },
@@ -386,7 +386,7 @@ function getClientProjectStep(gallery) {
   if (!gallery?.archive_prepared) {
     return {
       label: "Archiv vorbereiten",
-      helper: "Projekt fuer spaeteren Download/Account vorbereiten.",
+      helper: "Projekt für späteren Download/Account vorbereiten.",
       tone: "border-yellow-400/25 bg-yellow-400/10 text-yellow-100",
     };
   }
@@ -394,7 +394,7 @@ function getClientProjectStep(gallery) {
   if (!gallery?.client_informed) {
     return {
       label: "Kunde informieren",
-      helper: "Galerie ist bereit zur Rueckmeldung an den Kunden.",
+      helper: "Galerie ist bereit zur Rückmeldung an den Kunden.",
       tone: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
     };
   }
@@ -565,7 +565,7 @@ export default function AdminPage() {
   const tabGroups = [
     {
       title: "Alltag",
-      description: "Das brauchst du am haeufigsten.",
+      description: "Das brauchst du am häufigsten.",
       values: ["dashboard", "clients", "reviews"],
     },
     {
@@ -929,7 +929,7 @@ export default function AdminPage() {
       showMessage(successMessage, "success");
     } catch {
       window.prompt("Text kopieren:", text);
-      showMessage("Einladung wurde zum Kopieren geoeffnet.", "success");
+      showMessage("Einladung wurde zum Kopieren geöffnet.", "success");
     }
   };
 
@@ -975,7 +975,7 @@ export default function AdminPage() {
     if (imageUploading) return;
 
     if (!imageFile) {
-      showMessage("Bitte zuerst ein Bild auswaehlen.", "error");
+      showMessage("Bitte zuerst ein Bild auswählen.", "error");
       return;
     }
 
@@ -1111,7 +1111,7 @@ export default function AdminPage() {
         setClientGalleries(previousGalleries);
         showMessage(
           missingWorkflowField
-            ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen. Wichtig: Die letzte Zeile laedt den Supabase-Cache neu."
+            ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen. Wichtig: Die letzte Zeile lädt den Supabase-Cache neu."
             : data.error || "Kundengalerie konnte nicht gespeichert werden.",
           "error"
         );
@@ -1163,7 +1163,7 @@ export default function AdminPage() {
   const deleteClientGallery = async (gallery) => {
     if (
       !window.confirm(
-        `Kundengalerie "${gallery.title}" inklusive Bilder wirklich loeschen?`
+        `Kundengalerie "${gallery.title}" inklusive Bilder wirklich löschen?`
       )
     ) {
       return;
@@ -1181,7 +1181,7 @@ export default function AdminPage() {
 
     if (!response.ok) {
       showMessage(
-        data.error || "Kundengalerie konnte nicht geloescht werden.",
+        data.error || "Kundengalerie konnte nicht gelöscht werden.",
         "error"
       );
       setBusyClientGalleryId(null);
@@ -1191,7 +1191,7 @@ export default function AdminPage() {
     const nextGalleries = clientGalleries.filter((item) => item.id !== gallery.id);
     setClientGalleries(nextGalleries);
     setActiveClientGalleryId(nextGalleries[0]?.id || "");
-    showMessage("Kundengalerie wurde geloescht.", "success");
+    showMessage("Kundengalerie wurde gelöscht.", "success");
     setBusyClientGalleryId(null);
   };
 
@@ -1206,7 +1206,7 @@ export default function AdminPage() {
     }
 
     if (!clientGalleryFile) {
-      showMessage("Bitte zuerst ein Kundenbild auswaehlen.", "error");
+      showMessage("Bitte zuerst ein Kundenbild auswählen.", "error");
       return;
     }
 
@@ -1265,7 +1265,7 @@ export default function AdminPage() {
   };
 
   const deleteClientGalleryImage = async (gallery, image) => {
-    if (!window.confirm("Dieses Kundenbild wirklich loeschen?")) return;
+    if (!window.confirm("Dieses Kundenbild wirklich löschen?")) return;
 
     setBusyClientImageId(image.id);
     setMessage("");
@@ -1279,7 +1279,7 @@ export default function AdminPage() {
 
     if (!response.ok) {
       showMessage(
-        data.error || "Kundenbild konnte nicht geloescht werden.",
+        data.error || "Kundenbild konnte nicht gelöscht werden.",
         "error"
       );
       setBusyClientImageId(null);
@@ -1306,7 +1306,7 @@ export default function AdminPage() {
         };
       })
     );
-    showMessage("Kundenbild wurde geloescht.", "success");
+    showMessage("Kundenbild wurde gelöscht.", "success");
     setBusyClientImageId(null);
   };
 
@@ -1336,7 +1336,7 @@ export default function AdminPage() {
 
   const copyClientGalleryInvite = () => {
     if (!activeClientGallery) {
-      showMessage("Bitte zuerst eine Kundengalerie auswaehlen.", "error");
+      showMessage("Bitte zuerst eine Kundengalerie auswählen.", "error");
       return;
     }
 
@@ -1363,7 +1363,7 @@ export default function AdminPage() {
         ? "Wenn du dich mit derselben E-Mail im Kundenkonto anmeldest, findest du die Galerie dort ebenfalls."
         : "",
       "",
-      "Liebe Gruesse",
+      "Liebe Grüße",
       "Felix",
     ]
       .filter((line, index, lines) => line || lines[index - 1])
@@ -1376,7 +1376,7 @@ export default function AdminPage() {
     const file = siteAssetFiles[assetKey];
 
     if (!file) {
-      showMessage("Bitte zuerst ein Bild auswaehlen.", "error");
+      showMessage("Bitte zuerst ein Bild auswählen.", "error");
       return;
     }
 
@@ -1513,7 +1513,7 @@ export default function AdminPage() {
   };
 
   const deleteReview = async (review) => {
-    if (!window.confirm(`Bewertung von ${review.name} wirklich loeschen?`)) {
+    if (!window.confirm(`Bewertung von ${review.name} wirklich löschen?`)) {
       return;
     }
 
@@ -1528,13 +1528,13 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      showMessage(data.error || "Bewertung konnte nicht geloescht werden.", "error");
+      showMessage(data.error || "Bewertung konnte nicht gelöscht werden.", "error");
       setBusyId(null);
       return;
     }
 
     setReviews((current) => current.filter((item) => item.id !== review.id));
-    showMessage("Bewertung wurde geloescht.", "success");
+    showMessage("Bewertung wurde gelöscht.", "success");
     setBusyId(null);
   };
 
@@ -1554,7 +1554,7 @@ export default function AdminPage() {
 
     if (!response.ok) {
       showMessage(
-        data.error || "Bewertungsstatus konnte nicht geaendert werden.",
+        data.error || "Bewertungsstatus konnte nicht geändert werden.",
         "error"
       );
       setBusyId(null);
@@ -1574,7 +1574,7 @@ export default function AdminPage() {
   };
 
   const deleteImage = async (image) => {
-    if (!window.confirm("Bild wirklich aus der Online-Galerie loeschen?")) {
+    if (!window.confirm("Bild wirklich aus der Online-Galerie löschen?")) {
       return;
     }
 
@@ -1589,14 +1589,14 @@ export default function AdminPage() {
     const data = await response.json();
 
     if (!response.ok) {
-      showMessage(data.error || "Bild konnte nicht geloescht werden.", "error");
+      showMessage(data.error || "Bild konnte nicht gelöscht werden.", "error");
       setBusyImageId(null);
       return;
     }
 
     setImages((current) => current.filter((item) => item.id !== image.id));
     setSelectedImageIds((current) => current.filter((id) => id !== image.id));
-    showMessage("Bild wurde aus der Galerie geloescht.", "success");
+    showMessage("Bild wurde aus der Galerie gelöscht.", "success");
     setBusyImageId(null);
   };
 
@@ -1623,7 +1623,7 @@ export default function AdminPage() {
 
     if (
       !window.confirm(
-        `${selectedImages.length} ausgewaehlte Bilder wirklich loeschen?`
+        `${selectedImages.length} ausgewählte Bilder wirklich löschen?`
       )
     ) {
       return;
@@ -1646,7 +1646,7 @@ export default function AdminPage() {
     if (failedResponse) {
       const data = await failedResponse.json();
       showMessage(
-        data.error || "Mindestens ein Bild konnte nicht geloescht werden.",
+        data.error || "Mindestens ein Bild konnte nicht gelöscht werden.",
         "error"
       );
       setBusyImageId(null);
@@ -1659,7 +1659,7 @@ export default function AdminPage() {
       current.filter((image) => !deletedIds.includes(image.id))
     );
     setSelectedImageIds([]);
-    showMessage("Ausgewaehlte Bilder wurden geloescht.", "success");
+    showMessage("Ausgewählte Bilder wurden gelöscht.", "success");
     setBusyImageId(null);
   };
 
@@ -1744,7 +1744,7 @@ export default function AdminPage() {
             </h1>
             <p className="mt-3 max-w-xl text-neutral-300">
               Hier verwaltest du Portfolio-Bilder, Bildreihenfolge und
-              Bewertungen fuer deine Website.
+              Bewertungen für deine Website.
             </p>
           </div>
 
@@ -1786,7 +1786,7 @@ export default function AdminPage() {
 
         {!configured && (
           <div className="mt-6 rounded-2xl border border-red-400/30 bg-red-500/10 px-5 py-4 text-sm text-red-100">
-            ADMIN_PASSWORD fehlt oder ADMIN_SESSION_SECRET ist kuerzer als 32 Zeichen.
+            ADMIN_PASSWORD fehlt oder ADMIN_SESSION_SECRET ist kürzer als 32 Zeichen.
           </div>
         )}
 
@@ -1816,12 +1816,12 @@ export default function AdminPage() {
               disabled={loading}
               className="mt-5 w-full rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
             >
-              {loading ? "Pruefe..." : "Einloggen"}
+              {loading ? "Prüfe..." : "Einloggen"}
             </button>
           </form>
         ) : (
           <section className="mt-10 grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-            <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+            <aside className="space-y-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:pr-2">
               <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
                 <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
                   Heute wichtig
@@ -1969,7 +1969,7 @@ export default function AdminPage() {
                     </h2>
                     <p className="mt-3 max-w-2xl text-neutral-300">
                       Von hier aus kommst du direkt zu den Bereichen, die du am
-                      haeufigsten brauchst.
+                      häufigsten brauchst.
                     </p>
                   </div>
 
@@ -2001,7 +2001,7 @@ export default function AdminPage() {
                       Offene Bewertungen
                     </h3>
                     <p className="mt-2 text-sm leading-6 text-yellow-100/75">
-                      Bewertungen pruefen, freigeben oder direkt loeschen.
+                      Bewertungen prüfen, freigeben oder direkt löschen.
                     </p>
                   </button>
 
@@ -2113,8 +2113,8 @@ export default function AdminPage() {
                         Projekt-Pipeline
                       </h3>
                       <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
-                        Schlanke Uebersicht fuer laufende Kundengalerien. Das ist
-                        die Basis fuer spaetere Kundenkonten.
+                        Schlanke Übersicht für laufende Kundengalerien. Das ist
+                        die Basis für spätere Kundenkonten.
                       </p>
                     </div>
                     <button
@@ -2292,7 +2292,7 @@ export default function AdminPage() {
                     <div className="min-w-0">
                       <h3 className="text-xl font-black">Schnellzugriff</h3>
                       <p className="mt-2 text-sm text-neutral-400">
-                        Direkt testen, ob deine Aenderungen vorne sichtbar sind.
+                        Direkt testen, ob deine Änderungen vorne sichtbar sind.
                       </p>
                     </div>
                     <div className="grid min-w-0 gap-2 sm:grid-cols-3">
@@ -2347,7 +2347,7 @@ export default function AdminPage() {
                     </h2>
                     <p className="mt-3 max-w-2xl text-neutral-300">
                       Hochgeladene Bilder erscheinen vorne in der passenden
-                      Galerie. Die Portfolio-Titelbilder bleiben unveraendert.
+                      Galerie. Die Portfolio-Titelbilder bleiben unverändert.
                     </p>
                   </div>
 
@@ -2402,7 +2402,7 @@ export default function AdminPage() {
                     className="inline-flex h-fit items-center justify-center gap-2 self-end rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
                   >
                     <Upload className="h-4 w-4" />
-                    {imageUploading ? "Laedt hoch..." : "Hochladen"}
+                    {imageUploading ? "Lädt hoch..." : "Hochladen"}
                   </button>
 
                   {imagePreview && (
@@ -2415,7 +2415,7 @@ export default function AdminPage() {
                         />
                         <div>
                           <p className="text-sm font-bold text-white">
-                            Ausgewaehltes Bild
+                            Ausgewähltes Bild
                           </p>
                           <p className="mt-1 break-all text-sm text-neutral-300">
                             {imageFile?.name}
@@ -2453,7 +2453,7 @@ export default function AdminPage() {
                       >
                         <option value="manual">Eigene Reihenfolge</option>
                         <option value="newest">Neueste zuerst</option>
-                        <option value="oldest">Aelteste zuerst</option>
+                        <option value="oldest">Älteste zuerst</option>
                       </select>
                     </label>
 
@@ -2507,13 +2507,13 @@ export default function AdminPage() {
                         disabled={visibleImageCount === 0}
                         className="h-4 w-4 rounded border-white/20 accent-yellow-400"
                       />
-                      Sichtbare Bilder auswaehlen
+                      Sichtbare Bilder auswählen
                     </label>
 
                     {selectedImageIds.length > 0 && (
                       <div className="flex flex-wrap items-center gap-3">
                         <span className="rounded-full bg-yellow-400 px-3 py-1 text-xs font-black text-black">
-                          {selectedImageIds.length} ausgewaehlt
+                          {selectedImageIds.length} ausgewählt
                         </span>
                         <button
                           type="button"
@@ -2529,7 +2529,7 @@ export default function AdminPage() {
                           className="inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
                         >
                           <Trash2 className="h-4 w-4" />
-                          Ausgewaehlte loeschen
+                          Ausgewählte löschen
                         </button>
                       </div>
                     )}
@@ -2680,7 +2680,7 @@ export default function AdminPage() {
                                     className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold text-neutral-100 transition hover:bg-white/15"
                                   >
                                     <ExternalLink className="h-4 w-4" />
-                                    Oeffnen
+                                    Öffnen
                                   </a>
 
                                   <button
@@ -2733,7 +2733,7 @@ export default function AdminPage() {
                                     className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
                                   >
                                     <Trash2 className="h-4 w-4" />
-                                    Loeschen
+                                    Löschen
                                   </button>
                                 </div>
                               </div>
@@ -2758,8 +2758,8 @@ export default function AdminPage() {
                       Private Galerien
                     </h2>
                     <p className="mt-3 max-w-2xl text-neutral-300">
-                      Erstelle fuer Kunden einen Code, lade Bilder nur in diese
-                      Galerie und pruefe spaeter die markierten Favoriten.
+                      Erstelle für Kunden einen Code, lade Bilder nur in diese
+                      Galerie und prüfe später die markierten Favoriten.
                     </p>
                   </div>
 
@@ -3222,7 +3222,7 @@ export default function AdminPage() {
                               <div>
                                 <h4 className="font-black">Kundendaten</h4>
                                 <p className="mt-1 text-sm text-neutral-500">
-                                  Grundlage fuer spaetere Kundenkonten.
+                                  Grundlage für spätere Kundenkonten.
                                 </p>
                               </div>
                               <button
@@ -3396,8 +3396,8 @@ export default function AdminPage() {
                               Kundenbild hochladen
                             </span>
                             <span className="mt-1 block text-xs leading-5 text-neutral-500">
-                              Originaldatei bis 15 MB. Fuer fluessiges Laden sind
-                              JPG/WebP mit ca. 2000-3000 px Kantenlaenge ideal.
+                              Originaldatei bis 15 MB. Für flüssiges Laden sind
+                              JPG/WebP mit ca. 2000-3000 px Kantenlänge ideal.
                             </span>
                             <input
                               type="file"
@@ -3418,7 +3418,7 @@ export default function AdminPage() {
                           >
                             <Upload className="h-4 w-4" />
                             {clientGalleryUploading
-                              ? "Laedt hoch..."
+                              ? "Lädt hoch..."
                               : "In Kundengalerie laden"}
                           </button>
 
@@ -3432,7 +3432,7 @@ export default function AdminPage() {
                                 />
                                 <div className="min-w-0">
                                   <p className="text-sm font-bold text-white">
-                                    Ausgewaehltes Kundenbild
+                                    Ausgewähltes Kundenbild
                                   </p>
                                   <p className="mt-1 break-all text-sm text-neutral-300">
                                     {clientGalleryFile?.name}
@@ -3635,7 +3635,7 @@ export default function AdminPage() {
                     </h2>
                     <p className="mt-3 max-w-2xl text-neutral-300">
                       Hier tauschst du die sichtbaren Titelbilder, ohne die
-                      Galerie-Uploads zu veraendern.
+                      Galerie-Uploads zu verändern.
                     </p>
                   </div>
 
@@ -3720,7 +3720,7 @@ export default function AdminPage() {
 
                                 <label className="mt-4 block">
                                   <span className="text-sm font-semibold text-neutral-300">
-                                    Neues Bild auswaehlen
+                                    Neues Bild auswählen
                                   </span>
                                   <input
                                     type="file"
@@ -4001,7 +4001,7 @@ export default function AdminPage() {
                     },
                     {
                       value: "approved",
-                      label: "Oeffentlich",
+                      label: "Öffentlich",
                       count: approvedReviews.length,
                     },
                     { value: "all", label: "Alle", count: reviews.length },
@@ -4047,7 +4047,7 @@ export default function AdminPage() {
                               }`}
                             >
                               {review.is_approved
-                                ? "Oeffentlich"
+                                ? "Öffentlich"
                                 : "Wartet auf Freigabe"}
                             </span>
                           </div>
@@ -4105,7 +4105,7 @@ export default function AdminPage() {
                             className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
                           >
                             <Trash2 className="h-4 w-4" />
-                            Loeschen
+                            Löschen
                           </button>
                         </div>
                       </div>
@@ -4132,7 +4132,7 @@ export default function AdminPage() {
                     <h3 className="mt-5 text-xl font-black">Admin-Schutz</h3>
                     <p className="mt-3 text-sm leading-6 text-emerald-100/80">
                       Der Admin-Bereich ist mit Passwort und Session-Cookie
-                      geschuetzt. Nach mehreren falschen Login-Versuchen wird
+                      geschützt. Nach mehreren falschen Login-Versuchen wird
                       kurz gebremst.
                     </p>
                   </div>
@@ -4155,23 +4155,23 @@ export default function AdminPage() {
                     <h3 className="mt-5 text-xl font-black">Bewertungen</h3>
                     <p className="mt-3 text-sm leading-6 text-yellow-100/80">
                       Neue Bewertungen werden gespeichert, sind aber erst nach
-                      deiner Freigabe fuer Besucher sichtbar.
+                      deiner Freigabe für Besucher sichtbar.
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
-                  <h3 className="text-xl font-black">Naechste sinnvolle Admin-Funktionen</h3>
+                  <h3 className="text-xl font-black">Nächste sinnvolle Admin-Funktionen</h3>
                   <div className="mt-4 grid gap-3 text-sm text-neutral-300 md:grid-cols-2">
                     <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
                       Startseitenbilder und Portfolio-Titelbilder sind jetzt
                       direkt im Admin pflegbar.
                     </p>
                     <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      Kontaktinfos ohne Code-Aenderung bearbeiten.
+                      Kontaktinfos ohne Code-Änderung bearbeiten.
                     </p>
                     <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      Spaeter Kundenkonten und Download-Galerien anbinden.
+                      Später Kundenkonten und Download-Galerien anbinden.
                     </p>
                   </div>
                 </div>
@@ -4243,7 +4243,7 @@ export default function AdminPage() {
                   className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Original oeffnen
+                  Original öffnen
                 </a>
               </div>
             </div>

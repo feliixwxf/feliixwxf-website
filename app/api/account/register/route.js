@@ -18,7 +18,7 @@ export async function POST(request) {
 
   if (!email || !email.includes("@")) {
     return NextResponse.json(
-      { error: "Bitte eine gueltige E-Mail eingeben." },
+      { error: "Bitte eine gültige E-Mail eingeben." },
       { status: 400 }
     );
   }
@@ -52,7 +52,7 @@ export async function POST(request) {
         error:
           data.msg ||
           data.message ||
-          "Konto konnte nicht erstellt werden. Bitte spaeter erneut versuchen.",
+          "Konto konnte nicht erstellt werden. Bitte später erneut versuchen.",
       },
       { status: 400 }
     );
@@ -68,7 +68,7 @@ export async function POST(request) {
     needsEmailConfirmation: !data.session,
     message: data.session
       ? "Konto wurde erstellt."
-      : "Konto wurde erstellt. Bitte bestaetige deine E-Mail und logge dich danach ein.",
+      : "Konto wurde erstellt. Bitte bestätige deine E-Mail und logge dich danach ein.",
   });
 
   return setCustomerCookies(result, data.session);

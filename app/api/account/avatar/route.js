@@ -42,7 +42,7 @@ export async function POST(request) {
 
   if (!file || typeof file === "string") {
     const response = NextResponse.json(
-      { error: "Bitte ein Profilbild auswaehlen." },
+      { error: "Bitte ein Profilbild auswählen." },
       { status: 400 }
     );
     return applyCustomerSessionCookies(response, customerSession);
@@ -85,7 +85,7 @@ export async function POST(request) {
     const response = NextResponse.json(
       {
         error:
-          "Profilbild konnte nicht hochgeladen werden. Bitte pruefe den Supabase Storage Bucket.",
+          "Profilbild konnte nicht hochgeladen werden. Bitte prüfe den Supabase Storage Bucket.",
         details: await uploadResponse.text(),
       },
       { status: 500 }

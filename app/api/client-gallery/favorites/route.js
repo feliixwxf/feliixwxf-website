@@ -75,7 +75,7 @@ export async function POST(request) {
 
   if (!imageResponse.ok) {
     return NextResponse.json(
-      { error: "Bild konnte nicht geprueft werden." },
+      { error: "Bild konnte nicht geprüft werden." },
       { status: 500 }
     );
   }
@@ -84,7 +84,7 @@ export async function POST(request) {
 
   if (!image) {
     return NextResponse.json(
-      { error: "Bild gehoert nicht zu dieser Galerie." },
+      { error: "Bild gehört nicht zu dieser Galerie." },
       { status: 400 }
     );
   }

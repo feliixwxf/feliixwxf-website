@@ -37,14 +37,14 @@ export async function POST(request) {
 
   if (!galleryId) {
     return NextResponse.json(
-      { error: "Bitte zuerst eine Kundengalerie auswaehlen." },
+      { error: "Bitte zuerst eine Kundengalerie auswählen." },
       { status: 400 }
     );
   }
 
   if (!file || typeof file === "string") {
     return NextResponse.json(
-      { error: "Bitte ein Bild auswaehlen." },
+      { error: "Bitte ein Bild auswählen." },
       { status: 400 }
     );
   }
@@ -206,7 +206,7 @@ export async function DELETE(request) {
   if (!deleteResponse.ok) {
     const details = await deleteResponse.text();
     return NextResponse.json(
-      { error: "Kundenbild konnte nicht geloescht werden.", details },
+      { error: "Kundenbild konnte nicht gelöscht werden.", details },
       { status: 500 }
     );
   }

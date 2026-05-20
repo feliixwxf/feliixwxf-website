@@ -95,7 +95,7 @@ export async function PATCH(request) {
   if (!response.ok) {
     const details = await response.text();
     return NextResponse.json(
-      { error: "Bewertungsstatus konnte nicht geaendert werden.", details },
+      { error: "Bewertungsstatus konnte nicht geändert werden.", details },
       { status: 500 }
     );
   }
@@ -137,7 +137,7 @@ export async function DELETE(request) {
   if (!response.ok) {
     const details = await response.text();
     return NextResponse.json(
-      { error: "Bewertung konnte nicht geloescht werden.", details },
+      { error: "Bewertung konnte nicht gelöscht werden.", details },
       { status: 500 }
     );
   }

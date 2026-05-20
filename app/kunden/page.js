@@ -246,7 +246,7 @@ export default function CustomerGalleryPage() {
                   ) : (
                     <ImageIcon className="h-5 w-5" />
                   )}
-                  {loading ? "Laedt..." : "Galerie öffnen"}
+                  {loading ? "Lädt..." : "Galerie öffnen"}
                 </button>
 
                 {message && (
@@ -331,7 +331,7 @@ export default function CustomerGalleryPage() {
                       </p>
                       <p className="text-sm text-neutral-400">
                         {gallery.downloads_enabled
-                          ? "Bilder koennen geladen werden"
+                          ? "Bilder können geladen werden"
                           : "Nur Ansicht freigegeben"}
                       </p>
                     </div>

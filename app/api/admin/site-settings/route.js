@@ -103,7 +103,7 @@ export async function PUT(request) {
 
   if (rows.length === 0) {
     return NextResponse.json(
-      { error: "Keine gueltigen Kontaktfelder gefunden." },
+      { error: "Keine gültigen Kontaktfelder gefunden." },
       { status: 400 }
     );
   }
