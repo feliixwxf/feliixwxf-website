@@ -3,12 +3,16 @@
 import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  Eye,
+  EyeOff,
   Image as ImageIcon,
   KeyRound,
   Lock,
   LogOut,
   Mail,
   RefreshCw,
+  Upload,
+  UserRound,
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
@@ -33,9 +37,12 @@ export default function AccountPage() {
     password: "",
   });
   const [profileName, setProfileName] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
 
@@ -81,10 +88,12 @@ export default function AccountPage() {
     if (data.authenticated) {
       setUser(data.user);
       setProfileName(data.user?.name || "");
+      setAvatarPreview(data.user?.avatar_url || "");
       await loadGalleries();
     } else {
       setUser(null);
       setProfileName("");
+      setAvatarPreview("");
       setGalleries([]);
     }
 
@@ -139,6 +148,7 @@ export default function AccountPage() {
 
     setUser(data.user);
     setProfileName(data.user?.name || form.name || "");
+    setAvatarPreview(data.user?.avatar_url || "");
     showMessage(
       mode === "register" ? "Konto wurde erstellt." : "Du bist eingeloggt.",
       "success"
@@ -151,6 +161,7 @@ export default function AccountPage() {
     await fetch("/api/account/logout", { method: "POST" });
     setUser(null);
     setProfileName("");
+    setAvatarPreview("");
     setGalleries([]);
     showMessage("Du wurdest ausgeloggt.", "success");
   };
@@ -174,8 +185,44 @@ export default function AccountPage() {
 
     setUser(data.user);
     setProfileName(data.user?.name || "");
+    setAvatarPreview(data.user?.avatar_url || "");
     showMessage("Benutzername wurde gespeichert.", "success");
     setProfileSaving(false);
+  };
+
+  const uploadAvatar = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+    setAvatarUploading(true);
+    setMessage("");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("/api/account/avatar", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json().catch(() => ({}));
+
+    URL.revokeObjectURL(previewUrl);
+
+    if (!response.ok) {
+      setAvatarPreview(user?.avatar_url || "");
+      showMessage(data.error || "Profilbild konnte nicht gespeichert werden.", "error");
+      setAvatarUploading(false);
+      return;
+    }
+
+    setUser(data.user);
+    setAvatarPreview(data.user?.avatar_url || "");
+    showMessage("Profilbild wurde gespeichert.", "success");
+    setAvatarUploading(false);
   };
 
   const openGallery = (gallery) => {
@@ -247,6 +294,35 @@ export default function AccountPage() {
                   </p>
 
                   <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
+                      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+                        {avatarPreview ? (
+                          <img
+                            src={avatarPreview}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <UserRound className="h-8 w-8 text-neutral-400" />
+                        )}
+                      </div>
+                      <label className="inline-flex w-fit cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black transition hover:bg-white/15">
+                        {avatarUploading ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                        Profilbild ändern
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={uploadAvatar}
+                          disabled={avatarUploading}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
                     <label className="block">
                       <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
                         Benutzername
@@ -399,14 +475,30 @@ export default function AccountPage() {
                       <div className="relative mt-2">
                         <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
                         <input
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           value={form.password}
                           onChange={(event) =>
                             updateForm("password", event.target.value)
                           }
                           placeholder="Mindestens 8 Zeichen"
-                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
+                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-14 text-neutral-950 outline-none focus:border-yellow-400"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((current) => !current)}
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-600 transition hover:bg-neutral-100"
+                          aria-label={
+                            showPassword
+                              ? "Passwort ausblenden"
+                              : "Passwort anzeigen"
+                          }
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
                       </div>
                     </label>
 

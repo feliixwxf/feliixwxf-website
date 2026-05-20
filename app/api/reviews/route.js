@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  applyCustomerSessionCookies,
+  getCustomerSession,
+} from "../account/_lib/auth";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -37,6 +41,22 @@ function cleanReview(review) {
   };
 }
 
+async function fetchReviews(select) {
+  const response = await fetch(
+    `${supabaseRestUrl}/rest/v1/reviews?select=${select}&is_approved=eq.true&order=created_at.desc&limit=50`,
+    {
+      headers,
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    return { response, reviews: null, details: await response.text() };
+  }
+
+  return { response, reviews: await response.json(), details: "" };
+}
+
 export async function GET(request) {
   try {
     if (new URL(request.url).searchParams.get("debug") === "1") {
@@ -65,22 +85,18 @@ export async function GET(request) {
       return NextResponse.json({ reviews: [] });
     }
 
-    const response = await fetch(
-      `${supabaseRestUrl}/rest/v1/reviews?select=name,text,stars,created_at&is_approved=eq.true&order=created_at.desc&limit=50`,
-      {
-        headers,
-        cache: "no-store",
-      }
-    );
+    let result = await fetchReviews("name,text,stars,avatar_url,created_at");
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error("Could not load reviews:", error);
+    if (!result.response.ok && result.details.toLowerCase().includes("avatar_url")) {
+      result = await fetchReviews("name,text,stars,created_at");
+    }
+
+    if (!result.response.ok) {
+      console.error("Could not load reviews:", result.details);
       return NextResponse.json({ reviews: [] }, { status: 200 });
     }
 
-    const reviews = await response.json();
-    return NextResponse.json({ reviews });
+    return NextResponse.json({ reviews: result.reviews || [] });
   } catch (error) {
     console.error("Review GET failed:", error);
     return NextResponse.json({ reviews: [] }, { status: 200 });
@@ -89,48 +105,91 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const customerSession = await getCustomerSession(request);
+    const user = customerSession.user;
     const review = cleanReview(await request.json());
+    const reviewPayload = {
+      ...review,
+      name: user?.name || review.name,
+      is_approved: false,
+    };
 
-    if (!review.name || !review.text) {
-      return NextResponse.json(
+    if (user?.id) reviewPayload.customer_user_id = user.id;
+    if (user?.avatar_url) reviewPayload.avatar_url = user.avatar_url;
+
+    if (!reviewPayload.name || !reviewPayload.text) {
+      const response = NextResponse.json(
         { error: "Name und Text sind erforderlich." },
         { status: 400 }
       );
+      return applyCustomerSessionCookies(response, customerSession);
     }
 
     if (!isConfigured) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: "Online-Speicher ist noch nicht konfiguriert." },
         { status: 503 }
       );
+      return applyCustomerSessionCookies(response, customerSession);
     }
 
-    const response = await fetch(`${supabaseRestUrl}/rest/v1/reviews`, {
+    let response = await fetch(`${supabaseRestUrl}/rest/v1/reviews`, {
       method: "POST",
       headers: {
         ...headers,
         Prefer: "return=minimal",
       },
-      body: JSON.stringify({ ...review, is_approved: false }),
+      body: JSON.stringify(reviewPayload),
     });
 
     if (!response.ok) {
       const error = await response.text();
+
+      if (
+        error.toLowerCase().includes("avatar_url") ||
+        error.toLowerCase().includes("customer_user_id")
+      ) {
+        response = await fetch(`${supabaseRestUrl}/rest/v1/reviews`, {
+          method: "POST",
+          headers: {
+            ...headers,
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({
+            name: reviewPayload.name,
+            text: reviewPayload.text,
+            stars: reviewPayload.stars,
+            is_approved: false,
+          }),
+        });
+      }
+
+      if (response.ok) {
+        const result = NextResponse.json({
+          review: {
+            ...reviewPayload,
+            created_at: new Date().toISOString(),
+          },
+        });
+        return applyCustomerSessionCookies(result, customerSession);
+      }
+
       console.error("Could not save review:", error);
 
-      return NextResponse.json(
+      const result = NextResponse.json(
         { error: "Bewertung konnte nicht gespeichert werden.", details: error },
         { status: 500 }
       );
+      return applyCustomerSessionCookies(result, customerSession);
     }
 
-    return NextResponse.json({
+    const result = NextResponse.json({
       review: {
-        ...review,
-        is_approved: false,
+        ...reviewPayload,
         created_at: new Date().toISOString(),
       },
     });
+    return applyCustomerSessionCookies(result, customerSession);
   } catch (error) {
     console.error("Review POST failed:", error);
     return NextResponse.json(

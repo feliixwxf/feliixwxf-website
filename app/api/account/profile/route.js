@@ -39,7 +39,7 @@ export async function PATCH(request) {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      data: { name },
+      data: { name, avatar_url: currentUser.avatar_url || "" },
     }),
   });
   const data = await response.json().catch(() => ({}));
@@ -62,6 +62,7 @@ export async function PATCH(request) {
       id: data.id || currentUser.id,
       email: data.email || currentUser.email,
       name: data.user_metadata?.name || name,
+      avatar_url: data.user_metadata?.avatar_url || currentUser.avatar_url || "",
     },
   });
 

@@ -23,16 +23,35 @@ export async function GET() {
     );
   }
 
-  const response = await fetch(
-    `${supabaseRestUrl}/rest/v1/reviews?select=id,name,text,stars,is_approved,created_at&order=created_at.desc&limit=200`,
+  let response = await fetch(
+    `${supabaseRestUrl}/rest/v1/reviews?select=id,name,text,stars,avatar_url,customer_user_id,is_approved,created_at&order=created_at.desc&limit=200`,
     {
       headers: supabaseServiceHeaders,
       cache: "no-store",
     }
   );
 
+  let responseDetails = "";
+
   if (!response.ok) {
-    const details = await response.text();
+    responseDetails = await response.text();
+
+    if (
+      responseDetails.toLowerCase().includes("avatar_url") ||
+      responseDetails.toLowerCase().includes("customer_user_id")
+    ) {
+      response = await fetch(
+        `${supabaseRestUrl}/rest/v1/reviews?select=id,name,text,stars,is_approved,created_at&order=created_at.desc&limit=200`,
+        {
+          headers: supabaseServiceHeaders,
+          cache: "no-store",
+        }
+      );
+    }
+  }
+
+  if (!response.ok) {
+    const details = responseDetails || (await response.text());
     return NextResponse.json(
       { error: "Bewertungen konnten nicht geladen werden.", details },
       { status: 500 }

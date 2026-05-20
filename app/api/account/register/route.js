@@ -63,6 +63,7 @@ export async function POST(request) {
       id: data.user?.id,
       email: data.user?.email || email,
       name,
+      avatar_url: data.user?.user_metadata?.avatar_url || "",
     },
     needsEmailConfirmation: !data.session,
     message: data.session

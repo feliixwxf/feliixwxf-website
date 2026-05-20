@@ -3994,9 +3994,22 @@ export default function AdminPage() {
                                 : "Wartet auf Freigabe"}
                             </span>
                           </div>
-                          <h3 className="mt-4 text-xl font-black">
-                            {review.name}
-                          </h3>
+                          <div className="mt-4 flex items-center gap-3">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10">
+                              {review.avatar_url ? (
+                                <img
+                                  src={review.avatar_url}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <Users className="h-5 w-5 text-neutral-400" />
+                              )}
+                            </div>
+                            <h3 className="text-xl font-black">
+                              {review.name}
+                            </h3>
+                          </div>
                           <p className="mt-3 leading-7 text-neutral-300">
                             "{review.text}"
                           </p>

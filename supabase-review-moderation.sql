@@ -16,3 +16,6 @@ begin
 end
 $$;
 
+alter table public.reviews
+  add column if not exists avatar_url text,
+  add column if not exists customer_user_id uuid;

@@ -125,6 +125,7 @@ export default function FeliixWxfPhotography() {
   const [showPopup, setShowPopup] = useState(false);
   const [popupClosed, setPopupClosed] = useState(false);
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
+  const [currentCustomer, setCurrentCustomer] = useState(null);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewMessage, setReviewMessage] = useState("");
   const [uploadedImages, setUploadedImages] = useState([]);
@@ -154,6 +155,16 @@ export default function FeliixWxfPhotography() {
           "Online-Bewertungen konnten gerade nicht geladen werden."
         );
       });
+
+    fetch("/api/account/session")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data?.authenticated && data.user) {
+          setCurrentCustomer(data.user);
+          setReviewName((current) => current || data.user.name || "");
+        }
+      })
+      .catch(() => {});
 
     fetch("/api/portfolio-images")
       .then((response) => (response.ok ? response.json() : null))
@@ -398,8 +409,9 @@ export default function FeliixWxfPhotography() {
 
       if (!response.ok) throw new Error("Review could not be saved");
 
+      const nextName = currentCustomer?.name || "";
       setRating(0);
-      setReviewName("");
+      setReviewName(nextName);
       setReviewText("");
       formElement.reset();
       setReviewMessage(
@@ -434,6 +446,22 @@ export default function FeliixWxfPhotography() {
       );
     });
   };
+
+  const ReviewAvatar = ({ review, className = "h-11 w-11" }) => (
+    <div
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10 ${className}`}
+    >
+      {review?.avatar_url ? (
+        <img
+          src={review.avatar_url}
+          alt=""
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <UserRound className="h-5 w-5 text-neutral-400" />
+      )}
+    </div>
+  );
 
   const ThemeToggle = () => (
     <button
@@ -843,7 +871,10 @@ export default function FeliixWxfPhotography() {
                       {renderStars(review.stars)}
                     </div>
                     <p className={`leading-7 ${muted}`}>“{review.text}”</p>
-                    <p className="mt-6 font-bold">{review.name}</p>
+                    <div className="mt-6 flex items-center gap-3">
+                      <ReviewAvatar review={review} />
+                      <p className="font-bold">{review.name}</p>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -887,8 +918,13 @@ export default function FeliixWxfPhotography() {
                       required
                       value={reviewName}
                       onChange={(event) => setReviewName(event.target.value)}
-                      placeholder="Dein Name"
-                      className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400"
+                      readOnly={Boolean(currentCustomer?.name)}
+                      placeholder={
+                        currentCustomer?.name
+                          ? "Nutzername aus deinem Konto"
+                          : "Dein Name"
+                      }
+                      className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400 read-only:bg-white/70"
                     />
 
                     <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4">
@@ -1105,7 +1141,10 @@ export default function FeliixWxfPhotography() {
                         “{review.text}”
                       </p>
 
-                      <p className="mt-6 text-lg font-bold">{review.name}</p>
+                      <div className="mt-6 flex items-center gap-3">
+                        <ReviewAvatar review={review} />
+                        <p className="text-lg font-bold">{review.name}</p>
+                      </div>
                       <p className="mt-2 text-xs uppercase tracking-[0.25em] text-neutral-500">
                         Anklicken zum Vergrößern
                       </p>
@@ -1131,9 +1170,15 @@ export default function FeliixWxfPhotography() {
                 <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
                   Bewertung
                 </p>
-                <h2 className="mt-3 text-4xl font-black">
-                  {selectedReview.name}
-                </h2>
+                <div className="mt-3 flex items-center gap-4">
+                  <ReviewAvatar
+                    review={selectedReview}
+                    className="h-14 w-14"
+                  />
+                  <h2 className="text-4xl font-black">
+                    {selectedReview.name}
+                  </h2>
+                </div>
               </div>
 
               <button
