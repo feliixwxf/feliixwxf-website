@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
   Download,
   ExternalLink,
   Heart,
   Image as ImageIcon,
   Lock,
   RefreshCw,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -53,13 +56,22 @@ export default function CustomerGalleryPage() {
   const [images, setImages] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [viewMode, setViewMode] = useState("all");
   const [loading, setLoading] = useState(false);
   const [busyImageId, setBusyImageId] = useState("");
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
 
-  const favoriteImageIds = new Set(favorites.map((favorite) => favorite.image_id));
+  const favoriteImageIds = useMemo(
+    () => new Set(favorites.map((favorite) => favorite.image_id)),
+    [favorites]
+  );
   const favoriteImages = images.filter((image) => favoriteImageIds.has(image.id));
+  const visibleImages = viewMode === "favorites" ? favoriteImages : images;
+  const selectedImageIndex = selectedImage
+    ? images.findIndex((image) => image.id === selectedImage.id)
+    : -1;
+  const coverImage = images[0];
   const galleryStatus = getGalleryStatus(gallery);
 
   const showMessage = (text, type = "info") => {
@@ -102,6 +114,7 @@ export default function CustomerGalleryPage() {
     setGallery(data.gallery);
     setImages(data.images || []);
     setFavorites(data.favorites || []);
+    setViewMode("all");
     showMessage("Galerie wurde geladen.", "success");
     setLoading(false);
   };
@@ -122,6 +135,27 @@ export default function CustomerGalleryPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!selectedImage) return;
+
+      if (event.key === "Escape") {
+        setSelectedImage(null);
+      }
+
+      if (event.key === "ArrowLeft") {
+        showPreviousImage();
+      }
+
+      if (event.key === "ArrowRight") {
+        showNextImage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImage, images]);
+
   const loadGallery = async (event) => {
     event?.preventDefault();
     await loadGalleryByCode(accessCode);
@@ -132,7 +166,20 @@ export default function CustomerGalleryPage() {
     setImages([]);
     setFavorites([]);
     setSelectedImage(null);
+    setViewMode("all");
     setMessage("");
+  };
+
+  const showPreviousImage = () => {
+    if (!images.length || selectedImageIndex < 0) return;
+    const nextIndex = selectedImageIndex === 0 ? images.length - 1 : selectedImageIndex - 1;
+    setSelectedImage(images[nextIndex]);
+  };
+
+  const showNextImage = () => {
+    if (!images.length || selectedImageIndex < 0) return;
+    const nextIndex = selectedImageIndex === images.length - 1 ? 0 : selectedImageIndex + 1;
+    setSelectedImage(images[nextIndex]);
   };
 
   const toggleFavorite = async (image) => {
@@ -173,7 +220,7 @@ export default function CustomerGalleryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-5 py-8 text-white">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-4 py-6 text-white sm:px-5 sm:py-8">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Link
@@ -196,7 +243,7 @@ export default function CustomerGalleryPage() {
           )}
         </div>
 
-        <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.08] shadow-2xl backdrop-blur-xl">
+        <section className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.08] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
           {!gallery ? (
             <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[0.85fr_1.15fr]">
               <div>
@@ -257,150 +304,150 @@ export default function CustomerGalleryPage() {
               </form>
             </div>
           ) : (
-            <div className="p-6 md:p-8">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
-                    {gallery.client_name || "Kundengalerie"}
-                  </p>
-                  <h1 className="mt-3 text-4xl font-black md:text-6xl">
-                    {gallery.title}
-                  </h1>
-                  <div className="mt-4 flex flex-wrap gap-2 text-sm">
-                    <span className={`rounded-full px-4 py-2 font-black ${galleryStatus.tone}`}>
-                      {galleryStatus.label}
-                    </span>
-                    {gallery.expires_at && (
-                      <span className="rounded-full bg-white/10 px-4 py-2 font-bold text-neutral-200">
-                        bis {formatDate(gallery.expires_at)}
+            <div>
+              <header className="relative overflow-hidden border-b border-white/10">
+                {coverImage && (
+                  <img
+                    src={coverImage.url}
+                    alt=""
+                    className="absolute inset-0 h-full w-full scale-105 object-cover opacity-20 blur-sm"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-br from-black via-black/75 to-black/35" />
+
+                <div className="relative grid gap-6 p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
+                      {gallery.client_name || "Kundengalerie"}
+                    </p>
+                    <h1 className="mt-3 max-w-4xl text-4xl font-black leading-tight md:text-6xl">
+                      {gallery.title}
+                    </h1>
+                    <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-300 md:text-lg md:leading-8">
+                      {galleryStatus.text}
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap gap-2 text-sm">
+                      <span className={`rounded-full px-4 py-2 font-black ${galleryStatus.tone}`}>
+                        {galleryStatus.label}
                       </span>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={loadGallery}
-                  disabled={loading}
-                  className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 disabled:opacity-60"
-                >
-                  <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                  Neu laden
-                </button>
-              </div>
-
-              <div className="mt-8 grid gap-3 md:grid-cols-3">
-                <div className="rounded-[1.3rem] border border-white/10 bg-black/25 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
-                      <ImageIcon className="h-5 w-5" />
+                      {gallery.expires_at && (
+                        <span className="rounded-full bg-white/10 px-4 py-2 font-bold text-neutral-200">
+                          bis {formatDate(gallery.expires_at)}
+                        </span>
+                      )}
+                      <span className="rounded-full bg-white/10 px-4 py-2 font-bold text-neutral-200">
+                        Code {gallery.access_code}
+                      </span>
                     </div>
-                    <div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 rounded-[1.3rem] border border-white/10 bg-black/30 p-2 backdrop-blur">
+                    <div className="rounded-2xl bg-white/[0.08] p-3 text-center">
                       <p className="text-2xl font-black">{images.length}</p>
-                      <p className="text-sm text-neutral-400">Bilder</p>
+                      <p className="mt-1 text-xs text-neutral-400">Bilder</p>
                     </div>
-                  </div>
-                </div>
-
-                <div className="rounded-[1.3rem] border border-yellow-400/20 bg-yellow-400/10 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-400 text-black">
-                      <Heart className="h-5 w-5 fill-current" />
-                    </div>
-                    <div>
+                    <div className="rounded-2xl bg-yellow-400/10 p-3 text-center text-yellow-100">
                       <p className="text-2xl font-black">{favorites.length}</p>
-                      <p className="text-sm text-yellow-100">Favoriten</p>
+                      <p className="mt-1 text-xs">Favoriten</p>
+                    </div>
+                    <div className="rounded-2xl bg-white/[0.08] p-3 text-center">
+                      <p className="text-sm font-black">
+                        {gallery.downloads_enabled ? "An" : "Aus"}
+                      </p>
+                      <p className="mt-1 text-xs text-neutral-400">Download</p>
                     </div>
                   </div>
                 </div>
+              </header>
 
-                <div className="rounded-[1.3rem] border border-white/10 bg-black/25 p-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                        gallery.downloads_enabled
-                          ? "bg-emerald-400 text-neutral-950"
-                          : "bg-white/10 text-neutral-300"
+              <div className="p-6 md:p-8">
+                <div className="flex flex-col gap-3 rounded-[1.3rem] border border-white/10 bg-black/25 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("all")}
+                      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${
+                        viewMode === "all"
+                          ? "bg-white text-neutral-950"
+                          : "bg-white/10 text-neutral-200 hover:bg-white/15"
                       }`}
                     >
-                      <Download className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-base font-black">
-                        {gallery.downloads_enabled ? "Downloads aktiv" : "Downloads aus"}
-                      </p>
-                      <p className="text-sm text-neutral-400">
-                        {gallery.downloads_enabled
-                          ? "Bilder können geladen werden"
-                          : "Nur Ansicht freigegeben"}
-                      </p>
-                    </div>
+                      <ImageIcon className="h-4 w-4" />
+                      Alle Bilder
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode("favorites")}
+                      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${
+                        viewMode === "favorites"
+                          ? "bg-yellow-400 text-neutral-950"
+                          : "bg-white/10 text-neutral-200 hover:bg-white/15"
+                      }`}
+                    >
+                      <Heart className="h-4 w-4" />
+                      Favoriten
+                    </button>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={loadGallery}
+                    disabled={loading}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 disabled:opacity-60"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                    Neu laden
+                  </button>
                 </div>
-              </div>
 
-              <div className="mt-4 rounded-[1.3rem] border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-neutral-300">
-                {galleryStatus.text}
-              </div>
-
-              {message && (
-                <div className={`mt-6 rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}>
-                  {message}
-                </div>
-              )}
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {images.length === 0 && (
-                  <div className="rounded-[1.5rem] border border-white/10 bg-black/25 p-6 text-neutral-300 sm:col-span-2 lg:col-span-3">
-                    In dieser Galerie sind noch keine Bilder.
+                {message && (
+                  <div className={`mt-6 rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}>
+                    {message}
                   </div>
                 )}
 
-                {images.map((image, index) => {
-                  const isFavorite = favoriteImageIds.has(image.id);
+                <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {visibleImages.length === 0 && (
+                    <div className="rounded-[1.5rem] border border-white/10 bg-black/25 p-6 text-neutral-300 sm:col-span-2 lg:col-span-3">
+                      {viewMode === "favorites"
+                        ? "Du hast noch keine Favoriten markiert."
+                        : "In dieser Galerie sind noch keine Bilder."}
+                    </div>
+                  )}
 
-                  return (
-                    <article
-                      key={image.id}
-                      className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/25"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setSelectedImage(image)}
-                        className="block aspect-[4/3] w-full bg-black/30"
+                  {visibleImages.map((image) => {
+                    const imageIndex = images.findIndex((item) => item.id === image.id);
+                    const isFavorite = favoriteImageIds.has(image.id);
+
+                    return (
+                      <article
+                        key={image.id}
+                        className="group overflow-hidden rounded-[1.4rem] border border-white/10 bg-black/25"
                       >
-                        <img
-                          src={image.url}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
-                        />
-                      </button>
-                      <div className="p-4">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-bold text-neutral-300">
-                            Bild {index + 1}
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => toggleFavorite(image)}
-                            disabled={busyImageId === image.id}
-                            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition disabled:opacity-60 ${
-                              isFavorite
-                                ? "border-yellow-400 bg-yellow-400 text-black"
-                                : "border-white/10 bg-white/10 text-white hover:bg-white/15"
-                            }`}
-                            aria-label="Favorit markieren"
-                          >
-                            <Heart
-                              className={`h-5 w-5 ${
-                                isFavorite ? "fill-current" : ""
-                              }`}
-                            />
-                          </button>
-                        </div>
-                        <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedImage(image)}
+                          className="relative block aspect-[4/3] w-full overflow-hidden bg-black/30"
+                        >
+                          <img
+                            src={image.url}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                          />
+                          <span className="absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1 text-xs font-black text-white backdrop-blur">
+                            Bild {imageIndex + 1}
+                          </span>
+                          {isFavorite && (
+                            <span className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-yellow-400 text-black shadow-lg">
+                              <Heart className="h-4 w-4 fill-current" />
+                            </span>
+                          )}
+                        </button>
+
+                        <div className="flex items-center justify-between gap-3 p-4">
                           <button
                             type="button"
                             onClick={() => setSelectedImage(image)}
@@ -409,64 +456,64 @@ export default function CustomerGalleryPage() {
                             <ExternalLink className="h-4 w-4" />
                             Groß
                           </button>
-                          {gallery.downloads_enabled && (
-                            <a
-                              href={image.url}
-                              download
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-3 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+
+                          <div className="flex gap-2">
+                            {gallery.downloads_enabled && (
+                              <a
+                                href={image.url}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400 text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                aria-label="Bild herunterladen"
+                              >
+                                <Download className="h-4 w-4" />
+                              </a>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => toggleFavorite(image)}
+                              disabled={busyImageId === image.id}
+                              className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition disabled:opacity-60 ${
+                                isFavorite
+                                  ? "border-yellow-400 bg-yellow-400 text-black"
+                                  : "border-white/10 bg-white/10 text-white hover:bg-white/15"
+                              }`}
+                              aria-label="Favorit markieren"
                             >
-                              <Download className="h-4 w-4" />
-                              Download
-                            </a>
-                          )}
+                              {busyImageId === image.id ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Heart
+                                  className={`h-4 w-4 ${
+                                    isFavorite ? "fill-current" : ""
+                                  }`}
+                                />
+                              )}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
+                      </article>
+                    );
+                  })}
+                </div>
 
-              {favoriteImages.length > 0 && (
-                <section className="mt-10 rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-5">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                      <p className="text-sm uppercase tracking-[0.3em] text-yellow-100/70">
-                        Auswahl
-                      </p>
-                      <h2 className="mt-2 text-2xl font-black">
-                        Deine markierten Favoriten
-                      </h2>
-                    </div>
-                    <span className="w-fit rounded-full bg-yellow-400 px-4 py-2 text-sm font-black text-black">
-                      {favoriteImages.length} ausgewählt
+                <section className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-neutral-950">
+                      <ShieldCheck className="h-5 w-5" />
                     </span>
-                  </div>
-
-                  <div className="mt-5 flex gap-3 overflow-x-auto pb-1">
-                    {favoriteImages.map((image) => (
-                      <button
-                        key={`favorite-${image.id}`}
-                        type="button"
-                        onClick={() => setSelectedImage(image)}
-                        className="relative h-24 w-32 shrink-0 overflow-hidden rounded-2xl border border-yellow-400/30 bg-black/30"
-                      >
-                        <img
-                          src={image.url}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          className="h-full w-full object-cover"
-                        />
-                        <span className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-yellow-400 text-black">
-                          <Heart className="h-4 w-4 fill-current" />
-                        </span>
-                      </button>
-                    ))}
+                    <div>
+                      <h2 className="font-black">Auswahl gespeichert</h2>
+                      <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-300">
+                        Deine Favoriten werden direkt gespeichert. Du kannst die
+                        Galerie später erneut über den gleichen Code oder QR-Code
+                        öffnen und weiter auswählen.
+                      </p>
+                    </div>
                   </div>
                 </section>
-              )}
+              </div>
             </div>
           )}
         </section>
@@ -476,24 +523,69 @@ export default function CustomerGalleryPage() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 p-4 backdrop-blur-lg">
           <div className="mx-auto flex min-h-full max-w-6xl items-center justify-center">
             <div className="w-full">
-              <div className="mb-4 flex justify-end">
+              <div className="mb-4 flex items-center justify-between gap-3">
                 <button
                   type="button"
-                  onClick={() => setSelectedImage(null)}
-                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-neutral-950 transition hover:scale-105"
-                  aria-label="Bild schließen"
+                  onClick={showPreviousImage}
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20"
+                  aria-label="Vorheriges Bild"
                 >
-                  <X className="h-5 w-5" />
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-neutral-200 backdrop-blur">
+                    {selectedImageIndex + 1} / {images.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImage(null)}
+                    className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-neutral-950 transition hover:scale-105"
+                    aria-label="Bild schließen"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={showNextImage}
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20"
+                  aria-label="Nächstes Bild"
+                >
+                  <ArrowRight className="h-5 w-5" />
                 </button>
               </div>
+
               <img
                 src={selectedImage.url}
                 alt=""
                 decoding="async"
-                className="max-h-[82vh] w-full rounded-[1.5rem] object-contain"
+                className="max-h-[80vh] w-full rounded-[1.2rem] object-contain"
               />
-              {gallery?.downloads_enabled && (
-                <div className="mt-4 flex justify-center">
+
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => toggleFavorite(selectedImage)}
+                  disabled={busyImageId === selectedImage.id}
+                  className={`inline-flex items-center gap-2 rounded-full px-5 py-3 font-black transition disabled:opacity-60 ${
+                    favoriteImageIds.has(selectedImage.id)
+                      ? "bg-yellow-400 text-neutral-950"
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
+                >
+                  {favoriteImageIds.has(selectedImage.id) ? (
+                    <CheckCircle2 className="h-5 w-5" />
+                  ) : (
+                    <Heart className="h-5 w-5" />
+                  )}
+                  {favoriteImageIds.has(selectedImage.id)
+                    ? "Favorit markiert"
+                    : "Als Favorit markieren"}
+                </button>
+
+                {gallery?.downloads_enabled && (
                   <a
                     href={selectedImage.url}
                     download
@@ -504,8 +596,8 @@ export default function CustomerGalleryPage() {
                     <Download className="h-5 w-5" />
                     Bild herunterladen
                   </a>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
