@@ -56,6 +56,7 @@ export default function AccountPage() {
   const [user, setUser] = useState(null);
   const [galleries, setGalleries] = useState([]);
   const [galleryCode, setGalleryCode] = useState("");
+  const [galleryFilter, setGalleryFilter] = useState("all");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -338,6 +339,31 @@ export default function AccountPage() {
   const completedGalleries = galleries.filter(
     (gallery) => gallery.status === "completed"
   );
+  const downloadableGalleries = galleries.filter(
+    (gallery) => gallery.downloads_enabled
+  );
+  const visibleActiveGalleries = activeGalleries.filter((gallery) => {
+    if (galleryFilter === "completed") return false;
+    if (galleryFilter === "downloads") return gallery.downloads_enabled;
+    return true;
+  });
+  const visibleCompletedGalleries = completedGalleries.filter((gallery) => {
+    if (galleryFilter === "active") return false;
+    if (galleryFilter === "downloads") return gallery.downloads_enabled;
+    return true;
+  });
+  const visibleGalleryCount =
+    visibleActiveGalleries.length + visibleCompletedGalleries.length;
+  const galleryFilters = [
+    { key: "all", label: "Alle", count: galleries.length },
+    { key: "active", label: "Aktiv", count: activeGalleries.length },
+    {
+      key: "completed",
+      label: "Abgeschlossen",
+      count: completedGalleries.length,
+    },
+    { key: "downloads", label: "Downloads", count: downloadableGalleries.length },
+  ];
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-5 py-8 text-white">
@@ -476,7 +502,7 @@ export default function AccountPage() {
                   </div>
 
                   {galleries.length > 0 && (
-                    <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                    <div className="mt-4 grid gap-2 sm:grid-cols-4">
                       <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
                         <p className="text-2xl font-black">
                           {galleries.reduce(
@@ -485,6 +511,14 @@ export default function AccountPage() {
                           )}
                         </p>
                         <p className="mt-1 text-xs text-neutral-400">Bilder</p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+                        <p className="text-2xl font-black">
+                          {completedGalleries.length}
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-400">
+                          Abgeschlossen
+                        </p>
                       </div>
                       <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-100">
                         <p className="text-2xl font-black">
@@ -498,11 +532,7 @@ export default function AccountPage() {
                       </div>
                       <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
                         <p className="text-2xl font-black">
-                          {
-                            galleries.filter(
-                              (gallery) => gallery.downloads_enabled
-                            ).length
-                          }
+                          {downloadableGalleries.length}
                         </p>
                         <p className="mt-1 text-xs text-neutral-400">
                           Downloads
@@ -567,16 +597,46 @@ export default function AccountPage() {
                       </div>
                     )}
 
+                    {galleries.length > 0 && (
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {galleryFilters.map((filter) => (
+                            <button
+                              key={filter.key}
+                              type="button"
+                              onClick={() => setGalleryFilter(filter.key)}
+                              className={`rounded-xl px-3 py-2 text-sm font-black transition ${
+                                galleryFilter === filter.key
+                                  ? "bg-white text-neutral-950"
+                                  : "bg-white/5 text-neutral-300 hover:bg-white/10"
+                              }`}
+                            >
+                              {filter.label}
+                              <span className="ml-2 rounded-full bg-black/10 px-2 py-0.5 text-xs">
+                                {filter.count}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {galleries.length > 0 && visibleGalleryCount === 0 && (
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-6 text-neutral-300">
+                        Für diesen Filter gibt es aktuell keine Galerien.
+                      </div>
+                    )}
+
                     {[
                       {
                         title: "Aktive Galerien",
                         description: "Hier liegen die Galerien, an denen du gerade arbeitest.",
-                        items: activeGalleries,
+                        items: visibleActiveGalleries,
                       },
                       {
                         title: "Abgeschlossen",
                         description: "Fertige Projekte bleiben hier gesammelt sichtbar.",
-                        items: completedGalleries,
+                        items: visibleCompletedGalleries,
                       },
                     ].map((section) => {
                       if (section.items.length === 0) return null;
@@ -644,6 +704,12 @@ export default function AccountPage() {
                                             Downloads
                                           </span>
                                         )}
+                                        {gallery.status === "completed" &&
+                                          !gallery.downloads_enabled && (
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-black text-neutral-300">
+                                              Downloads gesperrt
+                                            </span>
+                                          )}
                                       </div>
                                       <h4 className="mt-3 text-lg font-black">
                                         {gallery.title}
