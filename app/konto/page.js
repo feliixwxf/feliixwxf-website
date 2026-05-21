@@ -332,6 +332,13 @@ export default function AccountPage() {
     )}`;
   };
 
+  const activeGalleries = galleries.filter(
+    (gallery) => gallery.status !== "completed"
+  );
+  const completedGalleries = galleries.filter(
+    (gallery) => gallery.status === "completed"
+  );
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-5 py-8 text-white">
       <div className="mx-auto max-w-6xl">
@@ -560,87 +567,120 @@ export default function AccountPage() {
                       </div>
                     )}
 
-                    {galleries.map((gallery) => {
-                      const status = getGalleryStatus(gallery);
+                    {[
+                      {
+                        title: "Aktive Galerien",
+                        description: "Hier liegen die Galerien, an denen du gerade arbeitest.",
+                        items: activeGalleries,
+                      },
+                      {
+                        title: "Abgeschlossen",
+                        description: "Fertige Projekte bleiben hier gesammelt sichtbar.",
+                        items: completedGalleries,
+                      },
+                    ].map((section) => {
+                      if (section.items.length === 0) return null;
 
                       return (
-                      <article
-                        key={gallery.id}
-                        className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]"
-                      >
-                        <div className="grid gap-0 sm:grid-cols-[150px_minmax(0,1fr)]">
-                          <button
-                            type="button"
-                            onClick={() => openGallery(gallery)}
-                            className="relative aspect-[4/3] overflow-hidden bg-black/30 sm:aspect-auto"
-                            aria-label="Galerie öffnen"
-                          >
-                            {gallery.cover_url ? (
-                              <img
-                                src={gallery.cover_url}
-                                alt=""
-                                loading="lazy"
-                                decoding="async"
-                                className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
-                              />
-                            ) : (
-                              <div className="flex h-full min-h-32 items-center justify-center">
-                                <ImageIcon className="h-8 w-8 text-neutral-500" />
-                              </div>
-                            )}
-                            <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-black text-white backdrop-blur">
-                              Code {gallery.access_code}
-                            </span>
-                          </button>
-
-                          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span
-                                className={`rounded-full px-3 py-1 text-xs font-black ${status.className}`}
-                              >
-                                {status.label}
-                              </span>
-                              {gallery.downloads_enabled && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-100">
-                                  <Download className="h-3.5 w-3.5" />
-                                  Downloads
-                                </span>
-                              )}
-                            </div>
-                            <h4 className="mt-3 text-lg font-black">
-                              {gallery.title}
-                            </h4>
-                            <p className="mt-1 text-sm text-neutral-400">
-                              {gallery.client_name || "Kundengalerie"}
-                            </p>
-                            {gallery.expires_at && (
-                              <p className="mt-2 text-xs text-neutral-500">
-                                bis {formatDate(gallery.expires_at)}
+                        <section key={section.title} className="grid gap-3">
+                          <div className="flex items-end justify-between gap-3 px-1">
+                            <div>
+                              <h4 className="text-sm font-black uppercase tracking-[0.2em] text-neutral-300">
+                                {section.title}
+                              </h4>
+                              <p className="mt-1 text-xs text-neutral-500">
+                                {section.description}
                               </p>
-                            )}
-                            <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-neutral-300">
-                              <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-3 py-1">
-                                <ImageIcon className="h-3.5 w-3.5" />
-                                {gallery.image_count || 0} Bilder
-                              </span>
-                              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-3 py-1 text-yellow-100">
-                                <Heart className="h-3.5 w-3.5" />
-                                {gallery.favorite_count || 0} Favoriten
-                              </span>
                             </div>
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-neutral-300">
+                              {section.items.length}
+                            </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => openGallery(gallery)}
-                            className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
-                          >
-                            <ImageIcon className="h-4 w-4" />
-                            Öffnen
-                          </button>
-                          </div>
-                        </div>
-                      </article>
+
+                          {section.items.map((gallery) => {
+                            const status = getGalleryStatus(gallery);
+
+                            return (
+                              <article
+                                key={gallery.id}
+                                className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]"
+                              >
+                                <div className="grid gap-0 sm:grid-cols-[150px_minmax(0,1fr)]">
+                                  <button
+                                    type="button"
+                                    onClick={() => openGallery(gallery)}
+                                    className="relative aspect-[4/3] overflow-hidden bg-black/30 sm:aspect-auto"
+                                    aria-label="Galerie öffnen"
+                                  >
+                                    {gallery.cover_url ? (
+                                      <img
+                                        src={gallery.cover_url}
+                                        alt=""
+                                        loading="lazy"
+                                        decoding="async"
+                                        className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full min-h-32 items-center justify-center">
+                                        <ImageIcon className="h-8 w-8 text-neutral-500" />
+                                      </div>
+                                    )}
+                                    <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-black text-white backdrop-blur">
+                                      Code {gallery.access_code}
+                                    </span>
+                                  </button>
+
+                                  <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="min-w-0">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span
+                                          className={`rounded-full px-3 py-1 text-xs font-black ${status.className}`}
+                                        >
+                                          {status.label}
+                                        </span>
+                                        {gallery.downloads_enabled && (
+                                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-100">
+                                            <Download className="h-3.5 w-3.5" />
+                                            Downloads
+                                          </span>
+                                        )}
+                                      </div>
+                                      <h4 className="mt-3 text-lg font-black">
+                                        {gallery.title}
+                                      </h4>
+                                      <p className="mt-1 text-sm text-neutral-400">
+                                        {gallery.client_name || "Kundengalerie"}
+                                      </p>
+                                      {gallery.expires_at && (
+                                        <p className="mt-2 text-xs text-neutral-500">
+                                          bis {formatDate(gallery.expires_at)}
+                                        </p>
+                                      )}
+                                      <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-neutral-300">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-3 py-1">
+                                          <ImageIcon className="h-3.5 w-3.5" />
+                                          {gallery.image_count || 0} Bilder
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-3 py-1 text-yellow-100">
+                                          <Heart className="h-3.5 w-3.5" />
+                                          {gallery.favorite_count || 0} Favoriten
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => openGallery(gallery)}
+                                      className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                    >
+                                      <ImageIcon className="h-4 w-4" />
+                                      Öffnen
+                                    </button>
+                                  </div>
+                                </div>
+                              </article>
+                            );
+                          })}
+                        </section>
                       );
                     })}
                   </div>
