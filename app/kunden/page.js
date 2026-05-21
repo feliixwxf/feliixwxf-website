@@ -125,7 +125,7 @@ export default function CustomerGalleryPage() {
     ? `Hallo, ${galleryGreetingName}.`
     : "Hallo.";
   const galleryWelcomeMessage = String(gallery?.welcome_message || "").trim();
-  const galleryHeroText = galleryWelcomeMessage || galleryStatus.text;
+  const galleryHeroText = galleryStatus.text;
   const galleryActionHint =
     gallery?.status === "completed"
       ? "Deine Galerie ist abgeschlossen. Du kannst deine Favoriten und Bilder weiterhin ansehen."
@@ -421,6 +421,17 @@ export default function CustomerGalleryPage() {
                     <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-300 md:text-lg md:leading-8">
                       {galleryHeroText}
                     </p>
+
+                    {galleryWelcomeMessage && (
+                      <div className="mt-5 max-w-2xl rounded-[1.4rem] border border-yellow-400/25 bg-yellow-400/10 p-4 text-yellow-50 shadow-[0_18px_60px_rgba(250,204,21,0.08)] backdrop-blur">
+                        <p className="text-xs font-black uppercase tracking-[0.24em] text-yellow-100/70">
+                          Persönliche Nachricht
+                        </p>
+                        <p className="mt-2 text-sm leading-7 md:text-base">
+                          {galleryWelcomeMessage}
+                        </p>
+                      </div>
+                    )}
 
                     <div className="mt-5 flex flex-wrap gap-2 text-sm">
                       <span className={`rounded-full px-4 py-2 font-black ${galleryStatus.tone}`}>
