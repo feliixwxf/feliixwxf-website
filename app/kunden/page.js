@@ -50,6 +50,20 @@ function getGalleryStatus(gallery) {
   };
 }
 
+function WatermarkOverlay({ label = "feliix.wxf" }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden opacity-35 mix-blend-screen">
+      <div className="absolute -inset-20 grid rotate-[-18deg] grid-cols-3 gap-x-10 gap-y-10 text-center text-[10px] font-black uppercase tracking-[0.28em] text-white/45 sm:text-sm">
+        {Array.from({ length: 36 }).map((_, index) => (
+          <span key={index} className="select-none whitespace-nowrap">
+            {label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function CustomerGalleryPage() {
   const [accessCode, setAccessCode] = useState("");
   const [gallery, setGallery] = useState(null);
@@ -474,8 +488,10 @@ export default function CustomerGalleryPage() {
                             alt=""
                             loading="lazy"
                             decoding="async"
+                            draggable="false"
                             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                           />
+                          {!gallery.downloads_enabled && <WatermarkOverlay />}
                           <span className="absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1 text-xs font-black text-white backdrop-blur">
                             Bild {imageIndex + 1}
                           </span>
@@ -604,12 +620,16 @@ export default function CustomerGalleryPage() {
                 </button>
               </div>
 
-              <img
-                src={selectedImage.url}
-                alt=""
-                decoding="async"
-                className="max-h-[80vh] w-full rounded-[1.2rem] object-contain"
-              />
+              <div className="relative overflow-hidden rounded-[1.2rem] bg-black/30">
+                <img
+                  src={selectedImage.url}
+                  alt=""
+                  decoding="async"
+                  draggable="false"
+                  className="max-h-[80vh] w-full object-contain"
+                />
+                {!gallery?.downloads_enabled && <WatermarkOverlay />}
+              </div>
 
               <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                 <button
