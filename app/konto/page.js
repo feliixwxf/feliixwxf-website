@@ -368,6 +368,19 @@ export default function AccountPage() {
   const accountHeroGallery =
     activeGalleries.find((gallery) => gallery.cover_url) ||
     completedGalleries.find((gallery) => gallery.cover_url);
+  const accountDisplayName =
+    String(user?.name || "").trim() ||
+    String(galleries.find((gallery) => gallery.client_name)?.client_name || "").trim() ||
+    String(user?.email || "")
+      .split("@")[0]
+      .replace(/[._-]+/g, " ")
+      .trim();
+  const accountGreeting = accountDisplayName
+    ? `Hallo, ${accountDisplayName}.`
+    : "Dein Konto.";
+  const accountIntro = user
+    ? "Hier findest du deine persönlichen Shooting-Galerien, Favoriten und freigegebenen Downloads gesammelt an einem Ort."
+    : "Melde dich an, um deine freigegebenen Galerien gesammelt an einem Ort zu sehen.";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-5 py-8 text-white">
@@ -417,13 +430,12 @@ export default function AccountPage() {
                   transition={{ duration: 0.45, ease: "easeOut" }}
                   className="mt-4 text-4xl font-black md:text-6xl"
                 >
-                  Dein Konto.
+                  {accountGreeting}
                   <br />
                   Deine Galerien.
                 </motion.h1>
                 <p className="mt-6 max-w-xl text-lg leading-8 text-neutral-300">
-                  Melde dich an, um deine freigegebenen Galerien gesammelt an
-                  einem Ort zu sehen.
+                  {accountIntro}
                 </p>
               </div>
             </div>
