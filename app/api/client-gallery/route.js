@@ -8,7 +8,7 @@ import {
 const GALLERY_SELECT =
   "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,welcome_message,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
-  "id,title,client_name,access_code,downloads_enabled,expires_at,created_at";
+  "id,title,client_name,access_code,downloads_enabled,welcome_message,expires_at,created_at";
 
 function normalizeCode(value) {
   return String(value || "")

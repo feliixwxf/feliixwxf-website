@@ -10,7 +10,7 @@ import {
 const GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
-  "id,title,client_name,access_code,is_active,downloads_enabled,expires_at,created_at";
+  "id,title,client_name,access_code,is_active,downloads_enabled,welcome_message,expires_at,created_at";
 const IMAGE_SELECT =
   "id,gallery_id,url,path,filename,sort_order,created_at";
 const VALID_STATUSES = new Set(["active", "paused", "completed"]);
