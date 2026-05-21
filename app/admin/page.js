@@ -3545,6 +3545,26 @@ export default function AdminPage() {
                               <p className="mt-2 text-xs leading-5 text-neutral-500">
                                 Dieser Text erscheint oben in der Kundengalerie.
                               </p>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateClientGallery(
+                                    activeClientGallery,
+                                    {
+                                      welcome_message:
+                                        activeClientGallery.welcome_message || "",
+                                    },
+                                    "Persönliche Nachricht wurde gespeichert."
+                                  )
+                                }
+                                disabled={
+                                  busyClientGalleryId === activeClientGallery.id
+                                }
+                                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-yellow-400/25 bg-yellow-400/10 px-4 py-2 text-sm font-black text-yellow-100 transition hover:bg-yellow-400/15 disabled:opacity-60 sm:w-fit"
+                              >
+                                <Save className="h-4 w-4" />
+                                Nachricht speichern
+                              </button>
                             </label>
                           </div>
 
