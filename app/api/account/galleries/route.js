@@ -11,6 +11,8 @@ import {
 } from "../_lib/auth";
 
 const GALLERY_SELECT =
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,expires_at,created_at";
+const LEGACY_GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,expires_at,created_at";
 const LINK_GALLERY_SELECT =
   "id,title,client_email,access_code,is_active,status,expires_at";
@@ -54,7 +56,7 @@ export async function GET(request) {
     return applyCustomerSessionCookies(response, customerSession);
   }
 
-  const response = await fetch(
+  let response = await fetch(
     `${supabaseBaseUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&client_email=ilike.${encodeURIComponent(
       user.email.toLowerCase()
     )}&order=created_at.desc&limit=50`,
@@ -63,6 +65,22 @@ export async function GET(request) {
       cache: "no-store",
     }
   );
+
+  if (!response.ok) {
+    const details = await response.text();
+
+    if (details.toLowerCase().includes("cover_image_id")) {
+      response = await fetch(
+        `${supabaseBaseUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&client_email=ilike.${encodeURIComponent(
+          user.email.toLowerCase()
+        )}&order=created_at.desc&limit=50`,
+        {
+          headers: supabaseServiceHeaders,
+          cache: "no-store",
+        }
+      );
+    }
+  }
 
   if (!response.ok) {
     const result = NextResponse.json(
@@ -92,7 +110,7 @@ export async function GET(request) {
 
   const [imagesResponse, favoritesResponse] = await Promise.all([
     fetch(
-      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=gallery_id,url,sort_order,created_at&gallery_id=in.(${galleryIdFilter})&order=sort_order.asc&order=created_at.desc`,
+      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=id,gallery_id,url,sort_order,created_at&gallery_id=in.(${galleryIdFilter})&order=sort_order.asc&order=created_at.desc`,
       {
         headers: supabaseServiceHeaders,
         cache: "no-store",
@@ -109,7 +127,7 @@ export async function GET(request) {
 
   const galleryImages = imagesResponse.ok ? await imagesResponse.json() : [];
   const imageCounts = countByGalleryId(galleryImages);
-  const coverImages = getCoverImagesByGalleryId(galleryImages);
+  const fallbackCoverImages = getCoverImagesByGalleryId(galleryImages);
   const favoriteCounts = favoritesResponse.ok
     ? countByGalleryId(await favoritesResponse.json())
     : {};
@@ -119,7 +137,10 @@ export async function GET(request) {
       ...gallery,
       image_count: imageCounts[gallery.id] || 0,
       favorite_count: favoriteCounts[gallery.id] || 0,
-      cover_url: coverImages[gallery.id] || "",
+      cover_url:
+        galleryImages.find((image) => image.id === gallery.cover_image_id)?.url ||
+        fallbackCoverImages[gallery.id] ||
+        "",
     })),
   });
 

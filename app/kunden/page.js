@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -115,7 +116,9 @@ export default function CustomerGalleryPage() {
   const selectedImageIndex = selectedImage
     ? images.findIndex((image) => image.id === selectedImage.id)
     : -1;
-  const coverImage = images[0];
+  const coverImage = gallery?.cover_url
+    ? { url: gallery.cover_url }
+    : images[0];
   const galleryStatus = getGalleryStatus(gallery);
 
   const showMessage = (text, type = "info") => {
@@ -392,9 +395,14 @@ export default function CustomerGalleryPage() {
                     <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
                       {gallery.client_name || "Kundengalerie"}
                     </p>
-                    <h1 className="mt-3 max-w-4xl text-4xl font-black leading-tight md:text-6xl">
+                    <motion.h1
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.45, ease: "easeOut" }}
+                      className="mt-3 max-w-4xl text-4xl font-black leading-tight md:text-6xl"
+                    >
                       {gallery.title}
-                    </h1>
+                    </motion.h1>
                     <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-300 md:text-lg md:leading-8">
                       {galleryStatus.text}
                     </p>

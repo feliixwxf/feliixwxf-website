@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Download,
@@ -364,6 +365,9 @@ export default function AccountPage() {
     },
     { key: "downloads", label: "Downloads", count: downloadableGalleries.length },
   ];
+  const accountHeroGallery =
+    activeGalleries.find((gallery) => gallery.cover_url) ||
+    completedGalleries.find((gallery) => gallery.cover_url);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-5 py-8 text-white">
@@ -391,22 +395,37 @@ export default function AccountPage() {
 
         <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.08] shadow-2xl backdrop-blur-xl">
           <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[0.85fr_1.15fr]">
-            <div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
-                <Lock className="h-6 w-6" />
+            <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20 p-6 md:p-8">
+              {accountHeroGallery?.cover_url && (
+                <img
+                  src={accountHeroGallery.cover_url}
+                  alt=""
+                  className="absolute inset-0 h-full w-full scale-105 object-cover opacity-20 blur-sm"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-br from-black via-black/75 to-black/35" />
+              <div className="relative">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
+                  <Lock className="h-6 w-6" />
+                </div>
+                <p className="mt-8 text-sm uppercase tracking-[0.3em] text-neutral-400">
+                  Kundenkonto
+                </p>
+                <motion.h1
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, ease: "easeOut" }}
+                  className="mt-4 text-4xl font-black md:text-6xl"
+                >
+                  Dein Konto.
+                  <br />
+                  Deine Galerien.
+                </motion.h1>
+                <p className="mt-6 max-w-xl text-lg leading-8 text-neutral-300">
+                  Melde dich an, um deine freigegebenen Galerien gesammelt an
+                  einem Ort zu sehen.
+                </p>
               </div>
-              <p className="mt-8 text-sm uppercase tracking-[0.3em] text-neutral-400">
-                Kundenkonto
-              </p>
-              <h1 className="mt-4 text-4xl font-black md:text-6xl">
-                Dein Konto.
-                <br />
-                Deine Galerien.
-              </h1>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-neutral-300">
-                Melde dich an, um deine freigegebenen Galerien gesammelt an
-                einem Ort zu sehen.
-              </p>
             </div>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-black/25 p-6">

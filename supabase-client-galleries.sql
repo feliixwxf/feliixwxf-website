@@ -95,6 +95,24 @@ create table if not exists public.client_gallery_images (
   created_at timestamptz not null default now()
 );
 
+alter table public.client_galleries
+  add column if not exists cover_image_id uuid;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'client_galleries_cover_image_id_fkey'
+  ) then
+    alter table public.client_galleries
+      add constraint client_galleries_cover_image_id_fkey
+      foreign key (cover_image_id)
+      references public.client_gallery_images(id)
+      on delete set null;
+  end if;
+end $$;
+
 create table if not exists public.client_favorites (
   id uuid primary key default gen_random_uuid(),
   gallery_id uuid not null references public.client_galleries(id) on delete cascade,

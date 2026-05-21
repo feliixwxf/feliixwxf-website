@@ -626,6 +626,10 @@ export default function AdminPage() {
   const activeClientProjectStep = getClientProjectStep(activeClientGallery);
   const activeClientAccountState = getClientAccountState(activeClientGallery);
   const activeClientImages = activeClientGallery?.images || [];
+  const activeClientCoverImage =
+    activeClientImages.find(
+      (image) => image.id === activeClientGallery?.cover_image_id
+    ) || activeClientImages[0];
   const activeClientGalleryUrl =
     activeClientGallery && publicOrigin
       ? `${publicOrigin}/kunden?code=${encodeURIComponent(
@@ -1220,6 +1224,7 @@ export default function AdminPage() {
           "finals_exported",
           "archive_prepared",
           "client_informed",
+          "cover_image_id",
         ].some((field) => details.includes(field));
 
         setClientGalleries(previousGalleries);
@@ -1279,6 +1284,14 @@ export default function AdminPage() {
             }
           : gallery
       )
+    );
+  };
+
+  const setClientGalleryCover = async (gallery, image) => {
+    await updateClientGallery(
+      gallery,
+      { cover_image_id: image.id },
+      "Coverbild wurde gespeichert."
     );
   };
 
@@ -1423,6 +1436,10 @@ export default function AdminPage() {
           ...item,
           images: nextImages,
           favorites: nextFavorites,
+          cover_image_id:
+            item.cover_image_id === image.id ? null : item.cover_image_id,
+          cover_url:
+            item.cover_image_id === image.id ? nextImages[0]?.url || "" : item.cover_url,
           image_count: nextImages.length,
           favorite_count: nextFavorites.length,
         };
@@ -3165,7 +3182,21 @@ export default function AdminPage() {
                       <>
                         <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="min-w-0">
+                            <div className="flex min-w-0 gap-4">
+                              <div className="hidden h-24 w-32 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] sm:block">
+                                {activeClientCoverImage ? (
+                                  <img
+                                    src={activeClientCoverImage.url}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center">
+                                    <ImageIcon className="h-7 w-7 text-neutral-600" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0">
                               <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                                 Aktive Galerie
                               </p>
@@ -3181,6 +3212,12 @@ export default function AdminPage() {
                                   {activeClientGallery.client_email}
                                 </p>
                               )}
+                              <p className="mt-2 text-xs text-neutral-500">
+                                Cover:{" "}
+                                {activeClientCoverImage?.filename ||
+                                  "automatisch erstes Bild"}
+                              </p>
+                              </div>
                             </div>
 
                             <div className="flex flex-wrap gap-2 lg:justify-end">
@@ -3920,6 +3957,10 @@ export default function AdminPage() {
                             ).filter(
                               (favorite) => favorite.image_id === image.id
                             ).length;
+                            const isCover =
+                              image.id === activeClientGallery.cover_image_id ||
+                              (!activeClientGallery.cover_image_id &&
+                                image.id === activeClientImages[0]?.id);
 
                             return (
                               <article
@@ -3940,6 +3981,11 @@ export default function AdminPage() {
                                       {favoriteCount}
                                     </span>
                                   )}
+                                  {isCover && (
+                                    <span className="absolute right-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-black text-neutral-950">
+                                      Cover
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="p-4">
                                   <p className="truncate text-sm font-bold">
@@ -3958,6 +4004,23 @@ export default function AdminPage() {
                                       <ExternalLink className="h-4 w-4" />
                                       Öffnen
                                     </a>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setClientGalleryCover(
+                                          activeClientGallery,
+                                          image
+                                        )
+                                      }
+                                      disabled={
+                                        busyClientGalleryId ===
+                                          activeClientGallery.id || isCover
+                                      }
+                                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-50"
+                                    >
+                                      <ImageIcon className="h-4 w-4" />
+                                      Als Cover
+                                    </button>
                                     <button
                                       type="button"
                                       onClick={() =>

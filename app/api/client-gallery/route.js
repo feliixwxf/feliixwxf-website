@@ -6,7 +6,7 @@ import {
 } from "../_lib/supabase";
 
 const GALLERY_SELECT =
-  "id,title,client_name,access_code,downloads_enabled,status,expires_at,created_at";
+  "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,downloads_enabled,expires_at,created_at";
 
@@ -49,7 +49,12 @@ export async function POST(request) {
   if (!galleryResponse.ok) {
     const details = await galleryResponse.text();
 
-    if (details.toLowerCase().includes("status")) {
+    const normalizedDetails = details.toLowerCase();
+
+    if (
+      normalizedDetails.includes("status") ||
+      normalizedDetails.includes("cover_image_id")
+    ) {
       galleryResponse = await fetch(
         `${supabaseBaseUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&access_code=eq.${encodeURIComponent(
           code
@@ -113,9 +118,16 @@ export async function POST(request) {
     );
   }
 
+  const images = await imageResponse.json();
+  const coverImage =
+    images.find((image) => image.id === gallery.cover_image_id) || images[0];
+
   return NextResponse.json({
-    gallery,
-    images: await imageResponse.json(),
+    gallery: {
+      ...gallery,
+      cover_url: coverImage?.url || "",
+    },
+    images,
     favorites: await favoriteResponse.json(),
   });
 }

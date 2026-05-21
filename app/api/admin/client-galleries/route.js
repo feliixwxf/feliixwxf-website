@@ -8,7 +8,7 @@ import {
 } from "../_lib/supabase";
 
 const GALLERY_SELECT =
-  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,is_active,downloads_enabled,expires_at,created_at";
 const IMAGE_SELECT =
@@ -76,7 +76,8 @@ async function loadGalleries() {
       normalizedDetails.includes("favorites_reviewed") ||
       normalizedDetails.includes("finals_exported") ||
       normalizedDetails.includes("archive_prepared") ||
-      normalizedDetails.includes("client_informed")
+      normalizedDetails.includes("client_informed") ||
+      normalizedDetails.includes("cover_image_id")
     ) {
       galleryResponse = await fetch(
         `${supabaseRestUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&order=created_at.desc&limit=100`,
@@ -133,6 +134,9 @@ async function loadGalleries() {
       const galleryFavorites = favorites.filter(
         (favorite) => favorite.gallery_id === gallery.id
       );
+      const coverImage =
+        galleryImages.find((image) => image.id === gallery.cover_image_id) ||
+        galleryImages[0];
       const clientEmail = String(gallery.client_email || "").trim().toLowerCase();
       const favoriteLastAt = galleryFavorites.reduce((latest, favorite) => {
         if (!favorite.created_at) return latest;
@@ -147,6 +151,7 @@ async function loadGalleries() {
         ...gallery,
         images: galleryImages,
         favorites: galleryFavorites,
+        cover_url: coverImage?.url || "",
         image_count: galleryImages.length,
         favorite_count: galleryFavorites.length,
         favorite_last_at: favoriteLastAt,
@@ -302,6 +307,11 @@ export async function PATCH(request) {
   }
   if ("downloads_enabled" in body) {
     update.downloads_enabled = Boolean(body.downloads_enabled);
+  }
+  if ("cover_image_id" in body) {
+    update.cover_image_id = body.cover_image_id
+      ? String(body.cover_image_id)
+      : null;
   }
   if ("internal_note" in body) {
     update.internal_note = String(body.internal_note || "").trim().slice(0, 2000);
