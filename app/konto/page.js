@@ -771,6 +771,16 @@ export default function AccountPage() {
                                       <p className="mt-1 text-sm text-neutral-400">
                                         {gallery.client_name || "Kundengalerie"}
                                       </p>
+                                      {gallery.welcome_message && (
+                                        <div className="mt-3 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-sm leading-6 text-yellow-50">
+                                          <p className="text-[0.65rem] font-black uppercase tracking-[0.22em] text-yellow-100/70">
+                                            Persönliche Nachricht
+                                          </p>
+                                          <p className="mt-1 line-clamp-3">
+                                            {gallery.welcome_message}
+                                          </p>
+                                        </div>
+                                      )}
                                       {gallery.expires_at && (
                                         <p className="mt-2 text-xs text-neutral-500">
                                           bis {formatDate(gallery.expires_at)}

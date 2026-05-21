@@ -72,7 +72,6 @@ async function loadGalleries() {
     if (
       normalizedDetails.includes("status") ||
       normalizedDetails.includes("internal_note") ||
-      normalizedDetails.includes("welcome_message") ||
       normalizedDetails.includes("client_email") ||
       normalizedDetails.includes("favorites_reviewed") ||
       normalizedDetails.includes("finals_exported") ||

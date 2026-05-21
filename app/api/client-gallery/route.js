@@ -53,8 +53,7 @@ export async function POST(request) {
 
     if (
       normalizedDetails.includes("status") ||
-      normalizedDetails.includes("cover_image_id") ||
-      normalizedDetails.includes("welcome_message")
+      normalizedDetails.includes("cover_image_id")
     ) {
       galleryResponse = await fetch(
         `${supabaseBaseUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&access_code=eq.${encodeURIComponent(

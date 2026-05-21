@@ -11,7 +11,7 @@ import {
 } from "../_lib/auth";
 
 const GALLERY_SELECT =
-  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,expires_at,created_at";
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,expires_at,created_at";
 const LINK_GALLERY_SELECT =
