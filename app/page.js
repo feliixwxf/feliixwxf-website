@@ -1314,11 +1314,38 @@ export default function FeliixWxfPhotography() {
 
               <div>
                 <h3 className="text-2xl font-bold text-white">
+                  Kundenkonto und Kundengalerien
+                </h3>
+                <p className="mt-3">
+                  Wenn Sie ein Kundenkonto erstellen oder eine Kundengalerie
+                  nutzen, werden die dafür erforderlichen Daten verarbeitet. Dazu
+                  gehören insbesondere E-Mail-Adresse, Nutzername, Profilbild,
+                  Galerie-Zuordnung, Favoriten, Download-Freigaben und
+                  technische Zugriffsinformationen.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white">
+                  Bewertungen
+                </h3>
+                <p className="mt-3">
+                  Abgegebene Bewertungen werden zunächst gespeichert und erst
+                  nach manueller Freigabe veröffentlicht. Bei eingeloggten
+                  Kunden kann zusätzlich das Profilbild und der Nutzername aus
+                  dem Kundenkonto angezeigt werden.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white">
                   Externe Dienste
                 </h3>
                 <p className="mt-3">
-                  Diese Website nutzt externe Dienste wie Formspree und externe
-                  Bildquellen.
+                  Diese Website nutzt externe Dienste wie Formspree, Supabase,
+                  Vercel und externe Bildquellen. Diese Dienste können zur
+                  Bereitstellung der Website, Speicherung von Inhalten,
+                  Kundenkonten, Formularen und Medien genutzt werden.
                 </p>
               </div>
 
