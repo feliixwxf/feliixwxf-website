@@ -7,6 +7,7 @@ create table if not exists public.client_galleries (
   is_active boolean not null default true,
   status text not null default 'active'
     check (status in ('active', 'paused', 'completed')),
+  welcome_message text not null default '',
   internal_note text not null default '',
   favorites_reviewed boolean not null default false,
   finals_exported boolean not null default false,
@@ -44,17 +45,30 @@ alter table public.client_galleries
   add column if not exists internal_note text default '';
 
 alter table public.client_galleries
+  add column if not exists welcome_message text default '';
+
+alter table public.client_galleries
   add column if not exists client_email text;
 
 update public.client_galleries
 set internal_note = ''
 where internal_note is null;
 
+update public.client_galleries
+set welcome_message = ''
+where welcome_message is null;
+
 alter table public.client_galleries
   alter column internal_note set default '';
 
 alter table public.client_galleries
   alter column internal_note set not null;
+
+alter table public.client_galleries
+  alter column welcome_message set default '';
+
+alter table public.client_galleries
+  alter column welcome_message set not null;
 
 alter table public.client_galleries
   add column if not exists favorites_reviewed boolean default false;

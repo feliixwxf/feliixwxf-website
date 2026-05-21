@@ -124,6 +124,15 @@ export default function CustomerGalleryPage() {
   const galleryGreeting = galleryGreetingName
     ? `Hallo, ${galleryGreetingName}.`
     : "Hallo.";
+  const galleryWelcomeMessage = String(gallery?.welcome_message || "").trim();
+  const galleryHeroText = galleryWelcomeMessage || galleryStatus.text;
+  const galleryActionHint =
+    gallery?.status === "completed"
+      ? "Deine Galerie ist abgeschlossen. Du kannst deine Favoriten und Bilder weiterhin ansehen."
+      : "Markiere deine Favoriten, damit ich deine Auswahl direkt sehen kann.";
+  const galleryDownloadHint = gallery?.downloads_enabled
+    ? "Downloads sind freigegeben."
+    : "Downloads sind aktuell deaktiviert. Die Bilder sind als geschützte Vorschau sichtbar.";
 
   const showMessage = (text, type = "info") => {
     setMessage(text);
@@ -410,7 +419,7 @@ export default function CustomerGalleryPage() {
                       {gallery.title}
                     </motion.h1>
                     <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-300 md:text-lg md:leading-8">
-                      {galleryStatus.text}
+                      {galleryHeroText}
                     </p>
 
                     <div className="mt-5 flex flex-wrap gap-2 text-sm">
@@ -454,6 +463,25 @@ export default function CustomerGalleryPage() {
               </header>
 
               <div className="p-6 md:p-8">
+                <div className="mb-5 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-[1.3rem] border border-white/10 bg-white/[0.06] p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                      Nächster Schritt
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-neutral-300">
+                      {galleryActionHint}
+                    </p>
+                  </div>
+                  <div className="rounded-[1.3rem] border border-white/10 bg-white/[0.06] p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                      Download
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-neutral-300">
+                      {galleryDownloadHint}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="flex flex-col gap-3 rounded-[1.3rem] border border-white/10 bg-black/25 p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap gap-2">
                     <button

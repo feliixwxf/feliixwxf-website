@@ -6,7 +6,7 @@ import {
 } from "../_lib/supabase";
 
 const GALLERY_SELECT =
-  "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,expires_at,created_at";
+  "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,welcome_message,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,downloads_enabled,expires_at,created_at";
 
@@ -53,7 +53,8 @@ export async function POST(request) {
 
     if (
       normalizedDetails.includes("status") ||
-      normalizedDetails.includes("cover_image_id")
+      normalizedDetails.includes("cover_image_id") ||
+      normalizedDetails.includes("welcome_message")
     ) {
       galleryResponse = await fetch(
         `${supabaseBaseUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&access_code=eq.${encodeURIComponent(

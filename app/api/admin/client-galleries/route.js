@@ -8,7 +8,7 @@ import {
 } from "../_lib/supabase";
 
 const GALLERY_SELECT =
-  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,is_active,downloads_enabled,expires_at,created_at";
 const IMAGE_SELECT =
@@ -72,6 +72,7 @@ async function loadGalleries() {
     if (
       normalizedDetails.includes("status") ||
       normalizedDetails.includes("internal_note") ||
+      normalizedDetails.includes("welcome_message") ||
       normalizedDetails.includes("client_email") ||
       normalizedDetails.includes("favorites_reviewed") ||
       normalizedDetails.includes("finals_exported") ||
@@ -315,6 +316,11 @@ export async function PATCH(request) {
   }
   if ("internal_note" in body) {
     update.internal_note = String(body.internal_note || "").trim().slice(0, 2000);
+  }
+  if ("welcome_message" in body) {
+    update.welcome_message = String(body.welcome_message || "")
+      .trim()
+      .slice(0, 500);
   }
   if ("favorites_reviewed" in body) {
     update.favorites_reviewed = Boolean(body.favorites_reviewed);

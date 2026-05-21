@@ -381,6 +381,14 @@ export default function AccountPage() {
   const accountIntro = user
     ? "Hier findest du deine persönlichen Shooting-Galerien, Favoriten und freigegebenen Downloads gesammelt an einem Ort."
     : "Melde dich an, um deine freigegebenen Galerien gesammelt an einem Ort zu sehen.";
+  const totalFavoriteCount = galleries.reduce(
+    (sum, gallery) => sum + (gallery.favorite_count || 0),
+    0
+  );
+  const totalImageCount = galleries.reduce(
+    (sum, gallery) => sum + (gallery.image_count || 0),
+    0
+  );
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-5 py-8 text-white">
@@ -437,6 +445,28 @@ export default function AccountPage() {
                 <p className="mt-6 max-w-xl text-lg leading-8 text-neutral-300">
                   {accountIntro}
                 </p>
+                {user && (
+                  <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-3">
+                      <p className="text-2xl font-black">{galleries.length}</p>
+                      <p className="mt-1 text-xs text-neutral-400">
+                        Galerien für dich
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-3">
+                      <p className="text-2xl font-black">
+                        {completedGalleries.length}
+                      </p>
+                      <p className="mt-1 text-xs text-neutral-400">
+                        abgeschlossen
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-100">
+                      <p className="text-2xl font-black">{totalFavoriteCount}</p>
+                      <p className="mt-1 text-xs">Favoriten markiert</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -536,10 +566,7 @@ export default function AccountPage() {
                     <div className="mt-4 grid gap-2 sm:grid-cols-4">
                       <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
                         <p className="text-2xl font-black">
-                          {galleries.reduce(
-                            (sum, gallery) => sum + (gallery.image_count || 0),
-                            0
-                          )}
+                          {totalImageCount}
                         </p>
                         <p className="mt-1 text-xs text-neutral-400">Bilder</p>
                       </div>
@@ -553,11 +580,7 @@ export default function AccountPage() {
                       </div>
                       <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-100">
                         <p className="text-2xl font-black">
-                          {galleries.reduce(
-                            (sum, gallery) =>
-                              sum + (gallery.favorite_count || 0),
-                            0
-                          )}
+                          {totalFavoriteCount}
                         </p>
                         <p className="mt-1 text-xs">Favoriten</p>
                       </div>

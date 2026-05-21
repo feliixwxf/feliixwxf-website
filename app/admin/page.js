@@ -1225,6 +1225,7 @@ export default function AdminPage() {
           "archive_prepared",
           "client_informed",
           "cover_image_id",
+          "welcome_message",
         ].some((field) => details.includes(field));
 
         setClientGalleries(previousGalleries);
@@ -3475,6 +3476,8 @@ export default function AdminPage() {
                                         activeClientGallery.client_name || "",
                                       client_email:
                                         activeClientGallery.client_email || "",
+                                      welcome_message:
+                                        activeClientGallery.welcome_message || "",
                                     },
                                     "Kundendaten wurden gespeichert."
                                   )
@@ -3523,6 +3526,26 @@ export default function AdminPage() {
                                 />
                               </label>
                             </div>
+
+                            <label className="mt-4 block min-w-0">
+                              <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                                Persönliche Nachricht
+                              </span>
+                              <textarea
+                                value={activeClientGallery.welcome_message || ""}
+                                onChange={(event) =>
+                                  updateClientGalleryDraft({
+                                    welcome_message: event.target.value,
+                                  })
+                                }
+                                rows="3"
+                                placeholder="z. B. Schön, dass du da bist. Hier findest du deine Auswahl vom Shooting."
+                                className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-white px-3 py-2 text-sm leading-6 text-neutral-950 outline-none focus:border-yellow-400"
+                              />
+                              <p className="mt-2 text-xs leading-5 text-neutral-500">
+                                Dieser Text erscheint oben in der Kundengalerie.
+                              </p>
+                            </label>
                           </div>
 
                           <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
