@@ -50,15 +50,49 @@ function getGalleryStatus(gallery) {
   };
 }
 
-function WatermarkOverlay({ label = "feliix.wxf" }) {
+function WatermarkOverlay({ gallery }) {
+  const label = [
+    "feliix.wxf",
+    gallery?.access_code ? `Code ${gallery.access_code}` : "",
+    gallery?.client_name || "",
+  ]
+    .filter(Boolean)
+    .join("  •  ");
+  const textShadow =
+    "0 1px 2px rgba(0,0,0,0.9), 0 -1px 2px rgba(255,255,255,0.35)";
+
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden opacity-35 mix-blend-screen">
-      <div className="absolute -inset-20 grid rotate-[-18deg] grid-cols-3 gap-x-10 gap-y-10 text-center text-[10px] font-black uppercase tracking-[0.28em] text-white/45 sm:text-sm">
-        {Array.from({ length: 36 }).map((_, index) => (
-          <span key={index} className="select-none whitespace-nowrap">
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent,rgba(0,0,0,0.22))]" />
+
+      <div className="absolute -inset-24 grid rotate-[-19deg] grid-cols-3 gap-x-6 gap-y-7 text-center text-[10px] font-black uppercase tracking-[0.24em] text-white/60 sm:grid-cols-4 sm:text-sm">
+        {Array.from({ length: 56 }).map((_, index) => (
+          <span
+            key={`light-${index}`}
+            className="select-none whitespace-nowrap"
+            style={{ textShadow }}
+          >
             {label}
           </span>
         ))}
+      </div>
+
+      <div className="absolute -inset-24 grid rotate-[-19deg] grid-cols-2 gap-x-10 gap-y-12 text-center text-xs font-black uppercase tracking-[0.3em] text-black/35 sm:grid-cols-3 sm:text-lg">
+        {Array.from({ length: 24 }).map((_, index) => (
+          <span
+            key={`dark-${index}`}
+            className="select-none whitespace-nowrap"
+            style={{
+              textShadow: "0 1px 2px rgba(255,255,255,0.55)",
+            }}
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+
+      <div className="absolute left-1/2 top-1/2 w-[140%] -translate-x-1/2 -translate-y-1/2 rotate-[-19deg] border-y border-white/25 bg-black/18 py-3 text-center text-sm font-black uppercase tracking-[0.36em] text-white/75 sm:text-xl">
+        Vorschau geschützt  •  {label}
       </div>
     </div>
   );
@@ -491,7 +525,9 @@ export default function CustomerGalleryPage() {
                             draggable="false"
                             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                           />
-                          {!gallery.downloads_enabled && <WatermarkOverlay />}
+                          {!gallery.downloads_enabled && (
+                            <WatermarkOverlay gallery={gallery} />
+                          )}
                           <span className="absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1 text-xs font-black text-white backdrop-blur">
                             Bild {imageIndex + 1}
                           </span>
@@ -628,7 +664,9 @@ export default function CustomerGalleryPage() {
                   draggable="false"
                   className="max-h-[80vh] w-full object-contain"
                 />
-                {!gallery?.downloads_enabled && <WatermarkOverlay />}
+                {!gallery?.downloads_enabled && (
+                  <WatermarkOverlay gallery={gallery} />
+                )}
               </div>
 
               <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
