@@ -59,14 +59,14 @@ function WatermarkOverlay({ gallery }) {
     .filter(Boolean)
     .join("  •  ");
   const textShadow =
-    "0 1px 2px rgba(0,0,0,0.65), 0 -1px 2px rgba(255,255,255,0.25)";
+    "0 1px 2px rgba(0,0,0,0.45)";
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent,rgba(0,0,0,0.12))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent,rgba(0,0,0,0.06))]" />
 
-      <div className="absolute -inset-20 grid rotate-[-19deg] grid-cols-2 gap-x-10 gap-y-10 text-center text-[10px] font-black uppercase tracking-[0.24em] text-white/45 sm:grid-cols-3 sm:text-sm">
-        {Array.from({ length: 30 }).map((_, index) => (
+      <div className="absolute -inset-16 grid rotate-[-19deg] grid-cols-2 gap-x-16 gap-y-16 text-center text-[9px] font-black uppercase tracking-[0.24em] text-white/28 sm:grid-cols-3 sm:text-xs">
+        {Array.from({ length: 18 }).map((_, index) => (
           <span
             key={`light-${index}`}
             className="select-none whitespace-nowrap"
@@ -77,13 +77,13 @@ function WatermarkOverlay({ gallery }) {
         ))}
       </div>
 
-      <div className="absolute -inset-20 grid rotate-[-19deg] grid-cols-2 gap-x-14 gap-y-14 text-center text-xs font-black uppercase tracking-[0.28em] text-black/22 sm:grid-cols-3 sm:text-base">
-        {Array.from({ length: 15 }).map((_, index) => (
+      <div className="absolute -inset-16 grid rotate-[-19deg] grid-cols-2 gap-x-20 gap-y-20 text-center text-[10px] font-black uppercase tracking-[0.28em] text-black/12 sm:grid-cols-3 sm:text-sm">
+        {Array.from({ length: 9 }).map((_, index) => (
           <span
             key={`dark-${index}`}
             className="select-none whitespace-nowrap"
             style={{
-              textShadow: "0 1px 2px rgba(255,255,255,0.35)",
+              textShadow: "0 1px 2px rgba(255,255,255,0.2)",
             }}
           >
             {label}
