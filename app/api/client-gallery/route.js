@@ -4,6 +4,7 @@ import {
   supabaseBaseUrl,
   supabaseServiceHeaders,
 } from "../_lib/supabase";
+import { withSignedImageUrls } from "../_lib/storage";
 
 const GALLERY_SELECT =
   "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,welcome_message,expires_at,created_at";
@@ -92,7 +93,7 @@ export async function POST(request) {
 
   const [imageResponse, favoriteResponse] = await Promise.all([
     fetch(
-      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=id,gallery_id,url,filename,sort_order,created_at&gallery_id=eq.${encodeURIComponent(
+      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=id,gallery_id,url,path,filename,sort_order,created_at&gallery_id=eq.${encodeURIComponent(
         gallery.id
       )}&order=sort_order.asc&order=created_at.desc`,
       {
@@ -118,7 +119,7 @@ export async function POST(request) {
     );
   }
 
-  const images = await imageResponse.json();
+  const images = await withSignedImageUrls(await imageResponse.json());
   const coverImage =
     images.find((image) => image.id === gallery.cover_image_id) || images[0];
 

@@ -25,10 +25,10 @@ Wenn ein Kunde Loeschung verlangt, muessen Konto, Profilbild, Bewertungen und Ga
 
 ## Bilder und Galerien
 
-Aktuell liegen Medien in einem oeffentlichen Storage-Bucket. Das ist fuer Portfolio-Bilder okay. Fuer private Kundengalerien waere langfristig besser:
+Portfolio-Medien liegen weiterhin im oeffentlichen Storage-Bucket. Kundengalerien werden in der Kundenansicht inzwischen ueber zeitlich begrenzte signierte Bildlinks ausgeliefert. Fuer den finalen privaten Galerie-Modus waere langfristig besser:
 
 - eigener privater Bucket fuer Kundengalerien
-- signierte Links statt dauerhaft oeffentliche Bild-URLs
+- Kundengalerie-Uploads direkt in diesen privaten Bucket speichern
 - Ablaufdatum pro Galerie
 - Downloads nur bei aktiver Freigabe
 

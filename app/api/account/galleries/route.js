@@ -3,6 +3,7 @@ import {
   supabaseBaseUrl,
   supabaseServiceHeaders,
 } from "../../_lib/supabase";
+import { withSignedImageUrls } from "../../_lib/storage";
 import {
   accountConfigMissing,
   applyCustomerSessionCookies,
@@ -110,7 +111,7 @@ export async function GET(request) {
 
   const [imagesResponse, favoritesResponse] = await Promise.all([
     fetch(
-      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=id,gallery_id,url,sort_order,created_at&gallery_id=in.(${galleryIdFilter})&order=sort_order.asc&order=created_at.desc`,
+      `${supabaseBaseUrl}/rest/v1/client_gallery_images?select=id,gallery_id,url,path,sort_order,created_at&gallery_id=in.(${galleryIdFilter})&order=sort_order.asc&order=created_at.desc`,
       {
         headers: supabaseServiceHeaders,
         cache: "no-store",
@@ -125,7 +126,9 @@ export async function GET(request) {
     ),
   ]);
 
-  const galleryImages = imagesResponse.ok ? await imagesResponse.json() : [];
+  const galleryImages = imagesResponse.ok
+    ? await withSignedImageUrls(await imagesResponse.json())
+    : [];
   const imageCounts = countByGalleryId(galleryImages);
   const fallbackCoverImages = getCoverImagesByGalleryId(galleryImages);
   const favoriteCounts = favoritesResponse.ok
