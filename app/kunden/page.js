@@ -120,6 +120,10 @@ export default function CustomerGalleryPage() {
     ? { url: gallery.cover_url }
     : images[0];
   const galleryStatus = getGalleryStatus(gallery);
+  const galleryGreetingName = String(gallery?.client_name || "").trim();
+  const galleryGreeting = galleryGreetingName
+    ? `Hallo, ${galleryGreetingName}.`
+    : "Hallo.";
 
   const showMessage = (text, type = "info") => {
     setMessage(text);
@@ -393,7 +397,7 @@ export default function CustomerGalleryPage() {
                 <div className="relative grid gap-6 p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end">
                   <div>
                     <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
-                      {gallery.client_name || "Kundengalerie"}
+                      Kundengalerie
                     </p>
                     <motion.h1
                       initial={{ opacity: 0, y: 18 }}
@@ -401,6 +405,8 @@ export default function CustomerGalleryPage() {
                       transition={{ duration: 0.45, ease: "easeOut" }}
                       className="mt-3 max-w-4xl text-4xl font-black leading-tight md:text-6xl"
                     >
+                      {galleryGreeting}
+                      <br />
                       {gallery.title}
                     </motion.h1>
                     <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-300 md:text-lg md:leading-8">
