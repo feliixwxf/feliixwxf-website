@@ -188,6 +188,11 @@ export default function AccountPage() {
   const submitAccount = async (event) => {
     event.preventDefault();
 
+    if (mode === "register" && !form.name.trim()) {
+      showMessage("Bitte gib einen Benutzernamen ein.", "error");
+      return;
+    }
+
     if (mode === "register" && !form.privacyAccepted) {
       showMessage(
         "Bitte bestätige die Datenschutzhinweise, um ein Konto zu erstellen.",
@@ -998,6 +1003,7 @@ export default function AccountPage() {
                           onChange={(event) =>
                             updateForm("name", event.target.value)
                           }
+                          required
                           placeholder="z. B. Felix"
                           className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
                         />

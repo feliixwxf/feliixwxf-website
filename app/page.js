@@ -244,6 +244,10 @@ export default function FeliixWxfPhotography() {
   }, []);
 
   const dark = theme === "dark";
+  const accountLabel =
+    String(currentCustomer?.name || "").trim() ||
+    String(currentCustomer?.email || "").trim() ||
+    "Konto";
 
   const navItems = ["Startseite", "Info", "Portfolio", "Bewertung", "Kontakt"];
 
@@ -645,14 +649,14 @@ export default function FeliixWxfPhotography() {
           <div className="flex items-center gap-3">
             <a
               href="/konto"
-              className={`hidden items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold md:inline-flex ${
+              className={`hidden max-w-[180px] items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold md:inline-flex ${
                 dark
                   ? "border-white/20 bg-white/10 hover:bg-white/15"
                   : "border-black/10 bg-white/75 hover:bg-white"
               } ${buttonHover}`}
             >
               <UserRound className="h-4 w-4" />
-              Konto
+              <span className="truncate">{accountLabel}</span>
             </a>
 
             <ThemeToggle />
@@ -702,7 +706,7 @@ export default function FeliixWxfPhotography() {
                     : "border-black/10 bg-black/5 hover:bg-black/10"
                 }`}
               >
-                Konto
+                {accountLabel}
               </a>
             </div>
           </motion.div>

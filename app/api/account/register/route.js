@@ -17,6 +17,13 @@ export async function POST(request) {
   const origin = request.headers.get("origin") || new URL(request.url).origin;
   const redirectTo = `${origin}/konto?verified=1`;
 
+  if (!name) {
+    return NextResponse.json(
+      { error: "Bitte gib einen Benutzernamen ein." },
+      { status: 400 }
+    );
+  }
+
   if (!email || !email.includes("@")) {
     return NextResponse.json(
       { error: "Bitte eine gültige E-Mail eingeben." },
