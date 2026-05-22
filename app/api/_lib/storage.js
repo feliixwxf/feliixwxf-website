@@ -5,6 +5,8 @@ import {
 } from "./supabase";
 
 const SIGNED_IMAGE_EXPIRES_IN = 60 * 60 * 6;
+const signedClientImageUrlsEnabled =
+  process.env.SUPABASE_SIGN_CLIENT_IMAGES === "true";
 
 function encodeStoragePath(path) {
   return String(path || "")
@@ -45,9 +47,22 @@ export async function createSignedImageUrl(path, fallbackUrl = "") {
 
 export async function withSignedImageUrls(images) {
   return Promise.all(
-    images.map(async (image) => ({
-      ...image,
-      url: await createSignedImageUrl(image.path, image.url),
-    }))
+    images.map(async (image) => {
+      const publicUrl = image.url || "";
+
+      if (!signedClientImageUrlsEnabled) {
+        return {
+          ...image,
+          public_url: publicUrl,
+          url: publicUrl,
+        };
+      }
+
+      return {
+        ...image,
+        public_url: publicUrl,
+        url: await createSignedImageUrl(image.path, publicUrl),
+      };
+    })
   );
 }
