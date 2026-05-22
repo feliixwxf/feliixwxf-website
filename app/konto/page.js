@@ -62,6 +62,7 @@ export default function AccountPage() {
     name: "",
     email: "",
     password: "",
+    privacyAccepted: false,
   });
   const [profileName, setProfileName] = useState("");
   const [avatarPreview, setAvatarPreview] = useState("");
@@ -182,6 +183,15 @@ export default function AccountPage() {
 
   const submitAccount = async (event) => {
     event.preventDefault();
+
+    if (mode === "register" && !form.privacyAccepted) {
+      showMessage(
+        "Bitte bestätige die Datenschutzhinweise, um ein Konto zu erstellen.",
+        "error"
+      );
+      return;
+    }
+
     setSubmitting(true);
     setMessage("");
 
@@ -910,6 +920,30 @@ export default function AccountPage() {
                         </button>
                       </div>
                     </label>
+
+                    {mode === "register" && (
+                      <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.08] p-4 text-sm leading-6 text-neutral-300">
+                        <input
+                          type="checkbox"
+                          checked={form.privacyAccepted}
+                          onChange={(event) =>
+                            updateForm("privacyAccepted", event.target.checked)
+                          }
+                          className="mt-1 h-4 w-4 rounded border-white/20 accent-yellow-400"
+                        />
+                        <span>
+                          Ich habe die{" "}
+                          <Link
+                            href="/?datenschutz=1"
+                            className="font-bold text-white underline decoration-white/40 underline-offset-4 transition hover:decoration-white"
+                          >
+                            Datenschutzhinweise
+                          </Link>{" "}
+                          gelesen und stimme der Verarbeitung meiner Daten für
+                          Kundenkonto und Kundengalerien zu.
+                        </span>
+                      </label>
+                    )}
 
                     <button
                       type="submit"

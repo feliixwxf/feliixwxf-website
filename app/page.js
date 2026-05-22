@@ -139,6 +139,12 @@ export default function FeliixWxfPhotography() {
   const [showDatenschutz, setShowDatenschutz] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("datenschutz") === "1") {
+      setShowDatenschutz(true);
+      window.history.replaceState(null, "", "/");
+    }
+
     const savedTheme = localStorage.getItem("feliix-theme");
 
     if (savedTheme) setTheme(savedTheme);

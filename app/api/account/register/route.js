@@ -13,6 +13,7 @@ export async function POST(request) {
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
   const name = String(body.name || "").trim().slice(0, 100);
+  const privacyAccepted = body.privacyAccepted === true;
   const origin = request.headers.get("origin") || new URL(request.url).origin;
   const redirectTo = `${origin}/konto?verified=1`;
 
@@ -30,6 +31,16 @@ export async function POST(request) {
     );
   }
 
+  if (!privacyAccepted) {
+    return NextResponse.json(
+      {
+        error:
+          "Bitte bestätige die Datenschutzhinweise, um ein Konto zu erstellen.",
+      },
+      { status: 400 }
+    );
+  }
+
   const response = await fetch(
     `${supabaseBaseUrl}/auth/v1/signup?redirect_to=${encodeURIComponent(
       redirectTo
@@ -40,7 +51,11 @@ export async function POST(request) {
       body: JSON.stringify({
         email,
         password,
-        data: { name },
+        data: {
+          name,
+          privacy_accepted_at: new Date().toISOString(),
+          privacy_version: "2026-05-22",
+        },
       }),
     }
   );
