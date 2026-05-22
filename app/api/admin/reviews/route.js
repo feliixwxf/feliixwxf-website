@@ -24,7 +24,7 @@ export async function GET() {
   }
 
   let response = await fetch(
-    `${supabaseRestUrl}/rest/v1/reviews?select=id,name,text,stars,avatar_url,customer_user_id,is_approved,created_at&order=created_at.desc&limit=200`,
+    `${supabaseRestUrl}/rest/v1/reviews?select=id,name,text,stars,avatar_url,customer_user_id,account_deleted_at,is_approved,created_at&order=created_at.desc&limit=200`,
     {
       headers: supabaseServiceHeaders,
       cache: "no-store",
@@ -38,7 +38,8 @@ export async function GET() {
 
     if (
       responseDetails.toLowerCase().includes("avatar_url") ||
-      responseDetails.toLowerCase().includes("customer_user_id")
+      responseDetails.toLowerCase().includes("customer_user_id") ||
+      responseDetails.toLowerCase().includes("account_deleted_at")
     ) {
       response = await fetch(
         `${supabaseRestUrl}/rest/v1/reviews?select=id,name,text,stars,is_approved,created_at&order=created_at.desc&limit=200`,

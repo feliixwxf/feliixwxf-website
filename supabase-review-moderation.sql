@@ -18,4 +18,7 @@ $$;
 
 alter table public.reviews
   add column if not exists avatar_url text,
-  add column if not exists customer_user_id uuid;
+  add column if not exists customer_user_id uuid,
+  add column if not exists account_deleted_at timestamptz;
+
+notify pgrst, 'reload schema';

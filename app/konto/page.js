@@ -599,10 +599,11 @@ export default function AccountPage() {
                           Konto löschen
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-red-100/75">
-                          Löscht dein Kundenkonto, Profilbild, Bewertungen
-                          dieses Kontos, Favoriten und die Verknüpfung zu
-                          Kundengalerien. Die Shooting-Galerien selbst bleiben
-                          beim Fotografen erhalten.
+                          Löscht dein Kundenkonto, Profilbild, Favoriten und
+                          die Verknüpfung zu Kundengalerien. Bewertungen
+                          bleiben ohne Konto-Verknüpfung bestehen. Wenn eine
+                          Bewertung gelöscht werden soll, schreibe bitte an
+                          felixwolff411@gmail.com.
                         </p>
                       </div>
                       <button

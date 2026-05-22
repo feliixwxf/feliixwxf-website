@@ -116,18 +116,49 @@ export async function DELETE(request) {
     );
   }
 
-  await bestEffortFetch(
+  const reviewDisconnectResponse = await bestEffortFetch(
     `${supabaseBaseUrl}/rest/v1/reviews?customer_user_id=eq.${encodeURIComponent(
       user.id
     )}`,
     {
-      method: "DELETE",
+      method: "PATCH",
       headers: {
         ...supabaseServiceHeaders,
         Prefer: "return=minimal",
       },
+      body: JSON.stringify({
+        customer_user_id: null,
+        avatar_url: null,
+        account_deleted_at: new Date().toISOString(),
+      }),
     }
   );
+
+  const reviewDisconnectDetails =
+    reviewDisconnectResponse.details.toLowerCase();
+
+  if (
+    !reviewDisconnectResponse.ok &&
+    (reviewDisconnectDetails.includes("account_deleted") ||
+      reviewDisconnectDetails.includes("schema cache"))
+  ) {
+    await bestEffortFetch(
+      `${supabaseBaseUrl}/rest/v1/reviews?customer_user_id=eq.${encodeURIComponent(
+        user.id
+      )}`,
+      {
+        method: "PATCH",
+        headers: {
+          ...supabaseServiceHeaders,
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          customer_user_id: null,
+          avatar_url: null,
+        }),
+      }
+    );
+  }
 
   await bestEffortFetch(
     `${supabaseBaseUrl}/rest/v1/client_galleries?client_email=ilike.${encodeURIComponent(

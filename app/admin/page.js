@@ -4619,6 +4619,12 @@ export default function AdminPage() {
                                 ? "Öffentlich"
                                 : "Wartet auf Freigabe"}
                             </span>
+
+                            {review.account_deleted_at && (
+                              <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-bold text-neutral-300">
+                                Konto gelöscht
+                              </span>
+                            )}
                           </div>
                           <div className="mt-4 flex items-center gap-3">
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10">
@@ -4642,6 +4648,14 @@ export default function AdminPage() {
                           <p className="mt-4 text-xs uppercase tracking-[0.22em] text-neutral-500">
                             {formatDate(review.created_at)}
                           </p>
+                          {review.account_deleted_at && (
+                            <p className="mt-2 text-xs leading-5 text-neutral-500">
+                              Kundenkonto gelöscht am{" "}
+                              {formatDate(review.account_deleted_at)}.
+                              Bewertung bleibt erhalten und kann bei Bedarf
+                              manuell gelöscht werden.
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex flex-wrap gap-2 md:justify-end">
