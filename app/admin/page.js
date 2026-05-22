@@ -483,6 +483,7 @@ export default function AdminPage() {
   const [clientGalleryPreview, setClientGalleryPreview] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmInput, setConfirmInput] = useState("");
   const [confirmBusy, setConfirmBusy] = useState(false);
 
   const approvedReviews = reviews.filter((review) => review.is_approved);
@@ -826,6 +827,7 @@ export default function AdminPage() {
   };
 
   const requestConfirmation = (action) => {
+    setConfirmInput("");
     setConfirmAction({
       title: "Aktion bestätigen",
       description: "Diese Aktion kann nicht automatisch rückgängig gemacht werden.",
@@ -837,6 +839,16 @@ export default function AdminPage() {
 
   const runConfirmedAction = async () => {
     if (!confirmAction?.onConfirm) return;
+    if (
+      confirmAction.confirmText &&
+      confirmInput.trim() !== confirmAction.confirmText
+    ) {
+      showMessage(
+        `Bitte ${confirmAction.confirmText} eingeben, um die Aktion zu bestätigen.`,
+        "error"
+      );
+      return;
+    }
 
     setConfirmBusy(true);
     try {
@@ -1354,6 +1366,7 @@ export default function AdminPage() {
       title: `Kundengalerie "${gallery.title}" löschen?`,
       description:
         "Die Galerie wird aus dem Admin entfernt. Dazu gehören die Kundengalerie-Daten und die zugeordneten Kundenbilder. Nutze das nur, wenn das Projekt wirklich weg kann.",
+      confirmText: "LÖSCHEN",
       confirmLabel: "Galerie löschen",
       onConfirm: async () => {
         setBusyClientGalleryId(gallery.id);
@@ -1391,6 +1404,7 @@ export default function AdminPage() {
       title: "Kundenbild löschen?",
       description:
         "Das Bild wird aus dieser Kundengalerie entfernt. Falls es als Cover oder Favorit genutzt wurde, wird diese Zuordnung ebenfalls bereinigt.",
+      confirmText: "LÖSCHEN",
       confirmLabel: "Bild löschen",
       onConfirm: async () => {
         setBusyClientImageId(image.id);
@@ -1721,6 +1735,7 @@ export default function AdminPage() {
       title: `Bewertung von ${review.name} löschen?`,
       description:
         "Die Bewertung wird dauerhaft aus der Moderation und von der öffentlichen Website entfernt.",
+      confirmText: "LÖSCHEN",
       confirmLabel: "Bewertung löschen",
       onConfirm: async () => {
         setBusyId(review.id);
@@ -1789,6 +1804,7 @@ export default function AdminPage() {
       title: "Portfolio-Bild löschen?",
       description:
         "Das Bild wird aus der öffentlichen Portfolio-Galerie entfernt. Titelbilder und Kundengalerien bleiben davon getrennt.",
+      confirmText: "LÖSCHEN",
       confirmLabel: "Bild löschen",
       onConfirm: async () => {
         setBusyImageId(image.id);
@@ -1840,6 +1856,7 @@ export default function AdminPage() {
       title: `${selectedImages.length} Portfolio-Bilder löschen?`,
       description:
         "Alle aktuell ausgewählten Bilder werden aus der öffentlichen Portfolio-Galerie entfernt.",
+      confirmText: "LÖSCHEN",
       confirmLabel: "Auswahl löschen",
       onConfirm: async () => {
         setBusyImageId("bulk-delete");
@@ -5004,10 +5021,27 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {confirmAction.confirmText && (
+              <label className="mt-5 block rounded-2xl border border-red-400/15 bg-red-500/10 p-4">
+                <span className="text-xs font-black uppercase tracking-[0.2em] text-red-100/70">
+                  Zur Bestätigung {confirmAction.confirmText} eingeben
+                </span>
+                <input
+                  value={confirmInput}
+                  onChange={(event) => setConfirmInput(event.target.value)}
+                  placeholder={confirmAction.confirmText}
+                  className="mt-3 w-full rounded-xl border border-red-300/20 bg-white px-3 py-2 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
+                />
+              </label>
+            )}
+
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => setConfirmAction(null)}
+                onClick={() => {
+                  setConfirmAction(null);
+                  setConfirmInput("");
+                }}
                 disabled={confirmBusy}
                 className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 px-5 py-3 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60"
               >
@@ -5016,7 +5050,13 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={runConfirmedAction}
-                disabled={confirmBusy}
+                disabled={
+                  confirmBusy ||
+                  Boolean(
+                    confirmAction.confirmText &&
+                      confirmInput.trim() !== confirmAction.confirmText
+                  )
+                }
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-red-400/30 bg-red-500/20 px-5 py-3 text-sm font-black text-red-50 transition hover:bg-red-500/30 disabled:opacity-60"
               >
                 <Trash2 className="h-4 w-4" />

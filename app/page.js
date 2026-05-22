@@ -1310,6 +1310,11 @@ export default function FeliixWxfPhotography() {
                   Kundenkontos oder die Bereitstellung einer Kundengalerie
                   erforderlich ist.
                 </p>
+                <p className="mt-3">
+                  Verantwortlich für diese Website ist Felix Wolff. Für
+                  Datenschutzanfragen, Auskunft oder Löschwünsche genügt eine
+                  Nachricht an die im Impressum genannte E-Mail-Adresse.
+                </p>
               </div>
 
               <div>
@@ -1343,6 +1348,13 @@ export default function FeliixWxfPhotography() {
                   verknüpftes Kundenkonto erreichbar sein. Downloads können je
                   nach Projekt freigeschaltet oder deaktiviert werden.
                 </p>
+                <p className="mt-3">
+                  Ein Kundenkonto kann im Konto-Bereich gelöscht werden. Dabei
+                  werden Konto-Verknüpfungen, Profilbild und Favoriten entfernt.
+                  Shooting-Galerien bleiben beim Fotografen erhalten, solange
+                  sie für Projektabwicklung, Nachlieferung oder Dokumentation
+                  benötigt werden.
+                </p>
               </div>
 
               <div>
@@ -1354,6 +1366,12 @@ export default function FeliixWxfPhotography() {
                   nach manueller Freigabe veröffentlicht. Bei eingeloggten
                   Kunden kann zusätzlich das Profilbild und der Nutzername aus
                   dem Kundenkonto angezeigt werden.
+                </p>
+                <p className="mt-3">
+                  Wird ein Kundenkonto gelöscht, bleibt eine bereits
+                  veröffentlichte Bewertung ohne Konto-Verknüpfung bestehen.
+                  Wenn eine Bewertung ebenfalls gelöscht werden soll, kann dies
+                  jederzeit per E-Mail angefragt werden.
                 </p>
               </div>
 
@@ -1383,6 +1401,12 @@ export default function FeliixWxfPhotography() {
                   Kontaktformularen eingesetzt werden. Externe Bildquellen
                   können nur dort verwendet werden, wo keine eigenen Bilder
                   hinterlegt sind.
+                </p>
+                <p className="mt-3">
+                  Bei diesen Diensten können technische Daten wie IP-Adresse,
+                  Zeitpunkt des Zugriffs, Geräte- und Browserinformationen oder
+                  Formularinhalte verarbeitet werden, soweit dies für Betrieb,
+                  Sicherheit und Anfragebearbeitung erforderlich ist.
                 </p>
               </div>
 
