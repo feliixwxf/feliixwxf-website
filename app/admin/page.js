@@ -732,6 +732,35 @@ export default function AdminPage() {
       icon: CheckCircle2,
     },
   ];
+  const privacyFocusGalleries = clientGalleries
+    .filter((gallery) => {
+      const status = getClientGalleryStatus(gallery);
+
+      return (
+        gallery.downloads_enabled ||
+        !gallery.expires_at ||
+        (status === "completed" && gallery.is_active !== false)
+      );
+    })
+    .slice(0, 5);
+  const privacyStats = [
+    {
+      label: "Downloads aktiv",
+      value: clientGalleries.filter((gallery) => gallery.downloads_enabled)
+        .length,
+      helper: "Galerien, in denen Kunden Dateien laden können.",
+    },
+    {
+      label: "Ohne Ablaufdatum",
+      value: clientGalleries.filter((gallery) => !gallery.expires_at).length,
+      helper: "Diese Galerien bleiben dauerhaft erreichbar.",
+    },
+    {
+      label: "Öffentliche Bewertungen",
+      value: approvedReviews.length,
+      helper: "Sichtbare Kundenstimmen auf der Website.",
+    },
+  ];
   const clientProjectFocus = [...clientProjectQueue]
     .sort((a, b) => {
       const doneA = getClientChecklistDone(a);
@@ -4697,6 +4726,173 @@ export default function AdminPage() {
                       Neue Bewertungen werden gespeichert, sind aber erst nach
                       deiner Freigabe für Besucher sichtbar.
                     </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-[1.5rem] border border-sky-300/20 bg-sky-300/10 p-6">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-100/70">
+                        Datenschutz & Datenpflege
+                      </p>
+                      <h3 className="mt-3 text-2xl font-black">
+                        Schnell prüfen, ohne extra Fenster
+                      </h3>
+                      <p className="mt-3 max-w-3xl text-sm leading-6 text-sky-100/75">
+                        Hier siehst du die wichtigsten Punkte für Kundendaten:
+                        aktive Downloads, Galerien ohne Ablaufdatum und
+                        sichtbare Bewertungen. Die Aktionen bleiben klein und
+                        direkt im Admin-Bereich.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("clients")}
+                      className="inline-flex w-fit items-center gap-2 rounded-full border border-sky-200/20 bg-sky-200/10 px-4 py-2 text-sm font-bold text-sky-50 transition hover:bg-sky-200/15"
+                    >
+                      <Users className="h-4 w-4" />
+                      Zu Kundengalerien
+                    </button>
+                  </div>
+
+                  <div className="mt-5 grid gap-3 md:grid-cols-3">
+                    {privacyStats.map((item) => (
+                      <div
+                        key={item.label}
+                        className="rounded-2xl border border-white/10 bg-black/20 p-4"
+                      >
+                        <p className="text-2xl font-black">{item.value}</p>
+                        <h4 className="mt-2 font-bold">{item.label}</h4>
+                        <p className="mt-2 text-xs leading-5 text-sky-100/70">
+                          {item.helper}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <h4 className="font-black">Datenpflege-Fokus</h4>
+                        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-sky-100/80">
+                          {privacyFocusGalleries.length} offen
+                        </span>
+                      </div>
+
+                      <div className="mt-4 grid gap-3">
+                        {privacyFocusGalleries.length === 0 && (
+                          <p className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-100/80">
+                            Sieht gut aus: aktuell gibt es keinen auffälligen
+                            Datenschutz-Punkt bei Kundengalerien.
+                          </p>
+                        )}
+
+                        {privacyFocusGalleries.map((gallery) => {
+                          const status = getClientGalleryStatus(gallery);
+                          const notes = [
+                            gallery.downloads_enabled
+                              ? "Downloads aktiv"
+                              : null,
+                            !gallery.expires_at ? "kein Ablaufdatum" : null,
+                            status === "completed" && gallery.is_active !== false
+                              ? "abgeschlossen, aber erreichbar"
+                              : null,
+                          ].filter(Boolean);
+
+                          return (
+                            <div
+                              key={gallery.id}
+                              className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                            >
+                              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                                <div className="min-w-0">
+                                  <p className="truncate font-black">
+                                    {gallery.title}
+                                  </p>
+                                  <p className="mt-1 text-xs text-sky-100/65">
+                                    {notes.join(" · ")}
+                                  </p>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveClientGalleryId(gallery.id);
+                                      setActiveClientPanel("overview");
+                                      setActiveTab("clients");
+                                    }}
+                                    className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold transition hover:bg-white/15"
+                                  >
+                                    Öffnen
+                                  </button>
+
+                                  {gallery.downloads_enabled && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateClientGallery(
+                                          gallery,
+                                          { downloads_enabled: false },
+                                          "Downloads wurden deaktiviert."
+                                        )
+                                      }
+                                      disabled={
+                                        busyClientGalleryId === gallery.id
+                                      }
+                                      className="rounded-full border border-yellow-400/25 bg-yellow-400/10 px-3 py-2 text-xs font-bold text-yellow-100 transition hover:bg-yellow-400/20 disabled:opacity-60"
+                                    >
+                                      Downloads aus
+                                    </button>
+                                  )}
+
+                                  {status !== "paused" && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        updateClientGallery(
+                                          gallery,
+                                          {
+                                            is_active: false,
+                                            status: "paused",
+                                          },
+                                          "Galerie wurde pausiert."
+                                        )
+                                      }
+                                      disabled={
+                                        busyClientGalleryId === gallery.id
+                                      }
+                                      className="rounded-full border border-red-400/25 bg-red-400/10 px-3 py-2 text-xs font-bold text-red-100 transition hover:bg-red-400/20 disabled:opacity-60"
+                                    >
+                                      Pausieren
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                      <h4 className="font-black">Kurze DSGVO-Routine</h4>
+                      <div className="mt-4 space-y-3 text-sm leading-6 text-sky-100/75">
+                        <p className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                          Kundengalerien nach Projektende pausieren oder ein
+                          Ablaufdatum setzen.
+                        </p>
+                        <p className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                          Downloads nur aktiv lassen, wenn der Kunde sie gerade
+                          braucht.
+                        </p>
+                        <p className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                          Bewertungen nur freigeben, wenn Name und Text so
+                          veröffentlicht werden dürfen.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
