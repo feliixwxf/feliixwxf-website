@@ -14,6 +14,7 @@ import {
   LogOut,
   Mail,
   RefreshCw,
+  Trash2,
   Upload,
   UserRound,
   UserPlus,
@@ -71,6 +72,9 @@ export default function AccountPage() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [linkingGallery, setLinkingGallery] = useState(false);
+  const [deletePanelOpen, setDeletePanelOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
@@ -239,6 +243,40 @@ export default function AccountPage() {
     setAvatarPreview("");
     setGalleries([]);
     showMessage("Du wurdest ausgeloggt.", "success");
+  };
+
+  const deleteAccount = async () => {
+    if (deleteConfirmText !== "LÖSCHEN") {
+      showMessage("Bitte gib LÖSCHEN ein, um dein Konto zu löschen.", "error");
+      return;
+    }
+
+    setDeletingAccount(true);
+    setMessage("");
+
+    const response = await fetch("/api/account/delete", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirm: deleteConfirmText }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(data.error || "Konto konnte nicht gelöscht werden.", "error");
+      setDeletingAccount(false);
+      return;
+    }
+
+    setUser(null);
+    setGalleries([]);
+    setProfileName("");
+    setAvatarPreview("");
+    setGalleryCode("");
+    setDeleteConfirmText("");
+    setDeletePanelOpen(false);
+    setMode("login");
+    showMessage("Dein Konto und die verknüpften Kontodaten wurden gelöscht.", "success");
+    setDeletingAccount(false);
   };
 
   const saveProfile = async () => {
@@ -552,6 +590,67 @@ export default function AccountPage() {
                       )}
                       Benutzername speichern
                     </button>
+                  </div>
+
+                  <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <h3 className="font-black text-red-50">
+                          Konto löschen
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-red-100/75">
+                          Löscht dein Kundenkonto, Profilbild, Bewertungen
+                          dieses Kontos, Favoriten und die Verknüpfung zu
+                          Kundengalerien. Die Shooting-Galerien selbst bleiben
+                          beim Fotografen erhalten.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDeletePanelOpen((current) => !current)
+                        }
+                        className="inline-flex w-fit items-center justify-center gap-2 rounded-xl border border-red-300/30 bg-red-300/10 px-4 py-2 text-sm font-black text-red-50 transition hover:bg-red-300/20"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        {deletePanelOpen ? "Schließen" : "Löschen"}
+                      </button>
+                    </div>
+
+                    {deletePanelOpen && (
+                      <div className="mt-4 rounded-xl border border-red-300/20 bg-black/25 p-4">
+                        <label className="block">
+                          <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-100/70">
+                            Zur Bestätigung LÖSCHEN eingeben
+                          </span>
+                          <input
+                            value={deleteConfirmText}
+                            onChange={(event) => {
+                              setDeleteConfirmText(event.target.value);
+                              setMessage("");
+                            }}
+                            placeholder="LÖSCHEN"
+                            className="mt-2 w-full rounded-xl border border-red-300/20 bg-white px-3 py-2 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
+                          />
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={deleteAccount}
+                          disabled={
+                            deletingAccount || deleteConfirmText !== "LÖSCHEN"
+                          }
+                          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-black text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {deletingAccount ? (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                          Konto endgültig löschen
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-6 flex items-center justify-between gap-3">
