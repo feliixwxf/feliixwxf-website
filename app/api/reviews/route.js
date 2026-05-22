@@ -17,6 +17,10 @@ const SUPABASE_KEY_SOURCE = process.env.SUPABASE_SERVICE_ROLE_KEY
     : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       ? "NEXT_PUBLIC_SUPABASE_ANON_KEY"
       : "missing";
+const REVIEW_NOTIFICATION_ENDPOINT =
+  process.env.REVIEW_NOTIFICATION_ENDPOINT ||
+  process.env.FORMSPREE_ENDPOINT ||
+  "https://formspree.io/f/xqennvyy";
 
 const headers = {
   apikey: SUPABASE_KEY || "",
@@ -55,6 +59,37 @@ async function fetchReviews(select) {
   }
 
   return { response, reviews: await response.json(), details: "" };
+}
+
+async function notifyNewReview(review, user) {
+  if (!REVIEW_NOTIFICATION_ENDPOINT) return;
+
+  try {
+    const response = await fetch(REVIEW_NOTIFICATION_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        _subject: "Neue Bewertung auf feliix.wxf",
+        source: "Website Bewertung",
+        name: review.name,
+        stars: `${review.stars}/5`,
+        text: review.text,
+        customer_email: user?.email || "Nicht eingeloggt",
+        account_name: user?.name || "",
+        submitted_at: new Date().toISOString(),
+        note: "Die Bewertung ist noch nicht öffentlich und muss im Adminbereich freigegeben werden.",
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Review notification failed:", await response.text());
+    }
+  } catch (error) {
+    console.error("Review notification failed:", error);
+  }
 }
 
 export async function GET(request) {
@@ -165,6 +200,8 @@ export async function POST(request) {
       }
 
       if (response.ok) {
+        await notifyNewReview(reviewPayload, user);
+
         const result = NextResponse.json({
           review: {
             ...reviewPayload,
@@ -182,6 +219,8 @@ export async function POST(request) {
       );
       return applyCustomerSessionCookies(result, customerSession);
     }
+
+    await notifyNewReview(reviewPayload, user);
 
     const result = NextResponse.json({
       review: {

@@ -1,12 +1,12 @@
 # feliix.wxf Website - KI-Übergabe
 
-Stand: 19.05.2026
+Stand: 22.05.2026
 
-Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt schnell weitergeführt werden kann.
+Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt ohne langes Einlesen weitergeführt werden kann.
 
 ## Kurzüberblick
 
-Website für `feliix.wxf` Fotografie.
+Website für `feliix.wxf` Fotografie mit öffentlicher Website, Adminbereich, Kundenkonto, Kundengalerien, Portfolio-Verwaltung und Bewertungsworkflow.
 
 Tech Stack:
 - Next.js `16.2.6`
@@ -14,14 +14,18 @@ Tech Stack:
 - Tailwind CSS
 - Framer Motion
 - Lucide Icons
-- Supabase für Bewertungen, Portfolio-Bilder, Titelbilder, Kontaktinfos und Kundengalerien
+- Supabase für Bewertungen, Kundenkonten, Portfolio-Bilder, Titelbilder, Website-Texte und Kundengalerien
+- Formspree für Kontaktformular und E-Mail-Benachrichtigung bei neuen Bewertungen
 - Vercel Deployment über GitHub
 
 Live-Domain:
 - `https://www.feliixwxf.de`
 
-Adminbereich:
-- `/admin`
+Wichtige Bereiche:
+- Website: `/`
+- Kundenkonto: `/konto`
+- Kundengalerie per Code: `/kunden`
+- Adminbereich: `/admin`
 
 ## Wichtige Befehle
 
@@ -37,52 +41,33 @@ git push
 
 Lokale Entwicklung läuft meistens auf:
 - `http://localhost:3000`
-- falls Port belegt ist, nimmt Next.js automatisch z. B. `3001`
+- wenn Port belegt ist, nimmt Next.js automatisch z. B. `3001`
 
 ## Wichtige Dateien
 
 Hauptseite:
 - `app/page.js`
 
+Kundenkonto:
+- `app/konto/page.js`
+
+Kundengalerie:
+- `app/kunden/page.js`
+
 Adminbereich:
 - `app/admin/page.js`
-
-UI-Komponenten:
-- `components/ui/button.jsx`
-- `components/ui/card.jsx`
 
 Globale Styles:
 - `app/globals.css`
 
-Supabase-Hilfsdatei:
+Supabase-Hilfe:
 - `app/api/_lib/supabase.js`
 
 Admin-Auth:
 - `app/api/admin/_lib/auth.js`
-- Login nutzt ein HTTP-only Session-Cookie, `Cache-Control: no-store`,
-  timing-sicheren Passwortvergleich und eine kleine Sperre nach mehreren
-  falschen Login-Versuchen.
 
-## API-Routen
-
-Öffentlich:
-- `app/api/reviews/route.js`
-- `app/api/portfolio-images/route.js`
-- `app/api/site-assets/route.js`
-- `app/api/site-settings/route.js`
-- `app/api/client-gallery/route.js`
-- `app/api/client-gallery/favorites/route.js`
-
-Admin:
-- `app/api/admin/login/route.js`
-- `app/api/admin/logout/route.js`
-- `app/api/admin/session/route.js`
-- `app/api/admin/reviews/route.js`
-- `app/api/admin/images/route.js`
-- `app/api/admin/site-assets/route.js`
-- `app/api/admin/site-settings/route.js`
-- `app/api/admin/client-galleries/route.js`
-- `app/api/admin/client-gallery-images/route.js`
+Kundenkonto-Auth:
+- `app/api/account/_lib/auth.js`
 
 ## Environment Variables in Vercel
 
@@ -95,13 +80,15 @@ Benötigt:
 
 Optional:
 - `SUPABASE_STORAGE_BUCKET`
+- `REVIEW_NOTIFICATION_ENDPOINT`
+- `FORMSPREE_ENDPOINT`
 
-Standard-Bucket im Code:
-- `portfolio`
-
-Wichtig:
-- Keine echten Secrets in Code, Screenshots oder Übergabe-Dateien speichern.
+Hinweise:
 - `SUPABASE_SERVICE_ROLE_KEY` nur serverseitig verwenden.
+- Keine echten Secrets in Code, Screenshots oder Übergabe-Dateien speichern.
+- Für neue Bewertungs-E-Mails nutzt `app/api/reviews/route.js` diese Reihenfolge:
+  `REVIEW_NOTIFICATION_ENDPOINT`, dann `FORMSPREE_ENDPOINT`, dann Fallback `https://formspree.io/f/xqennvyy`.
+- Wenn Felix den Formspree-Link nicht ändert, muss in Vercel für die Bewertungs-E-Mail nichts Neues gesetzt werden.
 
 ## Supabase Setup
 
@@ -109,11 +96,13 @@ SQL-Dateien im Projekt:
 - `supabase-admin-setup.sql`
 - `supabase-review-moderation.sql`
 - `supabase-portfolio-sort.sql`
+- `supabase-portfolio-metadata.sql`
 - `supabase-site-assets.sql`
 - `supabase-site-settings.sql`
 - `supabase-client-galleries.sql`
+- `supabase-security-hardening.sql`
 
-Tabellen:
+Wichtige Tabellen:
 - `reviews`
 - `portfolio_images`
 - `site_assets`
@@ -121,57 +110,128 @@ Tabellen:
 - `client_galleries`
 - `client_gallery_images`
 - `client_favorites`
+- `customer_users`
+- `customer_sessions`
 
 Storage:
-- Bucket `portfolio`
-- Darin liegen Portfolio-Bilder, Admin-gesteuerte Titelbilder und Kundengalerie-Bilder.
-
-## Kundengalerien
-
-Kundengalerien sind ein einfacher Code-Zugang ohne Kundenkonto.
-
-Workflow:
-1. Admin erstellt im Tab `Kunden` eine Galerie.
-2. Admin kopiert Code und Link `/kunden`.
-3. Kunde öffnet `/kunden`, gibt den Code ein und sieht seine Bilder.
-4. Kunde kann Bilder als Favorit markieren.
-5. Admin sieht im Kunden-Tab die Favoritenanzahl.
-
-Wichtige Dateien:
-- Kundenseite: `app/kunden/page.js`
-- Public API: `app/api/client-gallery/route.js`
-- Public Favoriten-API: `app/api/client-gallery/favorites/route.js`
-- Admin API: `app/api/admin/client-galleries/route.js`
-- Admin Upload API: `app/api/admin/client-gallery-images/route.js`
-- SQL: `supabase-client-galleries.sql`
-
-Hinweis:
-- Die Kundengalerien werden über die eigenen Next.js API-Routen geladen.
-- Die SQL-Datei setzt RLS aktiv, legt aber keine öffentlichen Select-Policies an.
-- Die API nutzt serverseitig den `SUPABASE_SERVICE_ROLE_KEY`.
-- Der Storage-Bucket ist aktuell öffentlich. Der Galerie-Code schützt die Übersicht,
-  direkte Bild-URLs sind technisch trotzdem öffentlich, wenn jemand den exakten Link hat.
-  Für streng private Kundenbereiche später auf private Buckets und Signed URLs wechseln.
+- Standard-Bucket: `portfolio`
+- Darin liegen Portfolio-Bilder, Titelbilder, Kundengalerie-Bilder und Profilbilder.
 
 ## Bewertungen
 
-Besucher können Bewertungen schreiben.
+Besucher und eingeloggte Kunden können Bewertungen schreiben.
 
 Workflow:
-1. Besucher schreibt Bewertung.
-2. Bewertung wird in Supabase gespeichert.
-3. Neue Bewertung ist standardmäßig `is_approved = false`.
-4. Admin gibt Bewertung im Adminbereich frei.
-5. Erst dann erscheint sie öffentlich auf der Website.
+1. Bewertung wird über `app/api/reviews/route.js` gespeichert.
+2. Neue Bewertungen sind standardmäßig `is_approved = false`.
+3. Admin kann Bewertungen im Adminbereich freigeben oder löschen.
+4. Erst freigegebene Bewertungen erscheinen öffentlich.
+5. Bei einer neuen Bewertung wird zusätzlich eine E-Mail-Benachrichtigung über Formspree ausgelöst.
+
+Wichtig:
+- Die E-Mail-Benachrichtigung ist absichtlich nicht blockierend. Wenn Formspree kurz nicht antwortet, bleibt die Bewertung trotzdem gespeichert.
+- Wenn ein Kunde sein Konto löscht, bleiben Bewertungen bestehen, aber die Konto-Verknüpfung wird entfernt und `account_deleted_at` gesetzt.
+- Profilbild und Benutzername können bei Bewertungen angezeigt werden.
+- Der Bewertungsname ist im Formular vorbefüllt, kann aber geändert werden.
 
 Wichtige Dateien:
-- Public API: `app/api/reviews/route.js`
-- Admin API: `app/api/admin/reviews/route.js`
-- Admin UI: `app/admin/page.js`
+- `app/api/reviews/route.js`
+- `app/api/admin/reviews/route.js`
+- `app/page.js`
+- `app/admin/page.js`
 
-## Portfolio-Bilder
+## Kundenkonto
 
-Portfolio-Galeriebilder werden im Adminbereich hochgeladen.
+Kunden können ein Konto erstellen, sich einloggen und Galerien mit ihrem Konto verknüpfen.
+
+Funktionen:
+- Registrierung mit Datenschutz-Haken
+- Login und Logout
+- Passwort anzeigen/ausblenden
+- Benutzername
+- Profilbild
+- Galerie-Code mit Konto verknüpfen
+- aktive und abgeschlossene Galerien sehen
+- Favoriten zählen
+- Downloadstatus sehen
+- Konto löschen
+
+Konto löschen:
+- löscht Kundenkonto, Session, Profilbild, Favoriten und Galerie-Verknüpfungen
+- Bewertungen bleiben aus Nachweis- und Moderationsgründen bestehen
+- wenn eine Bewertung gelöscht werden soll, muss der Kunde Felix per E-Mail kontaktieren
+
+Wichtige Dateien:
+- `app/konto/page.js`
+- `app/api/account/register/route.js`
+- `app/api/account/login/route.js`
+- `app/api/account/logout/route.js`
+- `app/api/account/session/route.js`
+- `app/api/account/profile/route.js`
+- `app/api/account/avatar/route.js`
+- `app/api/account/galleries/route.js`
+- `app/api/account/delete/route.js`
+
+## Kundengalerien
+
+Kundengalerien funktionieren über Code, QR-Link und Kundenkonto.
+
+Workflow:
+1. Admin erstellt eine Galerie im Adminbereich.
+2. Admin lädt Bilder hoch.
+3. Admin kann Downloads aktivieren/deaktivieren.
+4. Admin kann Cover, Hero-Banner, Titel, persönliche Nachricht und Status pflegen.
+5. Kunde öffnet `/kunden` per Code oder QR-Link.
+6. Kunde kann Galerie später im Konto verknüpfen.
+
+Funktionen:
+- QR-Code für Galerie-Zugriff
+- Favoriten
+- abgeschlossene Galerien
+- Downloadschutz mit Wasserzeichen, wenn Downloads aus sind
+- persönliche Begrüßung und Nachricht
+- Galerie kann über Kundenkonto erneut geöffnet werden
+
+Wichtige Dateien:
+- `app/kunden/page.js`
+- `app/api/client-gallery/route.js`
+- `app/api/client-gallery/favorites/route.js`
+- `app/api/admin/client-galleries/route.js`
+- `app/api/admin/client-gallery-images/route.js`
+- `supabase-client-galleries.sql`
+
+## Adminbereich
+
+Der Adminbereich ist in übersichtliche Arbeitsbereiche aufgeteilt.
+
+Hauptbereiche:
+- Dashboard
+- Kunden/Galerien
+- Bewertungen
+- Portfolio
+- Titelbilder
+- Website-Texte
+- Kontakt/Datenschutz
+
+Admin kann:
+- Portfolio-Bilder hochladen, sortieren, löschen und beschriften
+- Portfolio-Titelbilder separat verwalten
+- Startseitenbilder ändern
+- Kundengalerien erstellen und bearbeiten
+- Kundengalerie-Bilder hochladen und löschen
+- Coverbilder und Hero-Banner pro Shooting setzen
+- Galerie-Codes und QR-Codes verwenden
+- Downloads aktivieren/deaktivieren
+- Checklisten und Abschlussstatus pflegen
+- Bewertungen freigeben oder löschen
+- Website-Texte und Kontaktinfos ändern
+
+Sicherheitsdetails:
+- Admin-Login nutzt HTTP-only Session-Cookie
+- Admin-Löschaktionen sind zusätzlich abgesichert
+- gefährliche Löschaktionen verlangen Bestätigung
+
+## Portfolio
 
 Kategorien:
 - `car`
@@ -182,155 +242,73 @@ Kategorien:
 Wichtig:
 - Galerie-Bilder sind getrennt von Portfolio-Titelbildern.
 - Uploads ändern nicht automatisch die Kacheln auf der Startseite.
-- Reihenfolge kann im Adminbereich sortiert werden.
-- Im Adminbereich gibt es Suche, Kategorie-Filter sowie optionale Bildnamen und Notizen.
-- Portfolio-Bilder koennen im Admin nach eigener Reihenfolge, neuesten oder aeltesten Uploads sortiert werden.
-- Mehrfachauswahl ist fuer sichtbare Bilder vorhanden, inklusive gesammelt loeschen.
-- Fuer Bildnamen und Notizen muss einmal `supabase-portfolio-metadata.sql` ausgefuehrt werden.
+- Die Reihenfolge kann im Adminbereich sortiert werden.
+- Mehrfachauswahl für sichtbare Bilder ist vorhanden.
 
 Wichtige Dateien:
-- Public API: `app/api/portfolio-images/route.js`
-- Admin API: `app/api/admin/images/route.js`
-- Admin UI: `app/admin/page.js`
-- SQL-Erweiterung: `supabase-portfolio-metadata.sql`
+- `app/api/portfolio-images/route.js`
+- `app/api/admin/images/route.js`
+- `supabase-portfolio-sort.sql`
+- `supabase-portfolio-metadata.sql`
 
-## Titelbilder
+## Titelbilder und Website-Texte
 
-Admin kann diese Bilder direkt ändern:
-- Startseite Vorher-Bild
-- Startseite Nachher-Bild
-- Portfolio-Kachel Car
-- Portfolio-Kachel Portrait
-- Portfolio-Kachel Nature & Street
-- Portfolio-Kachel Event
-
-Wichtige Dateien:
-- Public API: `app/api/site-assets/route.js`
-- Admin API: `app/api/admin/site-assets/route.js`
-- SQL: `supabase-site-assets.sql`
-
-Fallback-Bilder stehen in `app/page.js` in `DEFAULT_SITE_ASSETS`.
-
-## Kontaktinfos
-
-Admin kann folgende Kontaktinfos ändern:
-- Kontakt-Überschrift
-- Kontakt-Text
-- E-Mail
-- Telefon
-- Instagram-Link
-- Instagram-Anzeige-Name
-- Formspree/Formular-Link
+Admin kann ändern:
+- Startseiten-Vorher-Bild
+- Startseiten-Nachher-Bild
+- Portfolio-Kachelbilder
+- Website-Texte
+- Kontaktinfos
+- Formspree-Link des Kontaktformulars
+- Datenschutz- und Impressumstexte innerhalb der Website
 
 Wichtige Dateien:
-- Public API: `app/api/site-settings/route.js`
-- Admin API: `app/api/admin/site-settings/route.js`
-- SQL: `supabase-site-settings.sql`
+- `app/api/site-assets/route.js`
+- `app/api/admin/site-assets/route.js`
+- `app/api/site-settings/route.js`
+- `app/api/admin/site-settings/route.js`
+- `supabase-site-assets.sql`
+- `supabase-site-settings.sql`
 
-Fallback-Werte stehen in `app/page.js` und `app/admin/page.js` in `DEFAULT_SITE_SETTINGS`.
+## Datenschutz und Sicherheit
 
-## Website-Texte
+Aktueller Stand:
+- Datenschutz-Hinweise sind auf der Website vorhanden.
+- Kontoerstellung verlangt einen Datenschutz-Haken.
+- Konto kann gelöscht werden.
+- Beim Löschen bleiben Bewertungen bestehen, aber ohne Konto-Verknüpfung.
+- Kunden werden darauf hingewiesen, dass Bewertungs-Löschung per E-Mail angefragt werden kann.
 
-Admin kann folgende Texte ändern:
-- Startseiten-Kicker
-- Startseiten-Headline Zeile 1
-- Startseiten-Headline Zeile 2
-- Startseiten-Untertext
-- Info-Kicker
-- Info-Überschrift
-- Info-Text
-- Portfolio-Kicker
-- Portfolio-Überschrift
-- Bewertungs-Kicker
-- Bewertungs-Überschrift
-- Bewertungsformular-Kicker
-- Bewertungsformular-Überschrift
-- Bewertungsformular-Text
+Noch sinnvoll zu prüfen:
+- Impressum und Datenschutzerklärung rechtlich final prüfen lassen.
+- Supabase-E-Mail-Texte anpassen.
+- Backup- und Löschfristen schriftlich festlegen.
+- Für echte Kundenbilder langfristig private Storage-Buckets und signierte URLs vollständig durchziehen.
 
-Diese Werte werden ebenfalls in `site_settings` gespeichert.
+## Letzter technischer Stand
 
-Wichtige Dateien:
-- Public API: `app/api/site-settings/route.js`
-- Admin API: `app/api/admin/site-settings/route.js`
-- Admin UI: `app/admin/page.js`
-- Website UI: `app/page.js`
+Letzte größere Änderungen:
+- Kundenbereich optisch aufgeräumt und mit Statistik-/Profilkarten verbessert.
+- Neue Bewertungen lösen eine E-Mail-Benachrichtigung an Felix aus.
+- Kundenkonto-Löschung bleibt datenschutzfreundlich, Bewertungen bleiben aber nachvollziehbar erhalten.
 
-## Adminbereich
+Vor Übergabe oder Deployment prüfen:
 
-Der Adminbereich ist absichtlich strukturiert, damit er nicht unübersichtlich wird.
+```bash
+npm run build
+git status --short
+git push
+```
 
-Tabs:
-- Start
-- Portfolio
-- Titelbilder
-- Kunden
-- Texte
-- Kontakt
-- Bewertungen
-- Einstellungen
+Letzter bekannter Build:
+- `npm run build` erfolgreich am 22.05.2026.
 
-Design-Idee:
-- Links Übersicht und Navigation
-- Rechts aktiver Arbeitsbereich
-- Keine Vermischung von Uploads, Kontaktinfos und Bewertungen
+## Wichtige Hinweise für eine nächste KI
 
-## Bekannte wichtige Hinweise
-
-1. Wenn Admin-Funktionen nicht speichern:
-   - Erst prüfen, ob die passende SQL-Datei in Supabase ausgeführt wurde.
-   - Dann Vercel Environment Variables prüfen.
-   - Danach neuen Deploy auslösen.
-
-2. Wenn Bewertungen nur lokal oder nur auf einem Gerät sichtbar sind:
-   - Prüfen, ob die Website wirklich Supabase nutzt.
-   - Prüfen, ob `SUPABASE_URL` ohne `/rest/v1` oder mit `/rest/v1` korrekt behandelt wird. Der Code entfernt `/rest/v1` automatisch.
-
-3. Wenn neue Änderungen nicht live sind:
-   - `git push`
-   - Vercel Deployment abwarten, bis es `Ready/Current` ist.
-
-4. Wenn localhost nicht geht:
-   - Terminal prüfen, welchen Port Next.js nutzt.
-   - Im Browser genau diesen Port öffnen.
-
-## Aktueller Git-Stand
-
-Letzte wichtige Commits:
-- neu: Kundengalerien mit Code-Zugang
-- `596fa8f Add editable contact settings`
-- `aeb0dbc Add admin dashboard overview`
-- `6822dc2 Restructure admin workspace layout`
-- `22be289 Add admin editable site images`
-- `55529b7 Improve admin dashboard UI`
-- `3a46eea Polish admin feedback`
-
-## Sinnvolle nächste Schritte
-
-1. Kundengalerien weiter ausbauen.
-   Beispiele:
-   - Bildreihenfolge pro Kundengalerie
-   - private Storage-Buckets mit Signed URLs
-   - Export der Favoritenliste
-
-2. Kundenkonto planen.
-   Ziel:
-   - Registrierung/Login
-   - Galerie-Zuordnung pro Benutzer
-   - sichere Downloads
-
-3. Admin weiter verbessern.
-   Beispiele:
-   - Bildsuche
-   - Bildnamen/Notizen
-   - Warnung bei sehr großen Bildern
-   - bessere Mobile-Admin-Ansicht
-
-## Wichtige Arbeitsregel
-
-Bei Änderungen am Code:
-1. Kleine, klare Änderung machen.
-2. `npm run build` ausführen.
-3. Lokal im Browser testen.
-4. Commit erstellen.
-5. Pushen.
-6. Vercel Deployment abwarten.
+- Bestehende Supabase-Struktur nicht ohne Not umbauen.
+- Kein `SUPABASE_SERVICE_ROLE_KEY` im Client verwenden.
+- Admin-Änderungen möglichst in bestehende Tabs integrieren, Felix möchte keine überladenen neuen Fenster.
+- Bei UI-Änderungen besonders auf mobile Darstellung achten.
+- Bei Kundengalerien Downloads und Wasserzeichen nicht umgehen.
+- Bewertungen bleiben nach Konto-Löschung bewusst erhalten.
+- Wenn neue Datenbankfelder nötig sind, SQL-Datei aktualisieren und Felix klar sagen, welche Datei in Supabase auszuführen ist.
