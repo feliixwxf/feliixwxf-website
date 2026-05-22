@@ -482,6 +482,8 @@ export default function AdminPage() {
   const [imagePreview, setImagePreview] = useState("");
   const [clientGalleryPreview, setClientGalleryPreview] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
 
   const approvedReviews = reviews.filter((review) => review.is_approved);
   const pendingReviews = reviews.filter((review) => !review.is_approved);
@@ -792,6 +794,28 @@ export default function AdminPage() {
   const showMessage = (text, type = "info") => {
     setMessage(text);
     setMessageType(type);
+  };
+
+  const requestConfirmation = (action) => {
+    setConfirmAction({
+      title: "Aktion bestätigen",
+      description: "Diese Aktion kann nicht automatisch rückgängig gemacht werden.",
+      confirmLabel: "Bestätigen",
+      cancelLabel: "Abbrechen",
+      ...action,
+    });
+  };
+
+  const runConfirmedAction = async () => {
+    if (!confirmAction?.onConfirm) return;
+
+    setConfirmBusy(true);
+    try {
+      await confirmAction.onConfirm();
+      setConfirmAction(null);
+    } finally {
+      setConfirmBusy(false);
+    }
   };
 
   const messageStyle =
@@ -1296,39 +1320,99 @@ export default function AdminPage() {
     );
   };
 
-  const deleteClientGallery = async (gallery) => {
-    if (
-      !window.confirm(
-        `Kundengalerie "${gallery.title}" inklusive Bilder wirklich löschen?`
-      )
-    ) {
-      return;
-    }
+  const deleteClientGallery = (gallery) => {
+    requestConfirmation({
+      title: `Kundengalerie "${gallery.title}" löschen?`,
+      description:
+        "Die Galerie wird aus dem Admin entfernt. Dazu gehören die Kundengalerie-Daten und die zugeordneten Kundenbilder. Nutze das nur, wenn das Projekt wirklich weg kann.",
+      confirmLabel: "Galerie löschen",
+      onConfirm: async () => {
+        setBusyClientGalleryId(gallery.id);
+        setMessage("");
 
-    setBusyClientGalleryId(gallery.id);
-    setMessage("");
+        const response = await fetch("/api/admin/client-galleries", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: gallery.id }),
+        });
+        const data = await response.json().catch(() => ({}));
 
-    const response = await fetch("/api/admin/client-galleries", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: gallery.id }),
+        if (!response.ok) {
+          showMessage(
+            data.error || "Kundengalerie konnte nicht gelöscht werden.",
+            "error"
+          );
+          setBusyClientGalleryId(null);
+          return;
+        }
+
+        const nextGalleries = clientGalleries.filter(
+          (item) => item.id !== gallery.id
+        );
+        setClientGalleries(nextGalleries);
+        setActiveClientGalleryId(nextGalleries[0]?.id || "");
+        showMessage("Kundengalerie wurde gelöscht.", "success");
+        setBusyClientGalleryId(null);
+      },
     });
-    const data = await response.json().catch(() => ({}));
+  };
 
-    if (!response.ok) {
-      showMessage(
-        data.error || "Kundengalerie konnte nicht gelöscht werden.",
-        "error"
-      );
-      setBusyClientGalleryId(null);
-      return;
-    }
+  const deleteClientGalleryImage = (gallery, image) => {
+    requestConfirmation({
+      title: "Kundenbild löschen?",
+      description:
+        "Das Bild wird aus dieser Kundengalerie entfernt. Falls es als Cover oder Favorit genutzt wurde, wird diese Zuordnung ebenfalls bereinigt.",
+      confirmLabel: "Bild löschen",
+      onConfirm: async () => {
+        setBusyClientImageId(image.id);
+        setMessage("");
 
-    const nextGalleries = clientGalleries.filter((item) => item.id !== gallery.id);
-    setClientGalleries(nextGalleries);
-    setActiveClientGalleryId(nextGalleries[0]?.id || "");
-    showMessage("Kundengalerie wurde gelöscht.", "success");
-    setBusyClientGalleryId(null);
+        const response = await fetch("/api/admin/client-gallery-images", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: image.id }),
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          showMessage(
+            data.error || "Kundenbild konnte nicht gelöscht werden.",
+            "error"
+          );
+          setBusyClientImageId(null);
+          return;
+        }
+
+        setClientGalleries((current) =>
+          current.map((item) => {
+            if (item.id !== gallery.id) return item;
+
+            const nextImages = (item.images || []).filter(
+              (entry) => entry.id !== image.id
+            );
+            const nextFavorites = (item.favorites || []).filter(
+              (favorite) => favorite.image_id !== image.id
+            );
+
+            return {
+              ...item,
+              images: nextImages,
+              favorites: nextFavorites,
+              cover_image_id:
+                item.cover_image_id === image.id ? null : item.cover_image_id,
+              cover_url:
+                item.cover_image_id === image.id
+                  ? nextImages[0]?.url || ""
+                  : item.cover_url,
+              image_count: nextImages.length,
+              favorite_count: nextFavorites.length,
+            };
+          })
+        );
+        showMessage("Kundenbild wurde gelöscht.", "success");
+        setBusyClientImageId(null);
+      },
+    });
   };
 
   const uploadClientGalleryImage = async (event) => {
@@ -1398,56 +1482,6 @@ export default function AdminPage() {
       window.clearTimeout(timeoutId);
       setClientGalleryUploading(false);
     }
-  };
-
-  const deleteClientGalleryImage = async (gallery, image) => {
-    if (!window.confirm("Dieses Kundenbild wirklich löschen?")) return;
-
-    setBusyClientImageId(image.id);
-    setMessage("");
-
-    const response = await fetch("/api/admin/client-gallery-images", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: image.id }),
-    });
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      showMessage(
-        data.error || "Kundenbild konnte nicht gelöscht werden.",
-        "error"
-      );
-      setBusyClientImageId(null);
-      return;
-    }
-
-    setClientGalleries((current) =>
-      current.map((item) => {
-        if (item.id !== gallery.id) return item;
-
-        const nextImages = (item.images || []).filter(
-          (entry) => entry.id !== image.id
-        );
-        const nextFavorites = (item.favorites || []).filter(
-          (favorite) => favorite.image_id !== image.id
-        );
-
-        return {
-          ...item,
-          images: nextImages,
-          favorites: nextFavorites,
-          cover_image_id:
-            item.cover_image_id === image.id ? null : item.cover_image_id,
-          cover_url:
-            item.cover_image_id === image.id ? nextImages[0]?.url || "" : item.cover_url,
-          image_count: nextImages.length,
-          favorite_count: nextFavorites.length,
-        };
-      })
-    );
-    showMessage("Kundenbild wurde gelöscht.", "success");
-    setBusyClientImageId(null);
   };
 
   const copyClientFavoriteList = () => {
@@ -1653,30 +1687,37 @@ export default function AdminPage() {
     setSettingsSaving(false);
   };
 
-  const deleteReview = async (review) => {
-    if (!window.confirm(`Bewertung von ${review.name} wirklich löschen?`)) {
-      return;
-    }
+  const deleteReview = (review) => {
+    requestConfirmation({
+      title: `Bewertung von ${review.name} löschen?`,
+      description:
+        "Die Bewertung wird dauerhaft aus der Moderation und von der öffentlichen Website entfernt.",
+      confirmLabel: "Bewertung löschen",
+      onConfirm: async () => {
+        setBusyId(review.id);
+        setMessage("");
 
-    setBusyId(review.id);
-    setMessage("");
+        const response = await fetch("/api/admin/reviews", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: review.id }),
+        });
+        const data = await response.json();
 
-    const response = await fetch("/api/admin/reviews", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: review.id }),
+        if (!response.ok) {
+          showMessage(
+            data.error || "Bewertung konnte nicht gelöscht werden.",
+            "error"
+          );
+          setBusyId(null);
+          return;
+        }
+
+        setReviews((current) => current.filter((item) => item.id !== review.id));
+        showMessage("Bewertung wurde gelöscht.", "success");
+        setBusyId(null);
+      },
     });
-    const data = await response.json();
-
-    if (!response.ok) {
-      showMessage(data.error || "Bewertung konnte nicht gelöscht werden.", "error");
-      setBusyId(null);
-      return;
-    }
-
-    setReviews((current) => current.filter((item) => item.id !== review.id));
-    showMessage("Bewertung wurde gelöscht.", "success");
-    setBusyId(null);
   };
 
   const setReviewApproval = async (review, isApproved) => {
@@ -1714,31 +1755,35 @@ export default function AdminPage() {
     setBusyId(null);
   };
 
-  const deleteImage = async (image) => {
-    if (!window.confirm("Bild wirklich aus der Online-Galerie löschen?")) {
-      return;
-    }
+  const deleteImage = (image) => {
+    requestConfirmation({
+      title: "Portfolio-Bild löschen?",
+      description:
+        "Das Bild wird aus der öffentlichen Portfolio-Galerie entfernt. Titelbilder und Kundengalerien bleiben davon getrennt.",
+      confirmLabel: "Bild löschen",
+      onConfirm: async () => {
+        setBusyImageId(image.id);
+        setMessage("");
 
-    setBusyImageId(image.id);
-    setMessage("");
+        const response = await fetch("/api/admin/images", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: image.id }),
+        });
+        const data = await response.json();
 
-    const response = await fetch("/api/admin/images", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: image.id }),
+        if (!response.ok) {
+          showMessage(data.error || "Bild konnte nicht gelöscht werden.", "error");
+          setBusyImageId(null);
+          return;
+        }
+
+        setImages((current) => current.filter((item) => item.id !== image.id));
+        setSelectedImageIds((current) => current.filter((id) => id !== image.id));
+        showMessage("Bild wurde aus der Galerie gelöscht.", "success");
+        setBusyImageId(null);
+      },
     });
-    const data = await response.json();
-
-    if (!response.ok) {
-      showMessage(data.error || "Bild konnte nicht gelöscht werden.", "error");
-      setBusyImageId(null);
-      return;
-    }
-
-    setImages((current) => current.filter((item) => item.id !== image.id));
-    setSelectedImageIds((current) => current.filter((id) => id !== image.id));
-    showMessage("Bild wurde aus der Galerie gelöscht.", "success");
-    setBusyImageId(null);
   };
 
   const toggleImageSelection = (imageId) => {
@@ -1759,49 +1804,49 @@ export default function AdminPage() {
     });
   };
 
-  const deleteSelectedImages = async () => {
+  const deleteSelectedImages = () => {
     if (selectedImages.length === 0) return;
 
-    if (
-      !window.confirm(
-        `${selectedImages.length} ausgewählte Bilder wirklich löschen?`
-      )
-    ) {
-      return;
-    }
+    requestConfirmation({
+      title: `${selectedImages.length} Portfolio-Bilder löschen?`,
+      description:
+        "Alle aktuell ausgewählten Bilder werden aus der öffentlichen Portfolio-Galerie entfernt.",
+      confirmLabel: "Auswahl löschen",
+      onConfirm: async () => {
+        setBusyImageId("bulk-delete");
+        setMessage("");
 
-    setBusyImageId("bulk-delete");
-    setMessage("");
+        const responses = await Promise.all(
+          selectedImages.map((image) =>
+            fetch("/api/admin/images", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: image.id }),
+            })
+          )
+        );
+        const failedResponse = responses.find((response) => !response.ok);
 
-    const responses = await Promise.all(
-      selectedImages.map((image) =>
-        fetch("/api/admin/images", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: image.id }),
-        })
-      )
-    );
-    const failedResponse = responses.find((response) => !response.ok);
+        if (failedResponse) {
+          const data = await failedResponse.json();
+          showMessage(
+            data.error || "Mindestens ein Bild konnte nicht gelöscht werden.",
+            "error"
+          );
+          setBusyImageId(null);
+          await loadImages();
+          return;
+        }
 
-    if (failedResponse) {
-      const data = await failedResponse.json();
-      showMessage(
-        data.error || "Mindestens ein Bild konnte nicht gelöscht werden.",
-        "error"
-      );
-      setBusyImageId(null);
-      await loadImages();
-      return;
-    }
-
-    const deletedIds = selectedImages.map((image) => image.id);
-    setImages((current) =>
-      current.filter((image) => !deletedIds.includes(image.id))
-    );
-    setSelectedImageIds([]);
-    showMessage("Ausgewählte Bilder wurden gelöscht.", "success");
-    setBusyImageId(null);
+        const deletedIds = selectedImages.map((image) => image.id);
+        setImages((current) =>
+          current.filter((image) => !deletedIds.includes(image.id))
+        );
+        setSelectedImageIds([]);
+        showMessage("Ausgewählte Bilder wurden gelöscht.", "success");
+        setBusyImageId(null);
+      },
+    });
   };
 
   const moveImage = async (categoryValue, imageId, direction) => {
@@ -3241,7 +3286,7 @@ export default function AdminPage() {
                             </div>
                           </div>
 
-                          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
                             <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
                               <p className="text-xs text-neutral-500">Status</p>
                               <span
@@ -3279,6 +3324,32 @@ export default function AdminPage() {
                               <p className="text-xs opacity-75">Kundenkonto</p>
                               <p className="mt-2 font-black">
                                 {activeClientAccountState.label}
+                              </p>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
+                              <p className="text-xs text-neutral-500">
+                                Downloads
+                              </p>
+                              <p
+                                className={`mt-2 text-sm font-black ${
+                                  activeClientGallery.downloads_enabled
+                                    ? "text-emerald-200"
+                                    : "text-neutral-300"
+                                }`}
+                              >
+                                {activeClientGallery.downloads_enabled
+                                  ? "Freigegeben"
+                                  : "Gesperrt"}
+                              </p>
+                            </div>
+                            <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
+                              <p className="text-xs text-neutral-500">
+                                Ablauf
+                              </p>
+                              <p className="mt-2 text-sm font-black text-neutral-200">
+                                {activeClientGallery.expires_at
+                                  ? formatDate(activeClientGallery.expires_at)
+                                  : "Kein Datum"}
                               </p>
                             </div>
                           </div>
@@ -4650,6 +4721,49 @@ export default function AdminPage() {
           </section>
         )}
       </div>
+
+      {confirmAction && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-5 backdrop-blur-lg">
+          <div className="w-full max-w-lg rounded-[2rem] border border-red-400/20 bg-neutral-950 p-6 text-white shadow-2xl">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-red-100">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-red-200/70">
+                  Sicherheitsabfrage
+                </p>
+                <h2 className="mt-3 text-2xl font-black">
+                  {confirmAction.title}
+                </h2>
+                <p className="mt-3 leading-7 text-neutral-300">
+                  {confirmAction.description}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setConfirmAction(null)}
+                disabled={confirmBusy}
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 px-5 py-3 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60"
+              >
+                {confirmAction.cancelLabel}
+              </button>
+              <button
+                type="button"
+                onClick={runConfirmedAction}
+                disabled={confirmBusy}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-red-400/30 bg-red-500/20 px-5 py-3 text-sm font-black text-red-50 transition hover:bg-red-500/30 disabled:opacity-60"
+              >
+                <Trash2 className="h-4 w-4" />
+                {confirmBusy ? "Wird ausgeführt..." : confirmAction.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedImage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-5 backdrop-blur-lg">
