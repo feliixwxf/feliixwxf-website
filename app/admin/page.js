@@ -4894,6 +4894,58 @@ export default function AdminPage() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <h4 className="font-black">
+                          AVV / Auftragsverarbeitung prüfen
+                        </h4>
+                        <p className="mt-2 max-w-3xl text-sm leading-6 text-sky-100/70">
+                          Prüfe in deinen Accounts, ob die
+                          Auftragsverarbeitungsverträge für die Dienste
+                          abgeschlossen oder verfügbar sind. Das ist eine
+                          organisatorische Aufgabe, kein Website-Popup.
+                        </p>
+                      </div>
+                      <span className="w-fit rounded-full border border-yellow-400/25 bg-yellow-400/10 px-3 py-1 text-xs font-black text-yellow-100">
+                        manuell prüfen
+                      </span>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 md:grid-cols-3">
+                      {[
+                        {
+                          name: "Supabase",
+                          helper:
+                            "Datenbank, Kundenkonten, Bewertungen und Bildspeicher.",
+                        },
+                        {
+                          name: "Vercel",
+                          helper:
+                            "Hosting, Deployment und Auslieferung der Website.",
+                        },
+                        {
+                          name: "Formspree",
+                          helper:
+                            "Kontaktformular, falls der Formspree-Link aktiv bleibt.",
+                        },
+                      ].map((processor) => (
+                        <div
+                          key={processor.name}
+                          className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Lock className="h-4 w-4 text-sky-100/80" />
+                            <h5 className="font-black">{processor.name}</h5>
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-sky-100/65">
+                            {processor.helper}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">

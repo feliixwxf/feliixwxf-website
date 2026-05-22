@@ -1298,7 +1298,11 @@ export default function FeliixWxfPhotography() {
                 </h3>
                 <p className="mt-3">
                   Der Schutz Ihrer persönlichen Daten ist uns wichtig.
-                  Personenbezogene Daten werden vertraulich behandelt.
+                  Personenbezogene Daten werden vertraulich behandelt und nur
+                  verarbeitet, wenn dies für die Bereitstellung der Website,
+                  die Bearbeitung einer Anfrage, die Nutzung eines
+                  Kundenkontos oder die Bereitstellung einer Kundengalerie
+                  erforderlich ist.
                 </p>
               </div>
 
@@ -1308,7 +1312,10 @@ export default function FeliixWxfPhotography() {
                 </h3>
                 <p className="mt-3">
                   Übermittelte Daten aus dem Kontaktformular werden zur
-                  Bearbeitung Ihrer Anfrage gespeichert.
+                  Bearbeitung Ihrer Anfrage verarbeitet. Dazu können Name,
+                  E-Mail-Adresse, Telefonnummer und Ihre Nachricht gehören.
+                  Die Verarbeitung erfolgt, um Ihre Anfrage beantworten und ein
+                  mögliches Shooting vorbereiten zu können.
                 </p>
               </div>
 
@@ -1321,7 +1328,14 @@ export default function FeliixWxfPhotography() {
                   nutzen, werden die dafür erforderlichen Daten verarbeitet. Dazu
                   gehören insbesondere E-Mail-Adresse, Nutzername, Profilbild,
                   Galerie-Zuordnung, Favoriten, Download-Freigaben und
-                  technische Zugriffsinformationen.
+                  technische Zugriffsinformationen. Kundengalerien können
+                  persönliche Fotos enthalten und werden nur für den jeweiligen
+                  Zweck des Shootings bereitgestellt.
+                </p>
+                <p className="mt-3">
+                  Galerien können über einen Zugangscode, QR-Code oder ein
+                  verknüpftes Kundenkonto erreichbar sein. Downloads können je
+                  nach Projekt freigeschaltet oder deaktiviert werden.
                 </p>
               </div>
 
@@ -1339,13 +1353,30 @@ export default function FeliixWxfPhotography() {
 
               <div>
                 <h3 className="text-2xl font-bold text-white">
+                  Speicherdauer
+                </h3>
+                <p className="mt-3">
+                  Daten werden nur so lange gespeichert, wie sie für die
+                  jeweiligen Zwecke erforderlich sind. Kundengalerien können
+                  nach Abschluss eines Projekts deaktiviert, mit einem
+                  Ablaufdatum versehen oder gelöscht werden. Gesetzliche
+                  Aufbewahrungspflichten bleiben unberührt.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white">
                   Externe Dienste
                 </h3>
                 <p className="mt-3">
-                  Diese Website nutzt externe Dienste wie Formspree, Supabase,
-                  Vercel und externe Bildquellen. Diese Dienste können zur
-                  Bereitstellung der Website, Speicherung von Inhalten,
-                  Kundenkonten, Formularen und Medien genutzt werden.
+                  Diese Website nutzt externe Dienste zur Bereitstellung und
+                  Verwaltung der Inhalte. Vercel wird für Hosting und
+                  Auslieferung der Website genutzt. Supabase wird für Datenbank,
+                  Kundenkonten, Bewertungen, Kundengalerien und Bildspeicher
+                  genutzt. Formspree kann für die Verarbeitung von
+                  Kontaktformularen eingesetzt werden. Externe Bildquellen
+                  können nur dort verwendet werden, wo keine eigenen Bilder
+                  hinterlegt sind.
                 </p>
               </div>
 
@@ -1355,7 +1386,11 @@ export default function FeliixWxfPhotography() {
                 </h3>
                 <p className="mt-3">
                   Sie haben jederzeit das Recht auf Auskunft, Berichtigung oder
-                  Löschung Ihrer gespeicherten Daten.
+                  Löschung Ihrer gespeicherten Daten. Außerdem können Sie je
+                  nach Situation Einschränkung der Verarbeitung, Widerspruch
+                  gegen die Verarbeitung oder Datenübertragbarkeit verlangen.
+                  Für Anfragen genügt eine Nachricht an die im Impressum
+                  genannte E-Mail-Adresse.
                 </p>
               </div>
             </div>
