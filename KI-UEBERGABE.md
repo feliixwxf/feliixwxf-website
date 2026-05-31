@@ -62,6 +62,7 @@ Globale Styles:
 
 Supabase-Hilfe:
 - `app/api/_lib/supabase.js`
+- `app/api/_lib/storage.js`
 
 Admin-Auth:
 - `app/api/admin/_lib/auth.js`
@@ -80,12 +81,17 @@ Benötigt:
 
 Optional:
 - `SUPABASE_STORAGE_BUCKET`
+- `SUPABASE_PORTFOLIO_STORAGE_BUCKET`
+- `SUPABASE_CLIENT_GALLERY_STORAGE_BUCKET`
+- `SUPABASE_SIGN_CLIENT_IMAGES`
 - `REVIEW_NOTIFICATION_ENDPOINT`
 - `FORMSPREE_ENDPOINT`
 
 Hinweise:
 - `SUPABASE_SERVICE_ROLE_KEY` nur serverseitig verwenden.
 - Keine echten Secrets in Code, Screenshots oder Übergabe-Dateien speichern.
+- `SUPABASE_CLIENT_GALLERY_STORAGE_BUCKET` ist optional. Ohne Variable nutzt die App `client-galleries`.
+- `SUPABASE_SIGN_CLIENT_IMAGES` sollte nicht auf `false` stehen. Ohne Variable sind signierte Kundengalerie-Links aktiv.
 - Für neue Bewertungs-E-Mails nutzt `app/api/reviews/route.js` diese Reihenfolge:
   `REVIEW_NOTIFICATION_ENDPOINT`, dann `FORMSPREE_ENDPOINT`, dann Fallback `https://formspree.io/f/xqennvyy`.
 - Wenn Felix den Formspree-Link nicht ändert, muss in Vercel für die Bewertungs-E-Mail nichts Neues gesetzt werden.
@@ -114,8 +120,16 @@ Wichtige Tabellen:
 - `customer_sessions`
 
 Storage:
-- Standard-Bucket: `portfolio`
-- Darin liegen Portfolio-Bilder, Titelbilder, Kundengalerie-Bilder und Profilbilder.
+- Öffentlicher Bucket `portfolio`
+  - Portfolio-Bilder
+  - Startseitenbilder
+  - Portfolio-Titelbilder
+  - Profilbilder
+- Privater Bucket `client-galleries`
+  - neue Kundengalerie-Bilder
+  - wird über `supabase-client-galleries.sql` angelegt
+  - muss `public = false` sein
+  - Bilder werden serverseitig über zeitlich begrenzte signierte URLs ausgeliefert
 
 ## Bewertungen
 
@@ -191,11 +205,20 @@ Funktionen:
 - Downloadschutz mit Wasserzeichen, wenn Downloads aus sind
 - persönliche Begrüßung und Nachricht
 - Galerie kann über Kundenkonto erneut geöffnet werden
+- neue Kundenbilder liegen im privaten Supabase-Bucket `client-galleries`
+- Kundenbilder werden über signierte URLs ausgeliefert
+
+Wichtig zu alten Kundengalerie-Bildern:
+- Bilder, die vor der privaten Bucket-Umstellung hochgeladen wurden, können noch im öffentlichen `portfolio`-Bucket liegen.
+- Der Code lässt alte Bilder als Fallback sichtbar, damit keine Galerie plötzlich leer ist.
+- Für maximalen Datenschutz sollten alte Kundengalerie-Bilder bei Gelegenheit neu hochgeladen oder migriert werden.
 
 Wichtige Dateien:
 - `app/kunden/page.js`
 - `app/api/client-gallery/route.js`
 - `app/api/client-gallery/favorites/route.js`
+- `app/api/account/galleries/route.js`
+- `app/api/_lib/storage.js`
 - `app/api/admin/client-galleries/route.js`
 - `app/api/admin/client-gallery-images/route.js`
 - `supabase-client-galleries.sql`
@@ -278,16 +301,22 @@ Aktueller Stand:
 - Konto kann gelöscht werden.
 - Beim Löschen bleiben Bewertungen bestehen, aber ohne Konto-Verknüpfung.
 - Kunden werden darauf hingewiesen, dass Bewertungs-Löschung per E-Mail angefragt werden kann.
+- Neue Kundengalerie-Bilder werden privat gespeichert und über signierte Links angezeigt.
+- Direkter öffentlicher Zugriff auf Kundengalerie-Tabellen wurde über RLS/Policies gehärtet.
 
 Noch sinnvoll zu prüfen:
 - Impressum und Datenschutzerklärung rechtlich final prüfen lassen.
 - Supabase-E-Mail-Texte anpassen.
 - Backup- und Löschfristen schriftlich festlegen.
-- Für echte Kundenbilder langfristig private Storage-Buckets und signierte URLs vollständig durchziehen.
+- Alte Kundengalerie-Bilder aus dem früheren öffentlichen Bucket migrieren oder neu hochladen.
 
 ## Letzter technischer Stand
 
 Letzte größere Änderungen:
+- Kundengalerie-Uploads wurden auf den privaten Supabase-Bucket `client-galleries` umgestellt.
+- Kundengalerie-Bilder werden in Adminbereich, Kundenkonto und Kundengalerie über signierte URLs angezeigt.
+- Der Upload prüft jetzt, ob `SUPABASE_SERVICE_ROLE_KEY` vorhanden ist, und zeigt technische Upload-Details im Adminbereich an.
+- Der private Bucket muss in Supabase Storage existieren. Falls Supabase ihn nicht automatisch anlegt, manuell erstellen: `client-galleries`, Public aus.
 - Kundenbereich optisch aufgeräumt und mit Statistik-/Profilkarten verbessert.
 - Leerer Kundenkonto-Zustand klarer erklärt und Galerie-Code-Eingabe hervorgehoben.
 - Eingeloggte Kunden sehen auf der Website im Header ihren Benutzernamen statt nur `Konto`.
@@ -313,5 +342,6 @@ Letzter bekannter Build:
 - Admin-Änderungen möglichst in bestehende Tabs integrieren, Felix möchte keine überladenen neuen Fenster.
 - Bei UI-Änderungen besonders auf mobile Darstellung achten.
 - Bei Kundengalerien Downloads und Wasserzeichen nicht umgehen.
+- Bei Kundengalerie-Bildern immer `app/api/_lib/storage.js` nutzen, damit private Bucket-Signierung und alte Fallback-URLs erhalten bleiben.
 - Bewertungen bleiben nach Konto-Löschung bewusst erhalten.
 - Wenn neue Datenbankfelder nötig sind, SQL-Datei aktualisieren und Felix klar sagen, welche Datei in Supabase auszuführen ist.
