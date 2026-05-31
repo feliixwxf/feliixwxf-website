@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
+  clientGalleryStorageBucket,
   hasSupabaseConfig,
-  storageBucket,
   supabaseRestUrl,
   supabaseServiceHeaders,
 } from "../_lib/supabase";
+import {
+  createSignedImageUrl,
+  deleteClientGalleryStoragePaths,
+} from "../../_lib/storage";
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 
@@ -84,7 +88,7 @@ export async function POST(request) {
   const bytes = await file.arrayBuffer();
 
   const uploadResponse = await fetch(
-    `${supabaseRestUrl}/storage/v1/object/${storageBucket}/${path}`,
+    `${supabaseRestUrl}/storage/v1/object/${clientGalleryStorageBucket}/${path}`,
     {
       method: "POST",
       headers: {
@@ -106,7 +110,7 @@ export async function POST(request) {
     );
   }
 
-  const url = `${supabaseRestUrl}/storage/v1/object/public/${storageBucket}/${path}`;
+  const url = `${supabaseRestUrl}/storage/v1/object/${clientGalleryStorageBucket}/${path}`;
   const insertResponse = await fetch(
     `${supabaseRestUrl}/rest/v1/client_gallery_images`,
     {
@@ -138,7 +142,13 @@ export async function POST(request) {
   }
 
   const [image] = await insertResponse.json();
-  return NextResponse.json({ image });
+  return NextResponse.json({
+    image: {
+      ...image,
+      public_url: image.url,
+      url: await createSignedImageUrl(image.path, image.url),
+    },
+  });
 }
 
 export async function DELETE(request) {
@@ -184,11 +194,7 @@ export async function DELETE(request) {
     );
   }
 
-  await fetch(`${supabaseRestUrl}/storage/v1/object/${storageBucket}`, {
-    method: "DELETE",
-    headers: supabaseServiceHeaders,
-    body: JSON.stringify({ prefixes: [image.path] }),
-  });
+  await deleteClientGalleryStoragePaths([image.path]);
 
   const deleteResponse = await fetch(
     `${supabaseRestUrl}/rest/v1/client_gallery_images?id=eq.${encodeURIComponent(

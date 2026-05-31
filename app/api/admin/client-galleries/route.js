@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
-  storageBucket,
   supabaseRestUrl,
   supabaseServiceHeaders,
 } from "../_lib/supabase";
+import {
+  deleteClientGalleryStoragePaths,
+  withSignedImageUrls,
+} from "../../_lib/storage";
 
 const GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
@@ -122,7 +125,7 @@ async function loadGalleries() {
   }
 
   const galleries = await finalGalleryResponse.json();
-  const images = await imageResponse.json();
+  const images = await withSignedImageUrls(await imageResponse.json());
   const favorites = await favoriteResponse.json();
   const customerAccountEmails = await loadCustomerAccountEmails();
 
@@ -401,11 +404,7 @@ export async function DELETE(request) {
     const paths = images.map((image) => image.path).filter(Boolean);
 
     if (paths.length > 0) {
-      await fetch(`${supabaseRestUrl}/storage/v1/object/${storageBucket}`, {
-        method: "DELETE",
-        headers: supabaseServiceHeaders,
-        body: JSON.stringify({ prefixes: paths }),
-      });
+      await deleteClientGalleryStoragePaths(paths);
     }
   }
 

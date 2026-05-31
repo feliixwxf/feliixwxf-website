@@ -135,6 +135,26 @@ create table if not exists public.client_favorites (
   unique (gallery_id, image_id)
 );
 
+insert into storage.buckets (
+  id,
+  name,
+  public,
+  file_size_limit,
+  allowed_mime_types
+)
+values (
+  'client-galleries',
+  'client-galleries',
+  false,
+  52428800,
+  array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do update
+set
+  public = false,
+  file_size_limit = 52428800,
+  allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
+
 alter table public.client_galleries enable row level security;
 alter table public.client_gallery_images enable row level security;
 alter table public.client_favorites enable row level security;

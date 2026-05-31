@@ -1,4 +1,5 @@
 import {
+  clientGalleryStorageBucket,
   storageBucket,
   supabaseBaseUrl,
   supabaseServiceHeaders,
@@ -6,7 +7,7 @@ import {
 
 const SIGNED_IMAGE_EXPIRES_IN = 60 * 60 * 6;
 const signedClientImageUrlsEnabled =
-  process.env.SUPABASE_SIGN_CLIENT_IMAGES === "true";
+  process.env.SUPABASE_SIGN_CLIENT_IMAGES !== "false";
 
 function encodeStoragePath(path) {
   return String(path || "")
@@ -26,7 +27,7 @@ export async function createSignedImageUrl(path, fallbackUrl = "") {
 
   try {
     const response = await fetch(
-      `${supabaseBaseUrl}/storage/v1/object/sign/${storageBucket}/${encodeStoragePath(
+      `${supabaseBaseUrl}/storage/v1/object/sign/${clientGalleryStorageBucket}/${encodeStoragePath(
         path
       )}`,
       {
@@ -65,4 +66,27 @@ export async function withSignedImageUrls(images) {
       };
     })
   );
+}
+
+export async function deleteClientGalleryStoragePaths(paths) {
+  const prefixes = paths.filter(Boolean);
+
+  if (!supabaseBaseUrl || prefixes.length === 0) return;
+
+  await fetch(
+    `${supabaseBaseUrl}/storage/v1/object/${clientGalleryStorageBucket}`,
+    {
+      method: "DELETE",
+      headers: supabaseServiceHeaders,
+      body: JSON.stringify({ prefixes }),
+    }
+  );
+
+  if (clientGalleryStorageBucket !== storageBucket) {
+    await fetch(`${supabaseBaseUrl}/storage/v1/object/${storageBucket}`, {
+      method: "DELETE",
+      headers: supabaseServiceHeaders,
+      body: JSON.stringify({ prefixes }),
+    });
+  }
 }

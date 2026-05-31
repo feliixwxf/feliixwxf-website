@@ -26,17 +26,15 @@ Wenn ein Kunde Loeschung verlangt, muessen Konto, Profilbild, Bewertungen und Ga
 
 ## Bilder und Galerien
 
-Portfolio-Medien liegen weiterhin im oeffentlichen Storage-Bucket. Kundengalerien werden in der Kundenansicht inzwischen ueber zeitlich begrenzte signierte Bildlinks ausgeliefert. Fuer den finalen privaten Galerie-Modus waere langfristig besser:
+Portfolio-Medien liegen weiterhin im oeffentlichen Storage-Bucket. Neue Kundengalerie-Uploads werden im privaten Bucket `client-galleries` gespeichert und in Kundenkonto, Kundengalerie und Adminbereich ueber zeitlich begrenzte signierte Bildlinks ausgeliefert.
 
-- eigener privater Bucket fuer Kundengalerien
-- Kundengalerie-Uploads direkt in diesen privaten Bucket speichern
-- Ablaufdatum pro Galerie
-- Downloads nur bei aktiver Freigabe
+Wichtig:
 
-Wichtig: Solange Portfolio und Kundengalerien denselben oeffentlichen Bucket nutzen,
-ist echter Bildschutz technisch begrenzt. Die Tabellen sind durch RLS gesperrt,
-aber Dateien in einem oeffentlichen Bucket koennen weiterhin ueber direkte Datei-URLs
-erreichbar sein, wenn jemand die URL kennt.
+- `supabase-client-galleries.sql` legt den privaten Bucket an und setzt ihn auf `public = false`.
+- `SUPABASE_SERVICE_ROLE_KEY` muss in Vercel gesetzt sein, weil der Server die signierten Bildlinks erzeugt.
+- `SUPABASE_SIGN_CLIENT_IMAGES` sollte nicht auf `false` stehen.
+- Alte Kundengalerie-Bilder aus dem frueheren oeffentlichen Bucket koennen als Fallback noch sichtbar bleiben. Fuer maximalen Schutz sollten alte Kundengalerien bei Gelegenheit neu hochgeladen oder migriert werden.
+- Downloads duerfen nur bei aktiver Freigabe angeboten werden.
 
 ## Datenschutztext
 

@@ -27,5 +27,12 @@ export const supabaseServiceHeaders = {
   "Content-Type": "application/json",
 };
 
-export const storageBucket =
-  process.env.SUPABASE_STORAGE_BUCKET || "portfolio";
+export const portfolioStorageBucket =
+  process.env.SUPABASE_PORTFOLIO_STORAGE_BUCKET ||
+  process.env.SUPABASE_STORAGE_BUCKET ||
+  "portfolio";
+
+export const clientGalleryStorageBucket =
+  process.env.SUPABASE_CLIENT_GALLERY_STORAGE_BUCKET || "client-galleries";
+
+export const storageBucket = portfolioStorageBucket;
