@@ -1262,6 +1262,12 @@ export default function FeliixWxfPhotography() {
                   Felix Wolff
                   <br />
                   feliix.wxf Photography
+                  <br />
+                  Zum Großenbach 1
+                  <br />
+                  98673 Eisfeld
+                  <br />
+                  Deutschland
                 </p>
               </div>
 
