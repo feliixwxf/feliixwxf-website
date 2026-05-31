@@ -660,34 +660,41 @@ export default function AdminPage() {
             new Date(a.favorite_created_at || 0)
         )
     : [];
+  const activeClientSuggestedPanel =
+    activeClientImages.length === 0
+      ? "upload"
+      : activeClientFavoriteImages.length > 0 &&
+          !activeClientGallery?.favorites_reviewed
+        ? "favorites"
+        : "overview";
   const clientDetailPanels = [
     {
       value: "overview",
-      label: "Übersicht",
-      helper: `${activeClientChecklistDone}/${CLIENT_GALLERY_CHECKLIST.length} erledigt`,
+      label: "Details",
+      helper: "Kunde & Status",
       icon: LayoutDashboard,
     },
     {
       value: "share",
-      label: "Teilen",
-      helper: "Code, Link, QR",
+      label: "Freigabe",
+      helper: "Code & QR",
       icon: QrCode,
     },
     {
       value: "upload",
       label: "Upload",
-      helper: "Bilder hinzufügen",
+      helper: "Bilder dazu",
       icon: Upload,
     },
     {
       value: "favorites",
-      label: "Favoriten",
+      label: "Auswahl",
       helper: `${activeClientFavoriteImages.length} markiert`,
       icon: Heart,
     },
     {
       value: "images",
-      label: "Bilder",
+      label: "Archiv",
       helper: `${activeClientImages.length} Dateien`,
       icon: Images,
     },
@@ -3397,6 +3404,31 @@ export default function AdminPage() {
                                   ? formatDate(activeClientGallery.expires_at)
                                   : "Kein Datum"}
                               </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                              <div className="min-w-0">
+                                <p className="text-xs font-black uppercase tracking-[0.22em] text-yellow-100/70">
+                                  Nächste Aktion
+                                </p>
+                                <h4 className="mt-1 font-black text-yellow-50">
+                                  {activeClientProjectStep.label}
+                                </h4>
+                                <p className="mt-1 text-sm leading-6 text-yellow-100/70">
+                                  {activeClientProjectStep.helper}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActiveClientPanel(activeClientSuggestedPanel)
+                                }
+                                className="inline-flex w-full items-center justify-center rounded-full bg-yellow-300 px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:w-fit"
+                              >
+                                Passenden Bereich öffnen
+                              </button>
                             </div>
                           </div>
                         </div>
