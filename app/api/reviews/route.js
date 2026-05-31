@@ -10,6 +10,7 @@ const SUPABASE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const SUPABASE_KEY_SOURCE = process.env.SUPABASE_SERVICE_ROLE_KEY
   ? "SUPABASE_SERVICE_ROLE_KEY"
   : process.env.SUPABASE_ANON_KEY
@@ -25,6 +26,11 @@ const REVIEW_NOTIFICATION_ENDPOINT =
 const headers = {
   apikey: SUPABASE_KEY || "",
   Authorization: `Bearer ${SUPABASE_KEY || ""}`,
+  "Content-Type": "application/json",
+};
+const serviceHeaders = {
+  apikey: SUPABASE_SERVICE_KEY || "",
+  Authorization: `Bearer ${SUPABASE_SERVICE_KEY || ""}`,
   "Content-Type": "application/json",
 };
 
@@ -168,10 +174,18 @@ export async function POST(request) {
       return applyCustomerSessionCookies(response, customerSession);
     }
 
+    if (!SUPABASE_SERVICE_KEY) {
+      const response = NextResponse.json(
+        { error: "Server-Schlüssel für Bewertungen fehlt." },
+        { status: 503 }
+      );
+      return applyCustomerSessionCookies(response, customerSession);
+    }
+
     let response = await fetch(`${supabaseRestUrl}/rest/v1/reviews`, {
       method: "POST",
       headers: {
-        ...headers,
+        ...serviceHeaders,
         Prefer: "return=minimal",
       },
       body: JSON.stringify(reviewPayload),
@@ -187,7 +201,7 @@ export async function POST(request) {
         response = await fetch(`${supabaseRestUrl}/rest/v1/reviews`, {
           method: "POST",
           headers: {
-            ...headers,
+            ...serviceHeaders,
             Prefer: "return=minimal",
           },
           body: JSON.stringify({

@@ -10,6 +10,13 @@ drop policy if exists "Public can read active client galleries by code" on publi
 drop policy if exists "Public can read client gallery images" on public.client_gallery_images;
 drop policy if exists "Public can manage client favorites" on public.client_favorites;
 
+-- Extra lock: the public browser keys should not read or write customer
+-- gallery tables directly. The website accesses these tables only through
+-- Next.js API routes with the server-side service role key.
+revoke all on table public.client_galleries from anon, authenticated;
+revoke all on table public.client_gallery_images from anon, authenticated;
+revoke all on table public.client_favorites from anon, authenticated;
+
 -- Reviews may be public only after admin approval.
 alter table public.reviews enable row level security;
 
@@ -22,11 +29,10 @@ for select
 to anon, authenticated
 using (is_approved = true);
 
-create policy "Public can create pending reviews"
-on public.reviews
-for insert
-to anon, authenticated
-with check (is_approved = false);
+-- New reviews are created through /api/reviews with the service role key.
+-- This prevents spam or manipulated direct inserts with the public anon key.
+revoke insert, update, delete on table public.reviews from anon, authenticated;
+grant select on table public.reviews to anon, authenticated;
 
 -- Keep PostgREST schema cache fresh after policy/schema changes.
 notify pgrst, 'reload schema';

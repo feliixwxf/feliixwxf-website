@@ -9,6 +9,7 @@ Kurzcheck fuer die aktuelle Website mit Kundenkonten, Kundengalerien und Bewertu
 - `ADMIN_PASSWORD` lang und einzigartig halten.
 - `ADMIN_SESSION_SECRET` muss mindestens 32 Zeichen haben.
 - Supabase SQL-Datei `supabase-security-hardening.sql` nach den Setup-Dateien ausfuehren.
+- Bewertungen werden serverseitig gespeichert. Dafuer muss `SUPABASE_SERVICE_ROLE_KEY` in Vercel gesetzt sein.
 
 ## Kundendaten
 
@@ -31,6 +32,11 @@ Portfolio-Medien liegen weiterhin im oeffentlichen Storage-Bucket. Kundengalerie
 - Kundengalerie-Uploads direkt in diesen privaten Bucket speichern
 - Ablaufdatum pro Galerie
 - Downloads nur bei aktiver Freigabe
+
+Wichtig: Solange Portfolio und Kundengalerien denselben oeffentlichen Bucket nutzen,
+ist echter Bildschutz technisch begrenzt. Die Tabellen sind durch RLS gesperrt,
+aber Dateien in einem oeffentlichen Bucket koennen weiterhin ueber direkte Datei-URLs
+erreichbar sein, wenn jemand die URL kennt.
 
 ## Datenschutztext
 
