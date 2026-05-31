@@ -1,6 +1,6 @@
 # feliix.wxf Website - KI-Übergabe
 
-Stand: 22.05.2026
+Stand: 31.05.2026
 
 Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt ohne langes Einlesen weitergeführt werden kann.
 
@@ -289,6 +289,9 @@ Noch sinnvoll zu prüfen:
 
 Letzte größere Änderungen:
 - Kundenbereich optisch aufgeräumt und mit Statistik-/Profilkarten verbessert.
+- Leerer Kundenkonto-Zustand klarer erklärt und Galerie-Code-Eingabe hervorgehoben.
+- Eingeloggte Kunden sehen auf der Website im Header ihren Benutzernamen statt nur `Konto`.
+- Benutzername ist bei der Kontoerstellung Pflichtfeld.
 - Neue Bewertungen lösen eine E-Mail-Benachrichtigung an Felix aus.
 - Kundenkonto-Löschung bleibt datenschutzfreundlich, Bewertungen bleiben aber nachvollziehbar erhalten.
 
@@ -301,7 +304,7 @@ git push
 ```
 
 Letzter bekannter Build:
-- `npm run build` erfolgreich am 22.05.2026.
+- `npm run build` erfolgreich am 31.05.2026.
 
 ## Wichtige Hinweise für eine nächste KI
 

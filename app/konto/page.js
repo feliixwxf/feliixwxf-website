@@ -685,11 +685,11 @@ export default function AccountPage() {
 
                   <form
                     onSubmit={linkGalleryByCode}
-                    className="mt-5 rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                    className="mt-5 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.08] p-4"
                   >
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
                       <label className="min-w-0 flex-1">
-                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-100/75">
                           Galerie-Code hinzufügen
                         </span>
                         <input
@@ -716,7 +716,7 @@ export default function AccountPage() {
                         Verknüpfen
                       </button>
                     </div>
-                    <p className="mt-3 text-xs leading-5 text-neutral-400">
+                    <p className="mt-3 text-xs leading-5 text-yellow-50/70">
                       Wenn du einen QR-Code oder Galerie-Code bekommen hast,
                       kannst du ihn hier direkt deinem Konto hinzufügen.
                     </p>
@@ -724,18 +724,61 @@ export default function AccountPage() {
 
                   <div className="mt-5 grid gap-3">
                     {galleries.length === 0 && (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-6 text-neutral-300">
-                        Noch keine Galerie gefunden. Wichtig: Die Galerie muss
-                        im Admin mit genau deiner Konto-E-Mail verknüpft sein.
-                        Alternativ kannst du oben einen Galerie-Code direkt
-                        hinzufügen.
-                        <Link
-                          href="/kunden"
-                          className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5"
-                        >
-                          <KeyRound className="h-4 w-4" />
-                          Galerie-Code eingeben
-                        </Link>
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                              Noch keine Galerie
+                            </p>
+                            <h4 className="mt-2 text-xl font-black">
+                              Verbinde dein erstes Shooting
+                            </h4>
+                            <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-300">
+                              Sobald eine Galerie mit deiner E-Mail verbunden
+                              ist oder du einen Code eingibst, erscheint sie
+                              hier automatisch.
+                            </p>
+                          </div>
+                          <Link
+                            href="/kunden"
+                            className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5"
+                          >
+                            <KeyRound className="h-4 w-4" />
+                            Code-Seite öffnen
+                          </Link>
+                        </div>
+
+                        <div className="mt-5 grid gap-3 md:grid-cols-3">
+                          {[
+                            {
+                              title: "Code bekommen",
+                              text: "QR-Code scannen oder Galerie-Code kopieren.",
+                            },
+                            {
+                              title: "Hier eintragen",
+                              text: "Code oben einfügen und mit deinem Konto verknüpfen.",
+                            },
+                            {
+                              title: "Galerie öffnen",
+                              text: "Danach findest du Bilder, Favoriten und Downloads hier.",
+                            },
+                          ].map((item, index) => (
+                            <div
+                              key={item.title}
+                              className="rounded-2xl border border-white/10 bg-black/20 p-4"
+                            >
+                              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-black text-neutral-950">
+                                {index + 1}
+                              </span>
+                              <p className="mt-3 font-black text-white">
+                                {item.title}
+                              </p>
+                              <p className="mt-1 text-xs leading-5 text-neutral-400">
+                                {item.text}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
 
