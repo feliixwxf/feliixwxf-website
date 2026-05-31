@@ -1256,7 +1256,7 @@ export default function FeliixWxfPhotography() {
             <div className="mt-10 space-y-8 text-neutral-300 leading-8">
               <div>
                 <h3 className="text-2xl font-bold text-white">
-                  Angaben gemäß § 5 TMG
+                  Angaben gemäß § 5 DDG
                 </h3>
                 <p className="mt-3">
                   Felix Wolff

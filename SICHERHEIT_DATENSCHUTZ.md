@@ -42,7 +42,7 @@ Die Datenschutz-Hinweise auf der Website wurden um Kundenkonten, Kundengalerien,
 
 Noch manuell/offiziell pruefen:
 
-- Impressum mit vollstaendiger ladungsfaehiger Anschrift.
+- Impressum mit vollstaendiger ladungsfaehiger Anschrift und aktuellen Anbieterangaben nach § 5 DDG.
 - Datenschutzerklaerung rechtlich pruefen lassen, bevor echte Kundendaten in groesserem Umfang verarbeitet werden.
 - AVV/Auftragsverarbeitungsvertraege fuer Supabase, Vercel und Formspree pruefen/abschliessen.
 - Loesch- und Aufbewahrungsfristen fuer Shootings, Kundengalerien, Rechnungen und Bewertungen schriftlich festlegen.
