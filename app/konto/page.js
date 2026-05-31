@@ -59,6 +59,7 @@ export default function AccountPage() {
   const [galleries, setGalleries] = useState([]);
   const [galleryCode, setGalleryCode] = useState("");
   const [galleryFilter, setGalleryFilter] = useState("all");
+  const [accountSection, setAccountSection] = useState("galleries");
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -418,6 +419,20 @@ export default function AccountPage() {
     },
     { key: "downloads", label: "Downloads", count: downloadableGalleries.length },
   ];
+  const accountSections = [
+    {
+      key: "galleries",
+      label: "Bilder & Galerien",
+      helper: "Galerien, Favoriten und Downloads",
+      icon: ImageIcon,
+    },
+    {
+      key: "profile",
+      label: "Konto bearbeiten",
+      helper: "Profilbild, Benutzername und Löschen",
+      icon: UserRound,
+    },
+  ];
   const accountHeroGallery =
     activeGalleries.find((gallery) => gallery.cover_url) ||
     completedGalleries.find((gallery) => gallery.cover_url);
@@ -573,7 +588,48 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+                  <div className="mt-4 grid gap-2 rounded-2xl border border-white/10 bg-black/25 p-1.5 sm:grid-cols-2">
+                    {accountSections.map((section) => {
+                      const SectionIcon = section.icon;
+                      const active = accountSection === section.key;
+
+                      return (
+                        <button
+                          key={section.key}
+                          type="button"
+                          onClick={() => setAccountSection(section.key)}
+                          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
+                            active
+                              ? "bg-white text-neutral-950 shadow-xl"
+                              : "bg-white/[0.04] text-neutral-300 hover:bg-white/10"
+                          }`}
+                        >
+                          <span
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                              active ? "bg-neutral-950 text-white" : "bg-white/10"
+                            }`}
+                          >
+                            <SectionIcon className="h-4 w-4" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-black">
+                              {section.label}
+                            </span>
+                            <span
+                              className={`mt-0.5 block truncate text-xs ${
+                                active ? "text-neutral-600" : "text-neutral-500"
+                              }`}
+                            >
+                              {section.helper}
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {accountSection === "profile" && (
+                    <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
                     <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
                       <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
                         {avatarPreview ? (
@@ -629,8 +685,11 @@ export default function AccountPage() {
                       Benutzername speichern
                     </button>
                   </div>
+                  )}
 
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  {accountSection === "galleries" && (
+                    <div className="mt-5">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <h3 className="text-xl font-black">Meine Galerien</h3>
@@ -945,8 +1004,11 @@ export default function AccountPage() {
                       );
                     })}
                   </div>
+                    </div>
+                  )}
 
-                  <div className="mt-8 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
+                  {accountSection === "profile" && (
+                    <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <h3 className="font-black text-red-50">
@@ -1007,6 +1069,7 @@ export default function AccountPage() {
                       </div>
                     )}
                   </div>
+                  )}
                 </div>
               ) : (
                 <form onSubmit={submitAccount}>
