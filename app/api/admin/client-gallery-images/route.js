@@ -3,6 +3,7 @@ import { isAdminAuthenticated } from "../_lib/auth";
 import {
   clientGalleryStorageBucket,
   hasSupabaseConfig,
+  hasSupabaseServiceConfig,
   supabaseRestUrl,
   supabaseServiceHeaders,
 } from "../_lib/supabase";
@@ -25,12 +26,54 @@ function safeFileName(name) {
     .slice(2)}.${String(extension || "jpg").toLowerCase()}`;
 }
 
+async function ensureClientGalleryBucket() {
+  const bucketResponse = await fetch(
+    `${supabaseRestUrl}/storage/v1/bucket/${clientGalleryStorageBucket}`,
+    {
+      headers: supabaseServiceHeaders,
+      cache: "no-store",
+    }
+  );
+
+  if (bucketResponse.ok) return "";
+
+  if (bucketResponse.status !== 404) {
+    return bucketResponse.text();
+  }
+
+  const createResponse = await fetch(`${supabaseRestUrl}/storage/v1/bucket`, {
+    method: "POST",
+    headers: supabaseServiceHeaders,
+    body: JSON.stringify({
+      id: clientGalleryStorageBucket,
+      name: clientGalleryStorageBucket,
+      public: false,
+      file_size_limit: 52428800,
+      allowed_mime_types: ["image/jpeg", "image/png", "image/webp"],
+    }),
+  });
+
+  if (createResponse.ok) return "";
+
+  return createResponse.text();
+}
+
 export async function POST(request) {
   if (!(await isAdminAuthenticated())) return unauthorized();
 
   if (!hasSupabaseConfig) {
     return NextResponse.json(
       { error: "Supabase ist noch nicht konfiguriert." },
+      { status: 503 }
+    );
+  }
+
+  if (!hasSupabaseServiceConfig) {
+    return NextResponse.json(
+      {
+        error:
+          "Private Kundenbilder brauchen den SUPABASE_SERVICE_ROLE_KEY in Vercel.",
+      },
       { status: 503 }
     );
   }
@@ -86,6 +129,18 @@ export async function POST(request) {
 
   const path = `client-galleries/${galleryId}/${safeFileName(file.name)}`;
   const bytes = await file.arrayBuffer();
+  const bucketError = await ensureClientGalleryBucket();
+
+  if (bucketError) {
+    return NextResponse.json(
+      {
+        error:
+          "Der private Kundengalerie-Bucket konnte nicht vorbereitet werden.",
+        details: bucketError,
+      },
+      { status: 500 }
+    );
+  }
 
   const uploadResponse = await fetch(
     `${supabaseRestUrl}/storage/v1/object/${clientGalleryStorageBucket}/${path}`,

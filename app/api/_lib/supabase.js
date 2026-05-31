@@ -10,6 +10,9 @@ export const SUPABASE_KEY =
 export const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 export const hasSupabaseConfig = Boolean(SUPABASE_URL && SUPABASE_KEY);
+export const hasSupabaseServiceConfig = Boolean(
+  SUPABASE_URL && SUPABASE_SERVICE_KEY
+);
 
 export const supabaseBaseUrl = SUPABASE_URL
   ? SUPABASE_URL.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "")

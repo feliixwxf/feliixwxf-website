@@ -1,6 +1,7 @@
 export {
   clientGalleryStorageBucket,
   hasSupabaseConfig,
+  hasSupabaseServiceConfig,
   storageBucket,
   supabaseBaseUrl as supabaseRestUrl,
   supabaseHeaders,
