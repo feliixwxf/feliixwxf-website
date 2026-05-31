@@ -1323,6 +1323,23 @@ export default function FeliixWxfPhotography() {
 
               <div>
                 <h3 className="text-2xl font-bold text-white">
+                  Zwecke und Rechtsgrundlagen
+                </h3>
+                <p className="mt-3">
+                  Die Verarbeitung erfolgt zur Bereitstellung dieser Website,
+                  zur Bearbeitung von Kontaktanfragen, zur Verwaltung von
+                  Kundenkonten, zur Bereitstellung von Kundengalerien, zur
+                  Verwaltung von Bewertungen sowie zur technischen Absicherung
+                  des Betriebs. Je nach Vorgang erfolgt die Verarbeitung zur
+                  Durchführung vorvertraglicher oder vertraglicher Maßnahmen,
+                  auf Grundlage berechtigter Interessen an einem sicheren und
+                  funktionierenden Webangebot oder auf Grundlage Ihrer
+                  Einwilligung, sofern eine solche abgefragt wird.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white">
                   Kontaktformular
                 </h3>
                 <p className="mt-3">
@@ -1359,6 +1376,13 @@ export default function FeliixWxfPhotography() {
                   sie für Projektabwicklung, Nachlieferung oder Dokumentation
                   benötigt werden.
                 </p>
+                <p className="mt-3">
+                  Neue Kundengalerie-Bilder werden in einem privaten
+                  Speicherbereich abgelegt und in der Kundenansicht nur über
+                  zeitlich begrenzte Bildlinks bereitgestellt. Ältere
+                  Kundengalerien können technisch noch anders gespeichert sein,
+                  solange sie nicht neu hochgeladen oder migriert wurden.
+                </p>
               </div>
 
               <div>
@@ -1376,6 +1400,20 @@ export default function FeliixWxfPhotography() {
                   veröffentlichte Bewertung ohne Konto-Verknüpfung bestehen.
                   Wenn eine Bewertung ebenfalls gelöscht werden soll, kann dies
                   jederzeit per E-Mail angefragt werden.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white">
+                  Cookies und lokale Speicherung
+                </h3>
+                <p className="mt-3">
+                  Für den Betrieb der Website können technisch notwendige
+                  Session-Cookies verwendet werden, etwa für Admin- oder
+                  Kunden-Logins. Zusätzlich können einzelne Einstellungen wie
+                  der gewählte Hell-/Dunkel-Modus lokal im Browser gespeichert
+                  werden. Eine werbliche Tracking- oder Analysefunktion ist auf
+                  dieser Website nicht vorgesehen.
                 </p>
               </div>
 
@@ -1412,6 +1450,14 @@ export default function FeliixWxfPhotography() {
                   Formularinhalte verarbeitet werden, soweit dies für Betrieb,
                   Sicherheit und Anfragebearbeitung erforderlich ist.
                 </p>
+                <p className="mt-3">
+                  Soweit diese Dienste personenbezogene Daten im Auftrag
+                  verarbeiten, sollten entsprechende Vereinbarungen zur
+                  Auftragsverarbeitung geprüft und abgeschlossen werden.
+                  Einzelne Dienste können Daten auch außerhalb der EU
+                  verarbeiten; dabei sind die jeweiligen Datenschutz- und
+                  Sicherheitsangaben des Dienstes zu beachten.
+                </p>
               </div>
 
               <div>
@@ -1425,6 +1471,12 @@ export default function FeliixWxfPhotography() {
                   gegen die Verarbeitung oder Datenübertragbarkeit verlangen.
                   Für Anfragen genügt eine Nachricht an die im Impressum
                   genannte E-Mail-Adresse.
+                </p>
+                <p className="mt-3">
+                  Sofern eine Verarbeitung auf Einwilligung beruht, kann diese
+                  Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen
+                  werden. Außerdem besteht das Recht, sich bei einer zuständigen
+                  Datenschutzaufsichtsbehörde zu beschweren.
                 </p>
               </div>
             </div>

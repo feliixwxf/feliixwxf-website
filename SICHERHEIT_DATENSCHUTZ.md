@@ -38,4 +38,12 @@ Wichtig:
 
 ## Datenschutztext
 
-Die Datenschutz-Hinweise auf der Website wurden um Kundenkonten, Kundengalerien, Bewertungen, Supabase und Vercel erweitert. Fuer rechtssichere Nutzung sollte der Text spaeter durch eine passende Datenschutzerklaerung ersetzt oder anwaltlich geprueft werden.
+Die Datenschutz-Hinweise auf der Website wurden um Kundenkonten, Kundengalerien, Bewertungen, Supabase, Vercel, Formspree, Session-Cookies, lokale Speicherung, Rechtsgrundlagen, Speicherdauer, Betroffenenrechte und Auftragsverarbeitung erweitert.
+
+Noch manuell/offiziell pruefen:
+
+- Impressum mit vollstaendiger ladungsfaehiger Anschrift.
+- Datenschutzerklaerung rechtlich pruefen lassen, bevor echte Kundendaten in groesserem Umfang verarbeitet werden.
+- AVV/Auftragsverarbeitungsvertraege fuer Supabase, Vercel und Formspree pruefen/abschliessen.
+- Loesch- und Aufbewahrungsfristen fuer Shootings, Kundengalerien, Rechnungen und Bewertungen schriftlich festlegen.
+- Supabase Auth E-Mail-Texte, Absender und Links passend zur Domain konfigurieren.
