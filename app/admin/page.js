@@ -1500,8 +1500,10 @@ export default function AdminPage() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        const details = data.details ? ` Details: ${data.details}` : "";
+
         throw new Error(
-          data.error || "Kundenbild konnte nicht hochgeladen werden."
+          `${data.error || "Kundenbild konnte nicht hochgeladen werden."}${details}`
         );
       }
 
