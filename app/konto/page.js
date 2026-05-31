@@ -445,12 +445,12 @@ export default function AccountPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-5 py-8 text-white">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-3 py-4 text-white sm:px-5 sm:py-8">
       <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="grid gap-3 sm:flex sm:flex-row sm:items-center sm:justify-between">
           <Link
             href="/"
-            className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15 sm:w-fit"
           >
             <ArrowLeft className="h-4 w-4" />
             Zur Website
@@ -460,7 +460,7 @@ export default function AccountPage() {
             <button
               type="button"
               onClick={logout}
-              className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit"
             >
               <LogOut className="h-4 w-4" />
               Ausloggen
@@ -468,9 +468,9 @@ export default function AccountPage() {
           )}
         </div>
 
-        <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.07] shadow-2xl backdrop-blur-xl">
-          <div className="grid gap-7 p-4 md:p-6 lg:grid-cols-[0.78fr_1.22fr]">
-            <div className="relative min-h-[520px] overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/20 p-6 md:p-8">
+        <section className="mt-4 overflow-hidden rounded-[1.3rem] border border-white/10 bg-white/[0.07] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
+          <div className="grid gap-4 p-3 sm:p-4 md:gap-7 md:p-6 lg:grid-cols-[0.78fr_1.22fr]">
+            <div className="relative min-h-[360px] overflow-hidden rounded-[1.2rem] border border-white/10 bg-black/20 p-4 sm:min-h-[430px] sm:rounded-[1.5rem] sm:p-6 md:min-h-[520px] md:p-8">
               {accountHeroGallery?.cover_url && (
                 <img
                   src={accountHeroGallery.cover_url}
@@ -480,61 +480,61 @@ export default function AccountPage() {
               )}
               <div className="absolute inset-0 bg-gradient-to-br from-black via-black/75 to-black/35" />
               <div className="relative">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
-                  <Lock className="h-6 w-6" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 sm:h-14 sm:w-14">
+                  <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <p className="mt-8 text-sm uppercase tracking-[0.3em] text-neutral-400">
+                <p className="mt-6 text-xs uppercase tracking-[0.24em] text-neutral-400 sm:mt-8 sm:text-sm sm:tracking-[0.3em]">
                   Kundenkonto
                 </p>
                 <motion.h1
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.45, ease: "easeOut" }}
-                  className="mt-4 text-4xl font-black md:text-6xl"
+                  className="mt-3 text-3xl font-black leading-tight sm:mt-4 sm:text-4xl md:text-6xl"
                 >
                   {accountGreeting}
                   <br />
                   Deine Galerien.
                 </motion.h1>
-                <p className="mt-6 max-w-xl text-lg leading-8 text-neutral-300">
+                <p className="mt-5 max-w-xl text-sm leading-6 text-neutral-300 sm:mt-6 sm:text-lg sm:leading-8">
                   {accountIntro}
                 </p>
                 {user && nextGallery && (
                   <button
                     type="button"
                     onClick={() => openGallery(nextGallery)}
-                    className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:mt-6 sm:w-fit"
                   >
                     <ImageIcon className="h-4 w-4" />
                     Letzte Galerie öffnen
                   </button>
                 )}
                 {user && (
-                  <div className="mt-6 grid gap-2 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-3">
-                      <p className="text-2xl font-black">{galleries.length}</p>
+                  <div className="mt-5 grid grid-cols-3 gap-1.5 sm:mt-6 sm:gap-2">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-2 sm:p-3">
+                      <p className="text-xl font-black sm:text-2xl">{galleries.length}</p>
                       <p className="mt-1 text-xs text-neutral-400">
-                        Galerien für dich
+                        Galerien
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-3">
-                      <p className="text-2xl font-black">
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-2 sm:p-3">
+                      <p className="text-xl font-black sm:text-2xl">
                         {completedGalleries.length}
                       </p>
                       <p className="mt-1 text-xs text-neutral-400">
-                        abgeschlossen
+                        fertig
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-100">
-                      <p className="text-2xl font-black">{totalFavoriteCount}</p>
-                      <p className="mt-1 text-xs">Favoriten markiert</p>
+                    <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-2 text-yellow-100 sm:p-3">
+                      <p className="text-xl font-black sm:text-2xl">{totalFavoriteCount}</p>
+                      <p className="mt-1 text-xs">Favoriten</p>
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] border border-white/10 bg-neutral-950/50 p-4 md:p-6">
+            <div className="rounded-[1.2rem] border border-white/10 bg-neutral-950/50 p-3 sm:rounded-[1.5rem] sm:p-4 md:p-6">
               {loading ? (
                 <div className="flex min-h-64 items-center justify-center">
                   <RefreshCw className="h-7 w-7 animate-spin text-neutral-300" />
@@ -543,8 +543,8 @@ export default function AccountPage() {
                 <div>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex min-w-0 items-center gap-4">
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+                      <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:h-14 sm:w-14">
                           {avatarPreview ? (
                             <img
                               src={avatarPreview}
@@ -559,7 +559,7 @@ export default function AccountPage() {
                           <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">
                             Angemeldet als
                           </p>
-                          <h2 className="mt-1 truncate text-2xl font-black">
+                          <h2 className="mt-1 truncate text-xl font-black sm:text-2xl">
                             {user.name || "Ohne Benutzername"}
                           </h2>
                           <p className="mt-1 truncate text-sm text-neutral-400">
@@ -586,7 +586,7 @@ export default function AccountPage() {
                           <UserRound className="h-8 w-8 text-neutral-400" />
                         )}
                       </div>
-                      <label className="inline-flex w-fit cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black transition hover:bg-white/15">
+                      <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black transition hover:bg-white/15 sm:w-fit">
                         {avatarUploading ? (
                           <RefreshCw className="h-4 w-4 animate-spin" />
                         ) : (
@@ -651,7 +651,7 @@ export default function AccountPage() {
                   </div>
 
                   {galleries.length > 0 && (
-                    <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                       <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3">
                         <p className="text-2xl font-black">
                           {totalImageCount}
@@ -706,7 +706,7 @@ export default function AccountPage() {
                       <button
                         type="submit"
                         disabled={linkingGallery}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 lg:w-fit"
                       >
                         {linkingGallery ? (
                           <RefreshCw className="h-4 w-4 animate-spin" />
@@ -748,7 +748,7 @@ export default function AccountPage() {
                           </Link>
                         </div>
 
-                        <div className="mt-5 grid gap-3 md:grid-cols-3">
+                        <div className="mt-5 grid gap-3 sm:grid-cols-3">
                           {[
                             {
                               title: "Code bekommen",
@@ -875,7 +875,7 @@ export default function AccountPage() {
                                     </span>
                                   </button>
 
-                                  <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between">
+                                  <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
                                     <div className="min-w-0">
                                       <div className="flex flex-wrap items-center gap-2">
                                         <span
@@ -931,7 +931,7 @@ export default function AccountPage() {
                                     <button
                                       type="button"
                                       onClick={() => openGallery(gallery)}
-                                      className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:w-fit"
                                     >
                                       <ImageIcon className="h-4 w-4" />
                                       Galerie öffnen
@@ -965,7 +965,7 @@ export default function AccountPage() {
                         onClick={() =>
                           setDeletePanelOpen((current) => !current)
                         }
-                        className="inline-flex w-fit items-center justify-center gap-2 rounded-xl border border-red-300/30 bg-red-300/10 px-4 py-2 text-sm font-black text-red-50 transition hover:bg-red-300/20"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-300/30 bg-red-300/10 px-4 py-2 text-sm font-black text-red-50 transition hover:bg-red-300/20 sm:w-fit"
                       >
                         <Trash2 className="h-4 w-4" />
                         {deletePanelOpen ? "Schließen" : "Löschen"}
