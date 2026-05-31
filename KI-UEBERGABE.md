@@ -107,6 +107,7 @@ SQL-Dateien im Projekt:
 - `supabase-site-settings.sql`
 - `supabase-client-galleries.sql`
 - `supabase-security-hardening.sql`
+- `SUPABASE_EMAIL_TEMPLATES.md`
 
 Wichtige Tabellen:
 - `reviews`
@@ -313,6 +314,7 @@ Noch sinnvoll zu prüfen:
 ## Letzter technischer Stand
 
 Letzte größere Änderungen:
+- Supabase-Auth-Mailvorlagen fuer Kundenkonto-Mails wurden in `SUPABASE_EMAIL_TEMPLATES.md` vorbereitet.
 - Kundengalerie-Uploads wurden auf den privaten Supabase-Bucket `client-galleries` umgestellt.
 - Kundengalerie-Bilder werden in Adminbereich, Kundenkonto und Kundengalerie über signierte URLs angezeigt.
 - Der Upload prüft jetzt, ob `SUPABASE_SERVICE_ROLE_KEY` vorhanden ist, und zeigt technische Upload-Details im Adminbereich an.

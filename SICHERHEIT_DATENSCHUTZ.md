@@ -47,3 +47,4 @@ Noch manuell/offiziell pruefen:
 - AVV/Auftragsverarbeitungsvertraege fuer Supabase, Vercel und Formspree pruefen/abschliessen.
 - Loesch- und Aufbewahrungsfristen fuer Shootings, Kundengalerien, Rechnungen und Bewertungen schriftlich festlegen.
 - Supabase Auth E-Mail-Texte, Absender und Links passend zur Domain konfigurieren.
+- Vorlagen fuer Supabase Auth liegen in `SUPABASE_EMAIL_TEMPLATES.md`.
