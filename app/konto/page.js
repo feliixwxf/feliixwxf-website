@@ -600,8 +600,8 @@ export default function AccountPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-3 py-4 text-white sm:px-5 sm:py-8">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-screen bg-[linear-gradient(135deg,#070707,#161616,#222)] px-3 py-4 text-white sm:px-5 sm:py-8">
+      <div className="mx-auto max-w-6xl">
         <div className="grid gap-3 sm:flex sm:flex-row sm:items-center sm:justify-between">
           <Link
             href="/"
@@ -611,85 +611,131 @@ export default function AccountPage() {
             Zur Website
           </Link>
 
-          {user && (
-            <button
-              type="button"
-              onClick={logout}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit"
-            >
-              <LogOut className="h-4 w-4" />
-              Ausloggen
-            </button>
-          )}
         </div>
 
-        <section className="mt-4 overflow-hidden rounded-[1.3rem] border border-white/10 bg-white/[0.07] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
-          <div className="grid gap-4 p-3 sm:p-4 md:gap-7 md:p-6 lg:grid-cols-[0.78fr_1.22fr]">
-            <div className="relative min-h-[360px] overflow-hidden rounded-[1.2rem] border border-white/10 bg-black/20 p-4 sm:min-h-[430px] sm:rounded-[1.5rem] sm:p-6 md:min-h-[520px] md:p-8">
+        <section className="mt-4 overflow-hidden rounded-[1.3rem] border border-white/10 bg-white/[0.05] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
+          <div className="grid gap-4 p-3 sm:p-4 md:p-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+            <div className="relative overflow-hidden rounded-[1.2rem] border border-white/10 bg-black/30 p-4 sm:rounded-[1.5rem] sm:p-5 lg:sticky lg:top-6 lg:self-start">
               {accountHeroGallery?.cover_url && (
                 <img
                   src={accountHeroGallery.cover_url}
                   alt=""
-                  className="absolute inset-0 h-full w-full scale-105 object-cover opacity-20 blur-sm"
+                  className="absolute inset-0 h-full w-full scale-105 object-cover opacity-10 blur-sm"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-br from-black via-black/75 to-black/35" />
+              <div className="absolute inset-0 bg-gradient-to-br from-black via-black/85 to-black/65" />
               <div className="relative">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 sm:h-14 sm:w-14">
-                  <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+                    {user && avatarPreview ? (
+                      <img
+                        src={avatarPreview}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Lock className="h-5 w-5" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-[0.22em] text-neutral-500">
+                      Kundenkonto
+                    </p>
+                    {user && (
+                      <p className="mt-1 truncate text-sm text-neutral-300">
+                        {user.email}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <p className="mt-6 text-xs uppercase tracking-[0.24em] text-neutral-400 sm:mt-8 sm:text-sm sm:tracking-[0.3em]">
-                  Kundenkonto
-                </p>
                 <motion.h1
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.45, ease: "easeOut" }}
-                  className="mt-3 text-3xl font-black leading-tight sm:mt-4 sm:text-4xl md:text-6xl"
+                  className="mt-6 text-3xl font-black leading-tight"
                 >
                   {accountGreeting}
-                  <br />
-                  Deine Galerien.
                 </motion.h1>
-                <p className="mt-5 max-w-xl text-sm leading-6 text-neutral-300 sm:mt-6 sm:text-lg sm:leading-8">
+                <p className="mt-3 text-sm leading-6 text-neutral-400">
                   {accountIntro}
                 </p>
+
                 {user && nextGallery && (
                   <button
                     type="button"
                     onClick={() => openGallery(nextGallery)}
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:mt-6 sm:w-fit"
+                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
                   >
                     <ImageIcon className="h-4 w-4" />
                     Letzte Galerie öffnen
                   </button>
                 )}
                 {user && (
-                  <div className="mt-5 grid grid-cols-3 gap-1.5 sm:mt-6 sm:gap-2">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-2 sm:p-3">
-                      <p className="text-xl font-black sm:text-2xl">{galleries.length}</p>
-                      <p className="mt-1 text-xs text-neutral-400">
-                        Galerien
-                      </p>
+                  <>
+                    <div className="mt-5 grid grid-cols-3 gap-2">
+                      <div className="rounded-xl border border-white/10 bg-white/[0.07] p-3">
+                        <p className="text-xl font-black">{galleries.length}</p>
+                        <p className="mt-1 text-xs text-neutral-500">Galerien</p>
+                      </div>
+                      <div className="rounded-xl border border-white/10 bg-white/[0.07] p-3">
+                        <p className="text-xl font-black">
+                          {completedGalleries.length}
+                        </p>
+                        <p className="mt-1 text-xs text-neutral-500">fertig</p>
+                      </div>
+                      <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-100">
+                        <p className="text-xl font-black">{totalFavoriteCount}</p>
+                        <p className="mt-1 text-xs">Favoriten</p>
+                      </div>
                     </div>
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.08] p-2 sm:p-3">
-                      <p className="text-xl font-black sm:text-2xl">
-                        {completedGalleries.length}
-                      </p>
-                      <p className="mt-1 text-xs text-neutral-400">
-                        fertig
-                      </p>
+
+                    <div className="mt-5 hidden gap-2 sm:grid">
+                      {accountSections.map((section) => {
+                        const SectionIcon = section.icon;
+                        const active = accountSection === section.key;
+
+                        return (
+                          <button
+                            key={section.key}
+                            type="button"
+                            onClick={() => setAccountSection(section.key)}
+                            className={`flex items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                              active
+                                ? "bg-white text-neutral-950 shadow-xl"
+                                : "bg-white/[0.06] text-neutral-300 hover:bg-white/10"
+                            }`}
+                          >
+                            <span
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                                active
+                                  ? "bg-neutral-950 text-white"
+                                  : "bg-white/10"
+                              }`}
+                            >
+                              <SectionIcon className="h-4 w-4" />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-black">
+                                {section.label}
+                              </span>
+                              <span
+                                className={`mt-0.5 block truncate text-xs ${
+                                  active ? "text-neutral-600" : "text-neutral-500"
+                                }`}
+                              >
+                                {section.helper}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
-                    <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-2 text-yellow-100 sm:p-3">
-                      <p className="text-xl font-black sm:text-2xl">{totalFavoriteCount}</p>
-                      <p className="mt-1 text-xs">Favoriten</p>
-                    </div>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
 
-            <div className="rounded-[1.2rem] border border-white/10 bg-neutral-950/50 p-3 sm:rounded-[1.5rem] sm:p-4 md:p-6">
+            <div className="rounded-[1.2rem] border border-white/10 bg-neutral-950/65 p-3 sm:rounded-[1.5rem] sm:p-4 md:p-5">
               {loading ? (
                 <div className="flex min-h-64 items-center justify-center">
                   <RefreshCw className="h-7 w-7 animate-spin text-neutral-300" />
@@ -698,74 +744,79 @@ export default function AccountPage() {
                 <div>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:h-14 sm:w-14">
-                          {avatarPreview ? (
-                            <img
-                              src={avatarPreview}
-                              alt=""
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <UserRound className="h-6 w-6 text-neutral-400" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs uppercase tracking-[0.24em] text-neutral-500">
-                            Angemeldet als
-                          </p>
-                          <h2 className="mt-1 truncate text-xl font-black sm:text-2xl">
-                            {user.name || "Ohne Benutzername"}
-                          </h2>
-                          <p className="mt-1 truncate text-sm text-neutral-400">
-                            {user.email}
-                          </p>
-                        </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.22em] text-neutral-500">
+                          {accountSection === "galleries"
+                            ? "Bilder & Galerien"
+                            : "Konto bearbeiten"}
+                        </p>
+                        <h2 className="mt-2 text-2xl font-black">
+                          {accountSection === "galleries"
+                            ? "Deine Shooting-Galerien"
+                            : "Profil und Sicherheit"}
+                        </h2>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
+                          {accountSection === "galleries"
+                            ? "Öffne Galerien, prüfe Favoriten oder füge einen neuen Galerie-Code hinzu."
+                            : "Ändere deinen Benutzernamen, dein Profilbild oder setze dein Passwort zurück."}
+                        </p>
                       </div>
-                      <span className="w-fit rounded-full bg-emerald-400 px-3 py-1 text-xs font-black text-neutral-950">
-                        Konto aktiv
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="w-fit rounded-full bg-emerald-400 px-3 py-1 text-xs font-black text-neutral-950">
+                          Konto aktiv
+                        </span>
+                        <button
+                          type="button"
+                          onClick={logout}
+                          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-black text-neutral-200 transition hover:bg-white/15"
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
+                          Ausloggen
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-2 rounded-2xl border border-white/10 bg-black/25 p-1.5 sm:grid-cols-2">
-                    {accountSections.map((section) => {
-                      const SectionIcon = section.icon;
-                      const active = accountSection === section.key;
+                  <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 sm:hidden">
+                    <div className="grid gap-2">
+                      {accountSections.map((section) => {
+                        const SectionIcon = section.icon;
+                        const active = accountSection === section.key;
 
-                      return (
-                        <button
-                          key={section.key}
-                          type="button"
-                          onClick={() => setAccountSection(section.key)}
-                          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
-                            active
-                              ? "bg-white text-neutral-950 shadow-xl"
-                              : "bg-white/[0.04] text-neutral-300 hover:bg-white/10"
-                          }`}
-                        >
-                          <span
-                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                              active ? "bg-neutral-950 text-white" : "bg-white/10"
+                        return (
+                          <button
+                            key={section.key}
+                            type="button"
+                            onClick={() => setAccountSection(section.key)}
+                            className={`flex items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                              active
+                                ? "bg-white text-neutral-950 shadow-xl"
+                                : "bg-white/[0.06] text-neutral-300 hover:bg-white/10"
                             }`}
                           >
-                            <SectionIcon className="h-4 w-4" />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-black">
-                              {section.label}
-                            </span>
                             <span
-                              className={`mt-0.5 block truncate text-xs ${
-                                active ? "text-neutral-600" : "text-neutral-500"
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                                active ? "bg-neutral-950 text-white" : "bg-white/10"
                               }`}
                             >
-                              {section.helper}
+                              <SectionIcon className="h-4 w-4" />
                             </span>
-                          </span>
-                        </button>
-                      );
-                    })}
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-black">
+                                {section.label}
+                              </span>
+                              <span
+                                className={`mt-0.5 block truncate text-xs ${
+                                  active ? "text-neutral-600" : "text-neutral-500"
+                                }`}
+                              >
+                                {section.helper}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {accountSection === "profile" && (
