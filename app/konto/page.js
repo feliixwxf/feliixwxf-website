@@ -66,6 +66,12 @@ export default function AccountPage() {
     password: "",
     privacyAccepted: false,
   });
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetTokens, setResetTokens] = useState({
+    accessToken: "",
+    refreshToken: "",
+  });
+  const [newPassword, setNewPassword] = useState("");
   const [profileName, setProfileName] = useState("");
   const [avatarPreview, setAvatarPreview] = useState("");
   const [loading, setLoading] = useState(false);
@@ -77,6 +83,7 @@ export default function AccountPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
 
@@ -94,6 +101,19 @@ export default function AccountPage() {
 
   const updateForm = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));
+    setMessage("");
+  };
+
+  const showPasswordResetRequest = () => {
+    setResetEmail(form.email || resetEmail);
+    setMode("resetRequest");
+    setMessage("");
+  };
+
+  const showLoginForm = () => {
+    setMode("login");
+    setResetTokens({ accessToken: "", refreshToken: "" });
+    setNewPassword("");
     setMessage("");
   };
 
@@ -172,12 +192,24 @@ export default function AccountPage() {
     const params = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const confirmed = params.get("verified") === "1";
+    const resetRequested = params.get("reset") === "1";
+    const recoveryType = params.get("type") || hashParams.get("type");
+    const accessToken = hashParams.get("access_token") || "";
+    const refreshToken = hashParams.get("refresh_token") || "";
     const error =
       params.get("error_description") || hashParams.get("error_description");
 
-    if (confirmed) {
+    if (recoveryType === "recovery" && accessToken) {
+      setResetTokens({ accessToken, refreshToken });
+      setMode("resetConfirm");
+      showMessage("Bitte vergib jetzt dein neues Passwort.", "success");
+      window.history.replaceState(null, "", "/konto?reset=1");
+    } else if (confirmed) {
       showMessage("E-Mail wurde bestätigt. Du kannst dich jetzt einloggen.", "success");
       window.history.replaceState(null, "", "/konto");
+    } else if (resetRequested) {
+      setMode("resetRequest");
+      showMessage("Gib deine E-Mail ein, um eine Reset-Mail zu erhalten.", "info");
     } else if (error) {
       showMessage(decodeURIComponent(error).replace(/\+/g, " "), "error");
       window.history.replaceState(null, "", "/konto");
@@ -239,6 +271,114 @@ export default function AccountPage() {
       );
     }
     await loadGalleries();
+    setSubmitting(false);
+  };
+
+  const requestPasswordReset = async (event) => {
+    event.preventDefault();
+
+    const email = String(resetEmail || form.email || "").trim().toLowerCase();
+
+    if (!email) {
+      showMessage("Bitte gib deine E-Mail-Adresse ein.", "error");
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage("");
+
+    const response = await fetch("/api/account/password-reset/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(data.error || "Reset-Mail konnte nicht gesendet werden.", "error");
+      setSubmitting(false);
+      return;
+    }
+
+    setResetEmail(email);
+    setForm((current) => ({ ...current, email }));
+    showMessage(
+      data.message ||
+        "Wenn ein Konto mit dieser E-Mail existiert, wurde eine Reset-Mail gesendet.",
+      "success"
+    );
+    setSubmitting(false);
+  };
+
+  const requestCurrentAccountPasswordReset = async () => {
+    const email = String(user?.email || "").trim().toLowerCase();
+
+    if (!email) {
+      showMessage("Für dein Konto ist keine E-Mail-Adresse verfügbar.", "error");
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage("");
+
+    const response = await fetch("/api/account/password-reset/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(data.error || "Reset-Mail konnte nicht gesendet werden.", "error");
+      setSubmitting(false);
+      return;
+    }
+
+    showMessage(
+      data.message ||
+        "Wenn ein Konto mit dieser E-Mail existiert, wurde eine Reset-Mail gesendet.",
+      "success"
+    );
+    setSubmitting(false);
+  };
+
+  const confirmPasswordReset = async (event) => {
+    event.preventDefault();
+
+    if (newPassword.length < 8) {
+      showMessage("Das neue Passwort muss mindestens 8 Zeichen haben.", "error");
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage("");
+
+    const response = await fetch("/api/account/password-reset/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        password: newPassword,
+        accessToken: resetTokens.accessToken,
+        refreshToken: resetTokens.refreshToken,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(data.error || "Passwort konnte nicht geändert werden.", "error");
+      setSubmitting(false);
+      return;
+    }
+
+    setUser(data.user);
+    setProfileName(data.user?.name || "");
+    setAvatarPreview(data.user?.avatar_url || "");
+    setNewPassword("");
+    setResetTokens({ accessToken: "", refreshToken: "" });
+    setMode("login");
+    window.history.replaceState(null, "", "/konto");
+    await loadGalleries();
+    showMessage(data.message || "Passwort wurde geändert.", "success");
     setSubmitting(false);
   };
 
@@ -629,62 +769,91 @@ export default function AccountPage() {
                   </div>
 
                   {accountSection === "profile" && (
-                    <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
-                    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
-                      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
-                        {avatarPreview ? (
-                          <img
-                            src={avatarPreview}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <UserRound className="h-8 w-8 text-neutral-400" />
-                        )}
-                      </div>
-                      <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black transition hover:bg-white/15 sm:w-fit">
-                        {avatarUploading ? (
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Upload className="h-4 w-4" />
-                        )}
-                        Profilbild ändern
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={uploadAvatar}
-                          disabled={avatarUploading}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
+                    <div className="mt-5 grid gap-4">
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+                        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
+                          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+                            {avatarPreview ? (
+                              <img
+                                src={avatarPreview}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <UserRound className="h-8 w-8 text-neutral-400" />
+                            )}
+                          </div>
+                          <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black transition hover:bg-white/15 sm:w-fit">
+                            {avatarUploading ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Upload className="h-4 w-4" />
+                            )}
+                            Profilbild ändern
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={uploadAvatar}
+                              disabled={avatarUploading}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
 
-                    <label className="block">
-                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
-                        Benutzername
-                      </span>
-                      <input
-                        value={profileName}
-                        onChange={(event) => {
-                          setProfileName(event.target.value);
-                          setMessage("");
-                        }}
-                        placeholder="z. B. Felix"
-                        className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={saveProfile}
-                      disabled={profileSaving}
-                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60"
-                    >
-                      {profileSaving && (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      )}
-                      Benutzername speichern
-                    </button>
-                  </div>
+                        <label className="block">
+                          <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
+                            Benutzername
+                          </span>
+                          <input
+                            value={profileName}
+                            onChange={(event) => {
+                              setProfileName(event.target.value);
+                              setMessage("");
+                            }}
+                            placeholder="z. B. Felix"
+                            className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={saveProfile}
+                          disabled={profileSaving}
+                          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60"
+                        >
+                          {profileSaving && (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          )}
+                          Benutzername speichern
+                        </button>
+                      </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <h3 className="font-black text-white">
+                              Passwort zurücksetzen
+                            </h3>
+                            <p className="mt-2 text-sm leading-6 text-neutral-400">
+                              Wir senden dir eine E-Mail, mit der du ein neues
+                              Passwort festlegen kannst.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={requestCurrentAccountPasswordReset}
+                            disabled={submitting}
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 sm:w-fit"
+                          >
+                            {submitting ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Mail className="h-4 w-4" />
+                            )}
+                            Reset-Mail senden
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   {accountSection === "galleries" && (
@@ -1071,6 +1240,139 @@ export default function AccountPage() {
                   </div>
                   )}
                 </div>
+              ) : mode === "resetConfirm" ? (
+                <form onSubmit={confirmPasswordReset}>
+                  <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-5">
+                    <p className="text-xs font-black uppercase tracking-[0.25em] text-yellow-100/70">
+                      Passwort zurücksetzen
+                    </p>
+                    <h2 className="mt-3 text-2xl font-black">
+                      Neues Passwort vergeben
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-yellow-50/75">
+                      Dein Reset-Link wurde erkannt. Gib jetzt dein neues
+                      Passwort ein.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 grid gap-4">
+                    <label className="block">
+                      <span className="text-sm font-bold text-neutral-200">
+                        Neues Passwort
+                      </span>
+                      <div className="relative mt-2">
+                        <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+                        <input
+                          type={showNewPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(event) => {
+                            setNewPassword(event.target.value);
+                            setMessage("");
+                          }}
+                          placeholder="Mindestens 8 Zeichen"
+                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-14 text-neutral-950 outline-none focus:border-yellow-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowNewPassword((current) => !current)
+                          }
+                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-600 transition hover:bg-neutral-100"
+                          aria-label={
+                            showNewPassword
+                              ? "Passwort ausblenden"
+                              : "Passwort anzeigen"
+                          }
+                        >
+                          {showNewPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
+                    </label>
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
+                    >
+                      {submitting ? (
+                        <RefreshCw className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <KeyRound className="h-5 w-5" />
+                      )}
+                      {submitting ? "Bitte warten..." : "Passwort speichern"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={showLoginForm}
+                      className="text-sm font-bold text-neutral-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white"
+                    >
+                      Zurück zum Login
+                    </button>
+                  </div>
+                </form>
+              ) : mode === "resetRequest" ? (
+                <form onSubmit={requestPasswordReset}>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
+                    <p className="text-xs font-black uppercase tracking-[0.25em] text-neutral-500">
+                      Passwort vergessen
+                    </p>
+                    <h2 className="mt-3 text-2xl font-black">
+                      Reset-Link per E-Mail
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-neutral-300">
+                      Gib die E-Mail-Adresse deines Kundenkontos ein. Du bekommst
+                      dann einen Link, mit dem du ein neues Passwort festlegen
+                      kannst.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 grid gap-4">
+                    <label className="block">
+                      <span className="text-sm font-bold text-neutral-200">
+                        E-Mail
+                      </span>
+                      <div className="relative mt-2">
+                        <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+                        <input
+                          type="email"
+                          value={resetEmail}
+                          onChange={(event) => {
+                            setResetEmail(event.target.value);
+                            setMessage("");
+                          }}
+                          placeholder="kunde@example.com"
+                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
+                        />
+                      </div>
+                    </label>
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
+                    >
+                      {submitting ? (
+                        <RefreshCw className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <Mail className="h-5 w-5" />
+                      )}
+                      {submitting ? "Sende..." : "Reset-Mail senden"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={showLoginForm}
+                      className="text-sm font-bold text-neutral-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white"
+                    >
+                      Zurück zum Login
+                    </button>
+                  </div>
+                </form>
               ) : (
                 <form onSubmit={submitAccount}>
                   <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/10 p-1">
@@ -1167,6 +1469,16 @@ export default function AccountPage() {
                         </button>
                       </div>
                     </label>
+
+                    {mode === "login" && (
+                      <button
+                        type="button"
+                        onClick={showPasswordResetRequest}
+                        className="w-fit text-sm font-bold text-neutral-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white"
+                      >
+                        Passwort vergessen?
+                      </button>
+                    )}
 
                     {mode === "register" && (
                       <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.08] p-4 text-sm leading-6 text-neutral-300">
