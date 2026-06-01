@@ -600,12 +600,12 @@ export default function AccountPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#070707,#161616,#222)] px-2 py-3 text-white sm:px-5 sm:py-8">
+    <main className="min-h-screen bg-[linear-gradient(135deg,#070707,#161616,#222)] px-3 py-3 text-white sm:px-5 sm:py-8">
       <div className="mx-auto max-w-6xl">
-        <div className="grid gap-3 sm:flex sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between gap-3">
           <Link
             href="/"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15 sm:w-fit"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15"
           >
             <ArrowLeft className="h-4 w-4" />
             Zur Website
@@ -613,9 +613,9 @@ export default function AccountPage() {
 
         </div>
 
-        <section className="mt-3 overflow-hidden rounded-[1.15rem] border border-white/10 bg-white/[0.05] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
+        <section className="mt-3 overflow-hidden rounded-[1.15rem] border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
           <div className="grid gap-3 p-2 sm:gap-4 sm:p-4 md:p-5 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <div className="relative overflow-hidden rounded-[1rem] border border-white/10 bg-black/30 p-3 sm:rounded-[1.5rem] sm:p-5 lg:sticky lg:top-6 lg:self-start">
+            <div className={`relative overflow-hidden rounded-[1rem] border border-white/10 bg-black/30 p-3 sm:rounded-[1.5rem] sm:p-5 lg:sticky lg:top-6 lg:self-start ${user ? "hidden sm:block" : ""}`}>
               {accountHeroGallery?.cover_url && (
                 <img
                   src={accountHeroGallery.cover_url}
@@ -735,14 +735,81 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <div className="rounded-[1rem] border border-white/10 bg-neutral-950/65 p-2.5 sm:rounded-[1.5rem] sm:p-4 md:p-5">
+            <div className="rounded-[1rem] border-0 border-white/10 bg-transparent p-0 sm:border sm:bg-neutral-950/65 sm:p-4 md:p-5">
               {loading ? (
                 <div className="flex min-h-64 items-center justify-center">
                   <RefreshCw className="h-7 w-7 animate-spin text-neutral-300" />
                 </div>
               ) : user ? (
                 <div>
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3 sm:p-4">
+                  <div className="mb-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] p-3 sm:hidden">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+                        {avatarPreview ? (
+                          <img
+                            src={avatarPreview}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <UserRound className="h-6 w-6 text-neutral-400" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                          Kundenkonto
+                        </p>
+                        <h1 className="mt-1 text-xl font-black leading-tight">
+                          {accountGreeting}
+                        </h1>
+                        <p className="mt-1 truncate text-xs text-neutral-400">
+                          {user.email}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={logout}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-neutral-200"
+                        aria-label="Ausloggen"
+                      >
+                        <LogOut className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-3 gap-1.5">
+                      <div className="rounded-xl bg-black/25 p-2.5">
+                        <p className="text-lg font-black">{galleries.length}</p>
+                        <p className="mt-0.5 text-[0.68rem] text-neutral-500">
+                          Galerien
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-black/25 p-2.5">
+                        <p className="text-lg font-black">
+                          {completedGalleries.length}
+                        </p>
+                        <p className="mt-0.5 text-[0.68rem] text-neutral-500">
+                          fertig
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-yellow-400/10 p-2.5 text-yellow-100">
+                        <p className="text-lg font-black">{totalFavoriteCount}</p>
+                        <p className="mt-0.5 text-[0.68rem]">Favoriten</p>
+                      </div>
+                    </div>
+
+                    {nextGallery && (
+                      <button
+                        type="button"
+                        onClick={() => openGallery(nextGallery)}
+                        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-neutral-950"
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                        Galerie öffnen
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="hidden rounded-2xl border border-white/10 bg-white/[0.06] p-3 sm:block sm:p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                       <div>
                         <p className="text-xs uppercase tracking-[0.22em] text-neutral-500">
@@ -777,7 +844,7 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-2 sm:hidden">
+                  <div className="sticky top-2 z-20 rounded-2xl border border-white/10 bg-neutral-950/90 p-1.5 backdrop-blur-xl sm:hidden">
                     <div className="grid grid-cols-2 gap-2">
                       {accountSections.map((section) => {
                         const SectionIcon = section.icon;
@@ -791,12 +858,12 @@ export default function AccountPage() {
                             className={`flex items-center justify-center gap-2 rounded-xl px-2.5 py-3 text-center transition ${
                               active
                                 ? "bg-white text-neutral-950 shadow-xl"
-                                : "bg-white/[0.06] text-neutral-300 hover:bg-white/10"
+                                : "bg-white/[0.06] text-neutral-300"
                             }`}
                           >
                             <span
                               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                                active ? "bg-neutral-950 text-white" : "bg-white/10"
+                                  active ? "bg-neutral-950 text-white" : "bg-white/10"
                               }`}
                             >
                               <SectionIcon className="h-4 w-4" />
@@ -930,7 +997,7 @@ export default function AccountPage() {
                   </div>
 
                   {galleries.length > 0 && (
-                    <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:grid-cols-4">
+                    <div className="mt-3 hidden grid-cols-2 gap-2 sm:mt-4 sm:grid sm:grid-cols-4">
                       <div className="rounded-xl border border-white/10 bg-white/[0.06] p-3 sm:rounded-2xl">
                         <p className="text-xl font-black sm:text-2xl">
                           {totalImageCount}
@@ -964,7 +1031,7 @@ export default function AccountPage() {
 
                   <form
                     onSubmit={linkGalleryByCode}
-                    className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.08] p-3 sm:mt-5 sm:p-4"
+                    className="mt-3 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.08] p-3 sm:mt-5 sm:p-4"
                   >
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
                       <label className="min-w-0 flex-1">
@@ -995,7 +1062,7 @@ export default function AccountPage() {
                         Verknüpfen
                       </button>
                     </div>
-                    <p className="mt-3 text-xs leading-5 text-yellow-50/70 sm:block">
+                    <p className="mt-3 hidden text-xs leading-5 text-yellow-50/70 sm:block">
                       Wenn du einen QR-Code oder Galerie-Code bekommen hast,
                       kannst du ihn hier direkt deinem Konto hinzufügen.
                     </p>
