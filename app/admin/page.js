@@ -1455,7 +1455,7 @@ export default function AdminPage() {
     requestConfirmation({
       title: `Kundengalerie "${gallery.title}" löschen?`,
       description:
-        "Die Galerie wird aus dem Admin entfernt. Dazu gehören die Kundengalerie-Daten und die zugeordneten Kundenbilder. Nutze das nur, wenn das Projekt wirklich weg kann.",
+        "Die Galerie wird aus dem Admin entfernt. Kundenbilder, Favoriten, QR-Zugriff und die Galerie-Verknüpfung werden gelöscht. Das Kundenkonto selbst bleibt bestehen. Nutze das nur, wenn das Projekt wirklich weg kann.",
       confirmText: "LÖSCHEN",
       confirmLabel: "Galerie löschen",
       onConfirm: async () => {
@@ -1493,7 +1493,7 @@ export default function AdminPage() {
     requestConfirmation({
       title: "Kundenbild löschen?",
       description:
-        "Das Bild wird aus dieser Kundengalerie entfernt. Falls es als Cover oder Favorit genutzt wurde, wird diese Zuordnung ebenfalls bereinigt.",
+        "Das Bild wird aus dieser Kundengalerie entfernt. Falls es als Cover oder Favorit genutzt wurde, werden diese Zuordnungen ebenfalls bereinigt. Andere Galerien bleiben unberührt.",
       confirmText: "LÖSCHEN",
       confirmLabel: "Bild löschen",
       onConfirm: async () => {
@@ -1826,7 +1826,7 @@ export default function AdminPage() {
     requestConfirmation({
       title: `Bewertung von ${review.name} löschen?`,
       description:
-        "Die Bewertung wird dauerhaft aus der Moderation und von der öffentlichen Website entfernt.",
+        "Die Bewertung wird dauerhaft aus der Moderation und von der öffentlichen Website entfernt. Das Kundenkonto bleibt bestehen.",
       confirmText: "LÖSCHEN",
       confirmLabel: "Bewertung löschen",
       onConfirm: async () => {
@@ -3502,26 +3502,26 @@ export default function AdminPage() {
                                 )}
                               </div>
                               <div className="min-w-0">
-                              <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
-                                Aktive Galerie
-                              </p>
-                              <h3 className="mt-2 text-2xl font-black">
-                                {activeClientGallery.title}
-                              </h3>
-                              <p className="mt-2 text-sm text-neutral-400">
-                                {activeClientGallery.client_name ||
-                                  "Kein Kundenname hinterlegt"}
-                              </p>
-                              {activeClientGallery.client_email && (
-                                <p className="mt-1 break-all text-sm text-neutral-500">
-                                  {activeClientGallery.client_email}
+                                <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                                  Aktive Galerie
                                 </p>
-                              )}
-                              <p className="mt-2 text-xs text-neutral-500">
-                                Cover:{" "}
-                                {activeClientCoverImage?.filename ||
-                                  "automatisch erstes Bild"}
-                              </p>
+                                <h3 className="mt-2 text-2xl font-black">
+                                  {activeClientGallery.title}
+                                </h3>
+                                <p className="mt-2 text-sm text-neutral-400">
+                                  {activeClientGallery.client_name ||
+                                    "Kein Kundenname hinterlegt"}
+                                </p>
+                                {activeClientGallery.client_email && (
+                                  <p className="mt-1 break-all text-sm text-neutral-500">
+                                    {activeClientGallery.client_email}
+                                  </p>
+                                )}
+                                <p className="mt-2 text-xs text-neutral-500">
+                                  Cover:{" "}
+                                  {activeClientCoverImage?.filename ||
+                                    "automatisch erstes Bild"}
+                                </p>
                               </div>
                             </div>
 
@@ -3545,84 +3545,55 @@ export default function AdminPage() {
                             </div>
                           </div>
 
-                          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
-                            <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
-                              <p className="text-xs text-neutral-500">Status</p>
-                              <span
-                                className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-black ${
-                                  CLIENT_GALLERY_STATUSES[
-                                    getClientGalleryStatus(activeClientGallery)
-                                  ].badge
-                                }`}
-                              >
-                                {
-                                  CLIENT_GALLERY_STATUSES[
-                                    getClientGalleryStatus(activeClientGallery)
-                                  ].label
-                                }
-                              </span>
-                            </div>
-                            <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
-                              <p className="text-xs text-neutral-500">Inhalt</p>
-                              <p className="mt-2 text-sm font-black">
-                                {activeClientImages.length} Bilder ·{" "}
-                                {activeClientFavoriteImages.length} Favoriten
-                              </p>
-                            </div>
-                            <div
-                              className={`rounded-xl border px-3 py-3 text-sm ${activeClientProjectStep.tone}`}
+                          <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                            <span
+                              className={`rounded-full px-3 py-1 font-black ${
+                                CLIENT_GALLERY_STATUSES[
+                                  getClientGalleryStatus(activeClientGallery)
+                                ].badge
+                              }`}
                             >
-                              <p className="text-xs opacity-75">Nächster Schritt</p>
-                              <p className="mt-2 font-black">
-                                {activeClientProjectStep.label}
-                              </p>
-                            </div>
-                            <div
-                              className={`rounded-xl border px-3 py-3 text-sm ${activeClientAccountState.tone}`}
+                              {
+                                CLIENT_GALLERY_STATUSES[
+                                  getClientGalleryStatus(activeClientGallery)
+                                ].label
+                              }
+                            </span>
+                            <span className="rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-300">
+                              {activeClientImages.length} Bilder
+                            </span>
+                            <span className="rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-300">
+                              {activeClientFavoriteImages.length} Favoriten
+                            </span>
+                            <span
+                              className={`rounded-full border px-3 py-1 font-bold ${activeClientAccountState.tone}`}
                             >
-                              <p className="text-xs opacity-75">Kundenkonto</p>
-                              <p className="mt-2 font-black">
-                                {activeClientAccountState.label}
-                              </p>
-                            </div>
-                            <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
-                              <p className="text-xs text-neutral-500">
-                                Downloads
-                              </p>
-                              <p
-                                className={`mt-2 text-sm font-black ${
-                                  activeClientGallery.downloads_enabled
-                                    ? "text-emerald-200"
-                                    : "text-neutral-300"
-                                }`}
-                              >
-                                {activeClientGallery.downloads_enabled
-                                  ? "Freigegeben"
-                                  : "Gesperrt"}
-                              </p>
-                            </div>
-                            <div className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
-                              <p className="text-xs text-neutral-500">
-                                Ablauf
-                              </p>
-                              <p className="mt-2 text-sm font-black text-neutral-200">
-                                {activeClientGallery.expires_at
-                                  ? formatDate(activeClientGallery.expires_at)
-                                  : "Kein Datum"}
-                              </p>
-                            </div>
+                              {activeClientAccountState.label}
+                            </span>
+                            <span
+                              className={`rounded-full px-3 py-1 font-bold ${
+                                activeClientGallery.downloads_enabled
+                                  ? "bg-emerald-400/15 text-emerald-100"
+                                  : "bg-white/10 text-neutral-300"
+                              }`}
+                            >
+                              Downloads{" "}
+                              {activeClientGallery.downloads_enabled
+                                ? "an"
+                                : "aus"}
+                            </span>
                           </div>
 
-                          <div className="mt-4 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4">
+                          <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <div className="min-w-0">
-                                <p className="text-xs font-black uppercase tracking-[0.22em] text-yellow-100/70">
-                                  Nächste Aktion
+                                <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                                  Nächster sinnvoller Schritt
                                 </p>
-                                <h4 className="mt-1 font-black text-yellow-50">
+                                <h4 className="mt-1 font-black text-neutral-100">
                                   {activeClientProjectStep.label}
                                 </h4>
-                                <p className="mt-1 text-sm leading-6 text-yellow-100/70">
+                                <p className="mt-1 text-sm leading-6 text-neutral-500">
                                   {activeClientProjectStep.helper}
                                 </p>
                               </div>
@@ -3631,50 +3602,37 @@ export default function AdminPage() {
                                 onClick={() =>
                                   setActiveClientPanel(activeClientSuggestedPanel)
                                 }
-                                className="inline-flex w-full items-center justify-center rounded-full bg-yellow-300 px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:w-fit"
+                                className="inline-flex w-full items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/15 sm:w-fit"
                               >
-                                Passenden Bereich öffnen
+                                Bereich öffnen
                               </button>
                             </div>
                           </div>
                         </div>
 
-                        <div className="mt-4 grid gap-1 rounded-2xl border border-white/10 bg-black/20 p-1.5 sm:grid-cols-2 xl:grid-cols-5">
-                          {clientDetailPanels.map((panel) => {
-                            const Icon = panel.icon;
-                            const active = activeClientPanel === panel.value;
+                        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-1.5">
+                          <div className="flex min-w-max gap-1 xl:grid xl:min-w-0 xl:grid-cols-5">
+                            {clientDetailPanels.map((panel) => {
+                              const Icon = panel.icon;
+                              const active = activeClientPanel === panel.value;
 
-                            return (
-                              <button
-                                key={panel.value}
-                                type="button"
-                                onClick={() => setActiveClientPanel(panel.value)}
-                                className={`flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5 text-left transition ${
-                                  active
-                                    ? "bg-white text-neutral-950"
-                                    : "text-neutral-300 hover:bg-white/10 hover:text-white"
-                                }`}
-                              >
-                                <span
-                                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                              return (
+                                <button
+                                  key={panel.value}
+                                  type="button"
+                                  onClick={() => setActiveClientPanel(panel.value)}
+                                  className={`inline-flex min-w-32 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-black transition xl:min-w-0 ${
                                     active
-                                      ? "bg-neutral-950 text-white"
-                                      : "bg-white/10"
+                                      ? "bg-white text-neutral-950"
+                                      : "text-neutral-300 hover:bg-white/10 hover:text-white"
                                   }`}
                                 >
                                   <Icon className="h-4 w-4" />
-                                </span>
-                                <span className="min-w-0">
-                                  <span className="block truncate text-sm font-black">
-                                    {panel.label}
-                                  </span>
-                                  <span className="mt-0.5 block truncate text-xs opacity-60">
-                                    {panel.helper}
-                                  </span>
-                                </span>
-                              </button>
-                            );
-                          })}
+                                  {panel.label}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
 
                         {activeClientPanel === "share" && (
@@ -3812,13 +3770,13 @@ export default function AdminPage() {
                         )}
 
                         {activeClientPanel === "overview" && (
-                        <section className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4 lg:col-span-2">
+                        <section className="mt-6 space-y-4">
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <div>
                                 <h4 className="font-black">Kundendaten</h4>
                                 <p className="mt-1 text-sm text-neutral-500">
-                                  Grundlage für spätere Kundenkonten.
+                                  Das Wichtigste zur Galerie und zur persönlichen Kundenansprache.
                                 </p>
                               </div>
                               <button
@@ -3923,16 +3881,21 @@ export default function AdminPage() {
                             </label>
                           </div>
 
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <h4 className="font-black">Status & Freigaben</h4>
-                                <p className="mt-1 text-sm text-neutral-500">
-                                  Sichtbarkeit, Downloads und Abschluss.
-                                </p>
-                              </div>
+                          <details
+                            open
+                            className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
+                          >
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
+                              <span>
+                                <span className="block font-black">
+                                  Projektstatus & Checkliste
+                                </span>
+                                <span className="mt-1 block text-sm text-neutral-500">
+                                  Sichtbarkeit, Downloads und Abschluss nur bei Bedarf öffnen.
+                                </span>
+                              </span>
                               <span
-                                className={`rounded-full px-3 py-1 text-xs font-black ${
+                                className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
                                   CLIENT_GALLERY_STATUSES[
                                     getClientGalleryStatus(activeClientGallery)
                                   ].badge
@@ -3944,232 +3907,261 @@ export default function AdminPage() {
                                   ].label
                                 }
                               </span>
-                            </div>
+                            </summary>
 
-                            <div className="mt-4 grid gap-2">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateClientGallery(
-                                    activeClientGallery,
-                                    {
-                                      is_active: !activeClientGallery.is_active,
-                                      status: activeClientGallery.is_active
-                                        ? "paused"
-                                        : "active",
-                                    },
-                                    activeClientGallery.is_active
-                                      ? "Kundengalerie wurde pausiert."
-                                      : "Kundengalerie wurde aktiviert."
-                                  )
-                                }
-                                disabled={
-                                  busyClientGalleryId === activeClientGallery.id
-                                }
-                                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-bold transition hover:bg-white/10 disabled:opacity-60"
-                              >
-                                <span>
-                                  {activeClientGallery.is_active
-                                    ? "Galerie pausieren"
-                                    : "Galerie aktivieren"}
-                                </span>
-                                {activeClientGallery.is_active ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateClientGallery(
-                                    activeClientGallery,
-                                    {
-                                      downloads_enabled:
-                                        !activeClientGallery.downloads_enabled,
-                                    },
-                                    activeClientGallery.downloads_enabled
-                                      ? "Downloads wurden deaktiviert."
-                                      : "Downloads wurden aktiviert."
-                                  )
-                                }
-                                disabled={
-                                  busyClientGalleryId === activeClientGallery.id
-                                }
-                                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-bold transition hover:bg-white/10 disabled:opacity-60"
-                              >
-                                <span>
-                                  Downloads{" "}
-                                  {activeClientGallery.downloads_enabled
-                                    ? "deaktivieren"
-                                    : "aktivieren"}
-                                </span>
-                                <span
-                                  className={`rounded-full px-2 py-1 text-xs ${
-                                    activeClientGallery.downloads_enabled
-                                      ? "bg-emerald-400 text-neutral-950"
-                                      : "bg-neutral-700 text-neutral-200"
-                                  }`}
-                                >
-                                  {activeClientGallery.downloads_enabled
-                                    ? "An"
-                                    : "Aus"}
-                                </span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateClientGallery(
-                                    activeClientGallery,
-                                    getClientGalleryStatus(activeClientGallery) ===
-                                      "completed"
-                                      ? { status: "active", is_active: true }
-                                      : { status: "completed", is_active: true },
-                                    getClientGalleryStatus(activeClientGallery) ===
-                                      "completed"
-                                      ? "Kundengalerie ist wieder aktiv."
-                                      : "Kundengalerie wurde abgeschlossen."
-                                  )
-                                }
-                                disabled={
-                                  busyClientGalleryId === activeClientGallery.id
-                                }
-                                className="flex items-center justify-between rounded-xl border border-sky-300/25 bg-sky-300/10 px-3 py-3 text-sm font-bold text-sky-100 transition hover:bg-sky-300/20 disabled:opacity-60"
-                              >
-                                <span>
-                                  {getClientGalleryStatus(activeClientGallery) ===
-                                  "completed"
-                                    ? "Wieder aktiv setzen"
-                                    : "Als abgeschlossen markieren"}
-                                </span>
-                                <CheckCircle2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="grid gap-4 border-t border-white/10 p-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)]">
                               <div>
-                                <h4 className="font-black">Interne Notiz</h4>
-                                <p className="mt-1 text-sm text-neutral-500">
-                                  Nur im Admin sichtbar.
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateClientGallery(
-                                    activeClientGallery,
-                                    {
-                                      internal_note:
-                                        activeClientGallery.internal_note || "",
-                                    },
-                                    "Interne Notiz wurde gespeichert."
-                                  )
-                                }
-                                disabled={
-                                  busyClientGalleryId === activeClientGallery.id
-                                }
-                                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60 sm:w-fit"
-                              >
-                                <Save className="h-4 w-4" />
-                                Speichern
-                              </button>
-                            </div>
-                            <textarea
-                              value={activeClientGallery.internal_note || ""}
-                              onChange={(event) =>
-                                updateClientGalleryDraft({
-                                  internal_note: event.target.value,
-                                })
-                              }
-                              rows="5"
-                              placeholder="z. B. Kunde möchte Bild 3 und 7 final retuschiert haben..."
-                              className="mt-4 w-full resize-y rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm leading-6 text-neutral-950 outline-none focus:border-yellow-400"
-                            />
-                          </div>
-
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <h4 className="font-black">
-                                  Abschluss-Checkliste
-                                </h4>
-                                <p className="mt-1 text-sm text-neutral-500">
-                                  {activeClientChecklistDone}/
-                                  {CLIENT_GALLERY_CHECKLIST.length} erledigt
-                                </p>
-                              </div>
-                              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-neutral-300">
-                                Workflow
-                              </span>
-                            </div>
-
-                            <div className="mt-4 grid gap-2">
-                              {CLIENT_GALLERY_CHECKLIST.map((item) => {
-                                const checked = Boolean(
-                                  activeClientGallery[item.key]
-                                );
-
-                                return (
+                                <h5 className="text-sm font-black text-neutral-200">
+                                  Freigaben
+                                </h5>
+                                <div className="mt-3 grid gap-2">
                                   <button
-                                    key={item.key}
                                     type="button"
                                     onClick={() =>
                                       updateClientGallery(
                                         activeClientGallery,
-                                        { [item.key]: !checked },
-                                        checked
-                                          ? "Punkt wurde wieder geöffnet."
-                                          : "Punkt wurde abgehakt."
+                                        {
+                                          is_active:
+                                            !activeClientGallery.is_active,
+                                          status: activeClientGallery.is_active
+                                            ? "paused"
+                                            : "active",
+                                        },
+                                        activeClientGallery.is_active
+                                          ? "Kundengalerie wurde pausiert."
+                                          : "Kundengalerie wurde aktiviert."
                                       )
                                     }
                                     disabled={
                                       busyClientGalleryId ===
                                       activeClientGallery.id
                                     }
-                                    className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm font-bold transition disabled:opacity-60 ${
-                                      checked
-                                        ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-100"
-                                        : "border-white/10 bg-white/[0.06] text-neutral-300 hover:bg-white/10"
-                                    }`}
+                                    className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-bold transition hover:bg-white/10 disabled:opacity-60"
                                   >
-                                    <span>{item.label}</span>
-                                    <CheckCircle2
-                                      className={`h-4 w-4 ${
-                                        checked
-                                          ? "fill-emerald-400 text-emerald-400"
-                                          : "text-neutral-600"
-                                      }`}
-                                    />
+                                    <span>
+                                      {activeClientGallery.is_active
+                                        ? "Galerie pausieren"
+                                        : "Galerie aktivieren"}
+                                    </span>
+                                    {activeClientGallery.is_active ? (
+                                      <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                      <Eye className="h-4 w-4" />
+                                    )}
                                   </button>
-                                );
-                              })}
-                            </div>
-                          </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateClientGallery(
+                                        activeClientGallery,
+                                        {
+                                          downloads_enabled:
+                                            !activeClientGallery.downloads_enabled,
+                                        },
+                                        activeClientGallery.downloads_enabled
+                                          ? "Downloads wurden deaktiviert."
+                                          : "Downloads wurden aktiviert."
+                                      )
+                                    }
+                                    disabled={
+                                      busyClientGalleryId ===
+                                      activeClientGallery.id
+                                    }
+                                    className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-bold transition hover:bg-white/10 disabled:opacity-60"
+                                  >
+                                    <span>
+                                      Downloads{" "}
+                                      {activeClientGallery.downloads_enabled
+                                        ? "deaktivieren"
+                                        : "aktivieren"}
+                                    </span>
+                                    <span
+                                      className={`rounded-full px-2 py-1 text-xs ${
+                                        activeClientGallery.downloads_enabled
+                                          ? "bg-emerald-400 text-neutral-950"
+                                          : "bg-neutral-700 text-neutral-200"
+                                      }`}
+                                    >
+                                      {activeClientGallery.downloads_enabled
+                                        ? "An"
+                                        : "Aus"}
+                                    </span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateClientGallery(
+                                        activeClientGallery,
+                                        getClientGalleryStatus(
+                                          activeClientGallery
+                                        ) === "completed"
+                                          ? { status: "active", is_active: true }
+                                          : {
+                                              status: "completed",
+                                              is_active: true,
+                                            },
+                                        getClientGalleryStatus(
+                                          activeClientGallery
+                                        ) === "completed"
+                                          ? "Kundengalerie ist wieder aktiv."
+                                          : "Kundengalerie wurde abgeschlossen."
+                                      )
+                                    }
+                                    disabled={
+                                      busyClientGalleryId ===
+                                      activeClientGallery.id
+                                    }
+                                    className="flex items-center justify-between rounded-xl border border-sky-300/25 bg-sky-300/10 px-3 py-3 text-sm font-bold text-sky-100 transition hover:bg-sky-300/20 disabled:opacity-60"
+                                  >
+                                    <span>
+                                      {getClientGalleryStatus(
+                                        activeClientGallery
+                                      ) === "completed"
+                                        ? "Wieder aktiv setzen"
+                                        : "Als abgeschlossen markieren"}
+                                    </span>
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
 
-                          <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
-                            <h4 className="font-black text-red-100">
-                              Gefährliche Aktion
-                            </h4>
-                            <p className="mt-1 text-sm leading-6 text-red-100/65">
-                              Löschen entfernt die Kundengalerie aus dem Admin.
-                              Nutze das nur, wenn das Projekt wirklich weg kann.
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                deleteClientGallery(activeClientGallery)
-                              }
-                              disabled={
-                                busyClientGalleryId === activeClientGallery.id
-                              }
-                              className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/15 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/25 disabled:opacity-60"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Galerie löschen
-                            </button>
-                          </div>
+                              <div>
+                                <div className="flex items-center justify-between gap-3">
+                                  <h5 className="text-sm font-black text-neutral-200">
+                                    Abschluss-Checkliste
+                                  </h5>
+                                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-neutral-300">
+                                    {activeClientChecklistDone}/
+                                    {CLIENT_GALLERY_CHECKLIST.length}
+                                  </span>
+                                </div>
+                                <div className="mt-3 grid gap-2">
+                                  {CLIENT_GALLERY_CHECKLIST.map((item) => {
+                                    const checked = Boolean(
+                                      activeClientGallery[item.key]
+                                    );
+
+                                    return (
+                                      <button
+                                        key={item.key}
+                                        type="button"
+                                        onClick={() =>
+                                          updateClientGallery(
+                                            activeClientGallery,
+                                            { [item.key]: !checked },
+                                            checked
+                                              ? "Punkt wurde wieder geöffnet."
+                                              : "Punkt wurde abgehakt."
+                                          )
+                                        }
+                                        disabled={
+                                          busyClientGalleryId ===
+                                          activeClientGallery.id
+                                        }
+                                        className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm font-bold transition disabled:opacity-60 ${
+                                          checked
+                                            ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-100"
+                                            : "border-white/10 bg-white/[0.06] text-neutral-300 hover:bg-white/10"
+                                        }`}
+                                      >
+                                        <span>{item.label}</span>
+                                        <CheckCircle2
+                                          className={`h-4 w-4 ${
+                                            checked
+                                              ? "fill-emerald-400 text-emerald-400"
+                                              : "text-neutral-600"
+                                          }`}
+                                        />
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </details>
+
+                          <details className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                            <summary className="cursor-pointer list-none px-5 py-4">
+                              <span className="block font-black">
+                                Interne Notiz
+                              </span>
+                              <span className="mt-1 block text-sm text-neutral-500">
+                                Nur für dich sichtbar. Eingeklappt, damit die Übersicht ruhig bleibt.
+                              </span>
+                            </summary>
+
+                            <div className="border-t border-white/10 p-5">
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <p className="text-sm text-neutral-500">
+                                  Notizen zu Auswahl, Retusche oder Absprachen.
+                                </p>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateClientGallery(
+                                      activeClientGallery,
+                                      {
+                                        internal_note:
+                                          activeClientGallery.internal_note || "",
+                                      },
+                                      "Interne Notiz wurde gespeichert."
+                                    )
+                                  }
+                                  disabled={
+                                    busyClientGalleryId ===
+                                    activeClientGallery.id
+                                  }
+                                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60 sm:w-fit"
+                                >
+                                  <Save className="h-4 w-4" />
+                                  Speichern
+                                </button>
+                              </div>
+                              <textarea
+                                value={activeClientGallery.internal_note || ""}
+                                onChange={(event) =>
+                                  updateClientGalleryDraft({
+                                    internal_note: event.target.value,
+                                  })
+                                }
+                                rows="5"
+                                placeholder="z. B. Kunde möchte Bild 3 und 7 final retuschiert haben..."
+                                className="mt-4 w-full resize-y rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm leading-6 text-neutral-950 outline-none focus:border-yellow-400"
+                              />
+                            </div>
+                          </details>
+
+                          <details className="overflow-hidden rounded-2xl border border-red-400/20 bg-red-500/10">
+                            <summary className="cursor-pointer list-none px-5 py-4">
+                              <span className="block font-black text-red-100">
+                                Sicherheitsbereich
+                              </span>
+                              <span className="mt-1 block text-sm leading-6 text-red-100/65">
+                                Löschen ist bewusst eingeklappt und fragt danach noch einmal nach dem Wort LÖSCHEN.
+                              </span>
+                            </summary>
+
+                            <div className="border-t border-red-400/20 p-5">
+                              <p className="text-sm leading-6 text-red-100/65">
+                                Löschen entfernt die Kundengalerie, die
+                                zugeordneten Bilder, Favoriten und den QR-Zugriff.
+                                Nutze das nur, wenn das Projekt wirklich weg kann.
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  deleteClientGallery(activeClientGallery)
+                                }
+                                disabled={
+                                  busyClientGalleryId === activeClientGallery.id
+                                }
+                                className="mt-4 inline-flex items-center gap-2 rounded-full border border-red-400/30 bg-red-500/15 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/25 disabled:opacity-60"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Galerie löschen
+                              </button>
+                            </div>
+                          </details>
                         </section>
                         )}
 
