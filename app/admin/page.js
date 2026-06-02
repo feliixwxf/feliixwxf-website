@@ -450,6 +450,10 @@ export default function AdminPage() {
   const [showClientGalleryForm, setShowClientGalleryForm] = useState(false);
   const [activeClientGalleryId, setActiveClientGalleryId] = useState("");
   const [clientGallerySearch, setClientGallerySearch] = useState("");
+  const [customerAccountSearch, setCustomerAccountSearch] = useState("");
+  const [customerAccounts, setCustomerAccounts] = useState([]);
+  const [customerAccountLoading, setCustomerAccountLoading] = useState(false);
+  const [customerAccountSearched, setCustomerAccountSearched] = useState(false);
   const [clientGalleryStatusFilter, setClientGalleryStatusFilter] =
     useState("all");
   const [clientGallerySortMode, setClientGallerySortMode] = useState("newest");
@@ -1253,6 +1257,85 @@ export default function AdminPage() {
     setClientGalleryForm(DEFAULT_CLIENT_GALLERY_FORM);
     setShowClientGalleryForm(false);
     showMessage("Kundengalerie wurde erstellt.", "success");
+  };
+
+  const searchCustomerAccounts = async (event) => {
+    event.preventDefault();
+
+    const query = customerAccountSearch.trim().toLowerCase();
+
+    if (!query) {
+      setCustomerAccounts([]);
+      setCustomerAccountSearched(false);
+      showMessage("Bitte eine E-Mail-Adresse für die Kundensuche eingeben.", "error");
+      return;
+    }
+
+    setCustomerAccountLoading(true);
+    setCustomerAccountSearched(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/admin/customer-accounts?email=${encodeURIComponent(query)}`,
+        { cache: "no-store" }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        showMessage(
+          data.error || "Kundenkonto konnte nicht gesucht werden.",
+          "error"
+        );
+        setCustomerAccounts([]);
+        return;
+      }
+
+      const accounts = data.accounts || [];
+      setCustomerAccounts(accounts);
+      showMessage(
+        accounts.length === 1
+          ? "1 Kundenkonto gefunden."
+          : `${accounts.length} Kundenkonten gefunden.`,
+        "success"
+      );
+    } catch (error) {
+      showMessage(
+        error.message || "Kundenkonto konnte nicht gesucht werden.",
+        "error"
+      );
+      setCustomerAccounts([]);
+    } finally {
+      setCustomerAccountLoading(false);
+    }
+  };
+
+  const focusClientAccountEmail = (account) => {
+    setClientGallerySearch(account.email);
+    setClientGalleryStatusFilter("all");
+
+    const matchingGallery = clientGalleries.find(
+      (gallery) =>
+        String(gallery.client_email || "").trim().toLowerCase() === account.email
+    );
+
+    if (matchingGallery) {
+      setActiveClientGalleryId(matchingGallery.id);
+      showMessage("Passende Galerie wurde geöffnet.", "success");
+      return;
+    }
+
+    showMessage("Keine Galerie mit dieser E-Mail gefunden.", "info");
+  };
+
+  const prepareGalleryForAccount = (account) => {
+    setClientGalleryForm((current) => ({
+      ...current,
+      client_name: current.client_name || account.name || "",
+      client_email: account.email,
+    }));
+    setShowClientGalleryForm(true);
+    showMessage("E-Mail wurde ins Galerie-Formular übernommen.", "success");
   };
 
   const updateClientGallery = async (gallery, updates, successText) => {
@@ -2965,19 +3048,19 @@ export default function AdminPage() {
 
             {activeTab === "clients" && (
               <div className="mt-8">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
-                      Kunden
-                    </p>
-                    <h2 className="mt-3 text-3xl font-black">
-                      Private Galerien
-                    </h2>
-                    <p className="mt-3 max-w-2xl text-neutral-300">
-                      Erstelle für Kunden einen Code, lade Bilder nur in diese
-                      Galerie und prüfe später die markierten Favoriten.
-                    </p>
-                  </div>
+	                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+	                  <div>
+	                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+	                      Kunden
+	                    </p>
+	                    <h2 className="mt-3 text-3xl font-black">
+	                      Kunden & Galerien
+	                    </h2>
+	                    <p className="mt-3 max-w-2xl text-neutral-300">
+	                      Suche Kundenkonten per E-Mail, öffne passende Galerien
+	                      und verwalte Codes, Uploads und Favoriten an einem Ort.
+	                    </p>
+	                  </div>
 
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -3007,10 +3090,131 @@ export default function AdminPage() {
                       <RefreshCw className="h-4 w-4" />
                       Neu laden
                     </button>
-                  </div>
-                </div>
+	                  </div>
+	                </div>
 
-                {showClientGalleryForm && (
+	                <section className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+	                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+	                    <div className="min-w-0">
+	                      <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+	                        Kundenkonto suchen
+	                      </p>
+	                      <h3 className="mt-2 text-xl font-black">
+	                        Per E-Mail finden
+	                      </h3>
+	                      <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
+	                        Findet echte registrierte Kundenkonten aus Supabase.
+	                        Danach kannst du direkt nach der passenden Galerie
+	                        filtern oder eine neue Galerie mit dieser E-Mail
+	                        vorbereiten.
+	                      </p>
+	                    </div>
+
+	                    <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-bold text-neutral-300">
+	                      <Users className="h-3.5 w-3.5" />
+	                      Konto-Datenbank
+	                    </span>
+	                  </div>
+
+	                  <form
+	                    onSubmit={searchCustomerAccounts}
+	                    className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]"
+	                  >
+	                    <label className="relative block min-w-0">
+	                      <span className="sr-only">Kundenkonto per E-Mail suchen</span>
+	                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+	                      <input
+	                        type="email"
+	                        value={customerAccountSearch}
+	                        onChange={(event) =>
+	                          setCustomerAccountSearch(event.target.value)
+	                        }
+	                        placeholder="kunde@email.de"
+	                        className="w-full rounded-2xl border border-white/10 bg-black/25 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-yellow-400/70"
+	                      />
+	                    </label>
+
+	                    <button
+	                      type="submit"
+	                      disabled={customerAccountLoading}
+	                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 lg:w-fit"
+	                    >
+	                      <Search className="h-4 w-4" />
+	                      {customerAccountLoading ? "Suche..." : "Konto suchen"}
+	                    </button>
+	                  </form>
+
+	                  {customerAccountSearched && customerAccounts.length === 0 && (
+	                    <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-neutral-400">
+	                      Kein Kundenkonto mit dieser E-Mail gefunden.
+	                    </div>
+	                  )}
+
+	                  {customerAccounts.length > 0 && (
+	                    <div className="mt-4 grid gap-3">
+	                      {customerAccounts.map((account) => (
+	                        <article
+	                          key={account.id}
+	                          className="rounded-2xl border border-white/10 bg-black/20 p-4"
+	                        >
+	                          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+	                            <div className="min-w-0">
+	                              <p className="break-all font-black text-white">
+	                                {account.email}
+	                              </p>
+	                              <p className="mt-1 text-sm text-neutral-400">
+	                                {account.name || "Kein Benutzername hinterlegt"}
+	                              </p>
+	                              <div className="mt-3 flex flex-wrap gap-2 text-xs text-neutral-400">
+	                                <span className="rounded-full bg-white/10 px-3 py-1">
+	                                  Erstellt: {formatDate(account.created_at)}
+	                                </span>
+	                                <span className="rounded-full bg-white/10 px-3 py-1">
+	                                  Letzter Login:{" "}
+	                                  {account.last_sign_in_at
+	                                    ? formatDate(account.last_sign_in_at)
+	                                    : "Noch nie"}
+	                                </span>
+	                                <span
+	                                  className={`rounded-full px-3 py-1 font-bold ${
+	                                    account.email_confirmed_at
+	                                      ? "bg-emerald-400/15 text-emerald-100"
+	                                      : "bg-yellow-400/15 text-yellow-100"
+	                                  }`}
+	                                >
+	                                  {account.email_confirmed_at
+	                                    ? "E-Mail bestätigt"
+	                                    : "E-Mail offen"}
+	                                </span>
+	                              </div>
+	                            </div>
+
+	                            <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+	                              <button
+	                                type="button"
+	                                onClick={() => focusClientAccountEmail(account)}
+	                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+	                              >
+	                                <Search className="h-4 w-4" />
+	                                Galerie suchen
+	                              </button>
+	                              <button
+	                                type="button"
+	                                onClick={() => prepareGalleryForAccount(account)}
+	                                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+	                              >
+	                                <Plus className="h-4 w-4" />
+	                                Galerie vorbereiten
+	                              </button>
+	                            </div>
+	                          </div>
+	                        </article>
+	                      ))}
+	                    </div>
+	                  )}
+	                </section>
+
+	                {showClientGalleryForm && (
                 <form
                   onSubmit={createClientGallery}
                   className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
