@@ -1308,6 +1308,14 @@ export default function FeliixWxfPhotography() {
             </div>
 
             <div className="mt-10 space-y-8 text-neutral-300 leading-8">
+              <p className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-neutral-400">
+                Stand: Juni 2026. Diese Hinweise fassen zusammen, welche Daten
+                auf dieser Website verarbeitet werden. Sie ersetzen keine
+                individuelle Rechtsberatung, sollen aber transparent erklären,
+                wie Kontaktformular, Kundenkonto, Bewertungen und
+                Kundengalerien funktionieren.
+              </p>
+
               <div>
                 <h3 className="text-2xl font-bold text-white">
                   Allgemeine Hinweise
@@ -1342,6 +1350,12 @@ export default function FeliixWxfPhotography() {
                   funktionierenden Webangebot oder auf Grundlage Ihrer
                   Einwilligung, sofern eine solche abgefragt wird.
                 </p>
+                <p className="mt-3">
+                  Pflichtangaben werden jeweils nur dort abgefragt, wo sie für
+                  die gewünschte Funktion notwendig sind, zum Beispiel E-Mail
+                  und Passwort für das Kundenkonto oder Kontaktdaten für eine
+                  Anfrage.
+                </p>
               </div>
 
               <div>
@@ -1371,6 +1385,13 @@ export default function FeliixWxfPhotography() {
                   Zweck des Shootings bereitgestellt.
                 </p>
                 <p className="mt-3">
+                  Bei der Kontoerstellung muss bestätigt werden, dass diese
+                  Datenschutzhinweise gelesen wurden. Für Login, Registrierung,
+                  E-Mail-Bestätigung und Passwort-Zurücksetzen können
+                  automatisch notwendige Authentifizierungs-E-Mails versendet
+                  werden.
+                </p>
+                <p className="mt-3">
                   Galerien können über einen Zugangscode, QR-Code oder ein
                   verknüpftes Kundenkonto erreichbar sein. Downloads können je
                   nach Projekt freigeschaltet oder deaktiviert werden.
@@ -1389,6 +1410,11 @@ export default function FeliixWxfPhotography() {
                   Kundengalerien können technisch noch anders gespeichert sein,
                   solange sie nicht neu hochgeladen oder migriert wurden.
                 </p>
+                <p className="mt-3">
+                  Zugangscodes und QR-Codes sollten vertraulich behandelt
+                  werden, da Personen mit gültigem Code die jeweilige Galerie
+                  öffnen können.
+                </p>
               </div>
 
               <div>
@@ -1406,6 +1432,11 @@ export default function FeliixWxfPhotography() {
                   veröffentlichte Bewertung ohne Konto-Verknüpfung bestehen.
                   Wenn eine Bewertung ebenfalls gelöscht werden soll, kann dies
                   jederzeit per E-Mail angefragt werden.
+                </p>
+                <p className="mt-3">
+                  Bei neuen Bewertungen kann eine Benachrichtigung per E-Mail an
+                  den Betreiber ausgelöst werden, damit die Bewertung geprüft
+                  und freigegeben werden kann.
                 </p>
               </div>
 
@@ -1463,6 +1494,11 @@ export default function FeliixWxfPhotography() {
                   Einzelne Dienste können Daten auch außerhalb der EU
                   verarbeiten; dabei sind die jeweiligen Datenschutz- und
                   Sicherheitsangaben des Dienstes zu beachten.
+                </p>
+                <p className="mt-3">
+                  Supabase wird außerdem für die Authentifizierung verwendet.
+                  Dadurch können Registrierungs-, Bestätigungs- und
+                  Passwort-Reset-E-Mails über Supabase ausgelöst werden.
                 </p>
               </div>
 
