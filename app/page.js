@@ -39,12 +39,8 @@ const DEFAULT_SITE_ASSETS = {
   hero_after: { url: "/images/nacher.jpg" },
   hero_before: { url: "/images/vorher.jpg" },
   cover_car: { url: "/images/hyundaititel.jpg" },
-  cover_portrait: {
-    url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80",
-  },
-  cover_nature: {
-    url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-  },
+  cover_portrait: { url: "/images/fw.jpg" },
+  cover_nature: { url: "/images/startpoint.jpg" },
   cover_event: { url: "/images/abititel.jpg" },
 };
 
@@ -106,6 +102,10 @@ function Section({ id, children, className = "" }) {
       {children}
     </motion.section>
   );
+}
+
+function isPlaceholderImageUrl(url = "") {
+  return url.includes("images.unsplash.com");
 }
 
 export default function FeliixWxfPhotography() {
@@ -310,25 +310,31 @@ export default function FeliixWxfPhotography() {
     {
       title: "Car",
       key: "car",
-      image: siteAssets.cover_car?.url || DEFAULT_SITE_ASSETS.cover_car.url,
+      image: isPlaceholderImageUrl(siteAssets.cover_car?.url)
+        ? DEFAULT_SITE_ASSETS.cover_car.url
+        : siteAssets.cover_car?.url || DEFAULT_SITE_ASSETS.cover_car.url,
     },
     {
       title: "Portrait",
       key: "portrait",
-      image:
-        siteAssets.cover_portrait?.url ||
-        DEFAULT_SITE_ASSETS.cover_portrait.url,
+      image: isPlaceholderImageUrl(siteAssets.cover_portrait?.url)
+        ? DEFAULT_SITE_ASSETS.cover_portrait.url
+        : siteAssets.cover_portrait?.url ||
+          DEFAULT_SITE_ASSETS.cover_portrait.url,
     },
     {
       title: "Nature & Street",
       key: "nature",
-      image:
-        siteAssets.cover_nature?.url || DEFAULT_SITE_ASSETS.cover_nature.url,
+      image: isPlaceholderImageUrl(siteAssets.cover_nature?.url)
+        ? DEFAULT_SITE_ASSETS.cover_nature.url
+        : siteAssets.cover_nature?.url || DEFAULT_SITE_ASSETS.cover_nature.url,
     },
     {
       title: "Event",
       key: "event",
-      image: siteAssets.cover_event?.url || DEFAULT_SITE_ASSETS.cover_event.url,
+      image: isPlaceholderImageUrl(siteAssets.cover_event?.url)
+        ? DEFAULT_SITE_ASSETS.cover_event.url
+        : siteAssets.cover_event?.url || DEFAULT_SITE_ASSETS.cover_event.url,
     },
   ];
 
@@ -341,41 +347,12 @@ export default function FeliixWxfPhotography() {
       "/images/bw.jpg",
       "/images/audi.jpg",
       "/images/goldcar.jpg",
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1541443131876-44b03de101c5?auto=format&fit=crop&w=1400&q=80",
     ],
-    portrait: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=1400&q=80",
-    ],
-    nature: [
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1482192505345-5655af888cc4?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1473773508845-188df298d2d1?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1400&q=80",
-    ],
+    portrait: ["/images/fw.jpg", "/images/ju.jpg"],
+    nature: ["/images/ski.jpg", "/images/startpoint.jpg", "/images/bw.jpg"],
     event: [
+      "/images/abititel.jpg",
       "/images/zeugnis.jpg",
-      "/images/ski.jpg",
-      "/images/startpoint.jpg",
-      "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=1400&q=80",
-      "https://images.unsplash.com/photo-1522158637959-30385a09e0da?auto=format&fit=crop&w=1400&q=80",
     ],
   };
 

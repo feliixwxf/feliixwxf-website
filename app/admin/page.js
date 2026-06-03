@@ -484,6 +484,7 @@ export default function AdminPage() {
   const [busyClientGalleryId, setBusyClientGalleryId] = useState(null);
   const [busyClientImageId, setBusyClientImageId] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [imagePreviewSize, setImagePreviewSize] = useState(null);
   const [clientGalleryPreview, setClientGalleryPreview] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
@@ -1121,11 +1122,22 @@ export default function AdminPage() {
   useEffect(() => {
     if (!imageFile) {
       setImagePreview("");
+      setImagePreviewSize(null);
       return;
     }
 
     const previewUrl = URL.createObjectURL(imageFile);
     setImagePreview(previewUrl);
+    setImagePreviewSize(null);
+
+    const previewImage = new Image();
+    previewImage.onload = () => {
+      setImagePreviewSize({
+        width: previewImage.naturalWidth,
+        height: previewImage.naturalHeight,
+      });
+    };
+    previewImage.src = previewUrl;
 
     return () => URL.revokeObjectURL(previewUrl);
   }, [imageFile]);
@@ -1200,6 +1212,7 @@ export default function AdminPage() {
         },
       }));
       setImageFile(null);
+      setImagePreviewSize(null);
       form.reset();
       showMessage(
         "Bild wurde hochgeladen und ist jetzt in der Galerie.",
@@ -2705,25 +2718,62 @@ export default function AdminPage() {
                   </button>
 
                   {imagePreview && (
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-3 md:col-span-3">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <img
-                          src={imagePreview}
-                          alt="Vorschau"
-                          className="h-28 w-full rounded-xl object-cover sm:w-40"
-                        />
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4 md:col-span-3">
+                      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_230px] lg:items-start">
                         <div>
+                          <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                            Portfolio-Zuschnitt
+                          </p>
+                          <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]">
+                            <img
+                              src={imagePreview}
+                              alt="Vorschau im Portfolio-Zuschnitt"
+                              className="aspect-[3/4] w-full object-cover"
+                            />
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-neutral-500">
+                            So wird das Bild in der Galerie-Kachel angezeigt.
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                            Komplettes Bild
+                          </p>
+                          <div className="mt-3 flex aspect-[3/4] items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]">
+                            <img
+                              src={imagePreview}
+                              alt="Vorschau des kompletten Bildes"
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                          <p className="mt-2 text-xs leading-5 text-neutral-500">
+                            Hier siehst du, wie viel Rand beim Zuschnitt bleibt.
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
                           <p className="text-sm font-bold text-white">
                             Ausgewähltes Bild
                           </p>
-                          <p className="mt-1 break-all text-sm text-neutral-300">
+                          <p className="mt-2 break-all text-sm text-neutral-300">
                             {imageFile?.name}
                           </p>
-                          <p className="mt-1 text-xs text-neutral-500">
-                            {imageFile
-                              ? `${(imageFile.size / 1024 / 1024).toFixed(2)} MB`
-                              : ""}
-                          </p>
+                          <div className="mt-4 space-y-2 text-xs leading-5 text-neutral-400">
+                            <p>
+                              Dateigröße:{" "}
+                              {imageFile
+                                ? `${(imageFile.size / 1024 / 1024).toFixed(2)} MB`
+                                : "-"}
+                            </p>
+                            <p>
+                              Pixel:{" "}
+                              {imagePreviewSize
+                                ? `${imagePreviewSize.width} x ${imagePreviewSize.height}px`
+                                : "wird gelesen..."}
+                            </p>
+                            <p>Empfohlen: Hochformat 3:4 oder genug Rand.</p>
+                          </div>
                         </div>
                       </div>
                     </div>
