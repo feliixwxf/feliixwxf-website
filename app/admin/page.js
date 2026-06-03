@@ -461,8 +461,10 @@ export default function AdminPage() {
   const [publicOrigin, setPublicOrigin] = useState("");
   const [activeClientGalleryQrUrl, setActiveClientGalleryQrUrl] = useState("");
   const [clientGalleryFile, setClientGalleryFile] = useState(null);
+  const [clientGalleryFiles, setClientGalleryFiles] = useState([]);
   const [imageCategory, setImageCategory] = useState("car");
   const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
   const [imageDrafts, setImageDrafts] = useState({});
   const [imageSearch, setImageSearch] = useState("");
   const [imageCategoryFilter, setImageCategoryFilter] = useState("all");
@@ -1171,8 +1173,10 @@ export default function AdminPage() {
 
     if (imageUploading) return;
 
-    if (!imageFile) {
-      showMessage("Bitte zuerst ein Bild auswählen.", "error");
+    const filesToUpload = imageFiles.length ? imageFiles : imageFile ? [imageFile] : [];
+
+    if (!filesToUpload.length) {
+      showMessage("Bitte zuerst mindestens ein Bild auswählen.", "error");
       return;
     }
 
@@ -1184,38 +1188,54 @@ export default function AdminPage() {
     setMessage("");
 
     try {
-      const formData = new FormData();
-      formData.append("category", imageCategory);
-      formData.append("file", imageFile);
+      const uploadedImages = [];
 
-      const response = await fetch("/api/admin/images", {
-        method: "POST",
-        body: formData,
-        signal: controller.signal,
-      });
-      const data = await response.json().catch(() => ({}));
+      for (const file of filesToUpload) {
+        const formData = new FormData();
+        formData.append("category", imageCategory);
+        formData.append("file", file);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Bild konnte nicht hochgeladen werden.");
+        const response = await fetch("/api/admin/images", {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || `${file.name} konnte nicht hochgeladen werden.`
+          );
+        }
+
+        if (!data.image) {
+          throw new Error("Upload war erfolgreich, aber die Bilddaten fehlen.");
+        }
+
+        uploadedImages.push(data.image);
       }
 
-      if (!data.image) {
-        throw new Error("Upload war erfolgreich, aber die Bilddaten fehlen.");
-      }
-
-      setImages((current) => [data.image, ...current]);
+      setImages((current) => [...uploadedImages, ...current]);
       setImageDrafts((current) => ({
         ...current,
-        [data.image.id]: {
-          title: data.image.title || "",
-          note: data.image.note || "",
-        },
+        ...Object.fromEntries(
+          uploadedImages.map((image) => [
+            image.id,
+            {
+              title: image.title || "",
+              note: image.note || "",
+            },
+          ])
+        ),
       }));
       setImageFile(null);
+      setImageFiles([]);
       setImagePreviewSize(null);
       form.reset();
       showMessage(
-        "Bild wurde hochgeladen und ist jetzt in der Galerie.",
+        uploadedImages.length === 1
+          ? "Bild wurde hochgeladen und ist jetzt in der Galerie."
+          : `${uploadedImages.length} Bilder wurden hochgeladen und sind jetzt in der Galerie.`,
         "success"
       );
     } catch (error) {
@@ -1571,8 +1591,14 @@ export default function AdminPage() {
       return;
     }
 
-    if (!clientGalleryFile) {
-      showMessage("Bitte zuerst ein Kundenbild auswählen.", "error");
+    const filesToUpload = clientGalleryFiles.length
+      ? clientGalleryFiles
+      : clientGalleryFile
+        ? [clientGalleryFile]
+        : [];
+
+    if (!filesToUpload.length) {
+      showMessage("Bitte zuerst mindestens ein Kundenbild auswählen.", "error");
       return;
     }
 
@@ -1584,30 +1610,36 @@ export default function AdminPage() {
     setMessage("");
 
     try {
-      const formData = new FormData();
-      formData.append("galleryId", activeClientGallery.id);
-      formData.append("file", clientGalleryFile);
+      const uploadedImages = [];
 
-      const response = await fetch("/api/admin/client-gallery-images", {
-        method: "POST",
-        body: formData,
-        signal: controller.signal,
-      });
-      const data = await response.json().catch(() => ({}));
+      for (const file of filesToUpload) {
+        const formData = new FormData();
+        formData.append("galleryId", activeClientGallery.id);
+        formData.append("file", file);
 
-      if (!response.ok) {
-        const details = data.details ? ` Details: ${data.details}` : "";
+        const response = await fetch("/api/admin/client-gallery-images", {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        });
+        const data = await response.json().catch(() => ({}));
 
-        throw new Error(
-          `${data.error || "Kundenbild konnte nicht hochgeladen werden."}${details}`
-        );
+        if (!response.ok) {
+          const details = data.details ? ` Details: ${data.details}` : "";
+
+          throw new Error(
+            `${data.error || `${file.name} konnte nicht hochgeladen werden.`}${details}`
+          );
+        }
+
+        uploadedImages.push(data.image);
       }
 
       setClientGalleries((current) =>
         current.map((gallery) => {
           if (gallery.id !== activeClientGallery.id) return gallery;
 
-          const nextImages = [data.image, ...(gallery.images || [])];
+          const nextImages = [...uploadedImages, ...(gallery.images || [])];
 
           return {
             ...gallery,
@@ -1617,8 +1649,14 @@ export default function AdminPage() {
         })
       );
       setClientGalleryFile(null);
+      setClientGalleryFiles([]);
       form.reset();
-      showMessage("Kundenbild wurde hochgeladen.", "success");
+      showMessage(
+        uploadedImages.length === 1
+          ? "Kundenbild wurde hochgeladen."
+          : `${uploadedImages.length} Kundenbilder wurden hochgeladen.`,
+        "success"
+      );
     } catch (error) {
       showMessage(
         error?.name === "AbortError"
@@ -2700,8 +2738,13 @@ export default function AdminPage() {
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
                       onChange={(event) => {
-                        setImageFile(event.target.files?.[0] || null);
+                        const selectedFiles = Array.from(
+                          event.target.files || []
+                        );
+                        setImageFiles(selectedFiles);
+                        setImageFile(selectedFiles[0] || null);
                         setMessage("");
                       }}
                       className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 file:mr-4 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
@@ -2759,6 +2802,12 @@ export default function AdminPage() {
                           <p className="mt-2 break-all text-sm text-neutral-300">
                             {imageFile?.name}
                           </p>
+                          {imageFiles.length > 1 && (
+                            <p className="mt-2 rounded-full bg-yellow-400/15 px-3 py-1 text-xs font-bold text-yellow-100">
+                              {imageFiles.length} Bilder ausgewählt. Vorschau
+                              zeigt das erste Bild.
+                            </p>
+                          )}
                           <div className="mt-4 space-y-2 text-xs leading-5 text-neutral-400">
                             <p>
                               Dateigröße:{" "}
@@ -4231,10 +4280,13 @@ export default function AdminPage() {
                             <input
                               type="file"
                               accept="image/*"
+                              multiple
                               onChange={(event) => {
-                                setClientGalleryFile(
-                                  event.target.files?.[0] || null
+                                const selectedFiles = Array.from(
+                                  event.target.files || []
                                 );
+                                setClientGalleryFiles(selectedFiles);
+                                setClientGalleryFile(selectedFiles[0] || null);
                                 setMessage("");
                               }}
                               className="mt-3 w-full min-w-0 rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-neutral-950 file:mr-3 file:max-w-full file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
@@ -4266,6 +4318,12 @@ export default function AdminPage() {
                                   <p className="mt-1 break-all text-sm text-neutral-300">
                                     {clientGalleryFile?.name}
                                   </p>
+                                  {clientGalleryFiles.length > 1 && (
+                                    <p className="mt-2 rounded-full bg-yellow-400/15 px-3 py-1 text-xs font-bold text-yellow-100">
+                                      {clientGalleryFiles.length} Bilder
+                                      ausgewählt. Vorschau zeigt das erste Bild.
+                                    </p>
+                                  )}
                                   <p className="mt-1 text-xs text-neutral-500">
                                     {clientGalleryFile
                                       ? `${(

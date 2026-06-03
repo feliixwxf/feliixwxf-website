@@ -108,6 +108,16 @@ function isPlaceholderImageUrl(url = "") {
   return url.includes("images.unsplash.com");
 }
 
+function uniqueImageList(images) {
+  const seen = new Set();
+
+  return images.filter((image) => {
+    if (!image || isPlaceholderImageUrl(image) || seen.has(image)) return false;
+    seen.add(image);
+    return true;
+  });
+}
+
 export default function FeliixWxfPhotography() {
   const sliderRef = useRef(null);
   const beforeRef = useRef(null);
@@ -339,7 +349,7 @@ export default function FeliixWxfPhotography() {
   ];
 
   const galleryImages = {
-    car: [
+    car: uniqueImageList([
       "/images/fw.jpg",
       "/images/ju.jpg",
       "/images/bus.jpg",
@@ -347,10 +357,16 @@ export default function FeliixWxfPhotography() {
       "/images/bw.jpg",
       "/images/audi.jpg",
       "/images/goldcar.jpg",
-    ],
+      siteAssets.cover_portrait?.url || DEFAULT_SITE_ASSETS.cover_portrait.url,
+    ]),
     portrait: [],
     nature: [],
-    event: ["/images/zeugnis.jpg", "/images/ski.jpg", "/images/startpoint.jpg"],
+    event: uniqueImageList([
+      "/images/zeugnis.jpg",
+      "/images/ski.jpg",
+      "/images/startpoint.jpg",
+      siteAssets.cover_nature?.url || DEFAULT_SITE_ASSETS.cover_nature.url,
+    ]),
   };
 
   const uploadedImagesByCategory = uploadedImages.reduce((groups, image) => {
