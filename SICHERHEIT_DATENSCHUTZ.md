@@ -22,7 +22,20 @@ Gespeichert werden koennen:
 - Download-Freigaben
 - Bewertungen
 
-Wenn ein Kunde Loeschung verlangt, muessen Konto, Profilbild, Bewertungen und Galerie-Verknuepfung geprueft und geloescht oder anonymisiert werden.
+Wenn ein Kunde Loeschung verlangt, muessen Konto, Profilbild, Bewertungen und Galerie-Verknuepfung geprueft und geloescht oder anonymisiert werden. Die praktische Arbeitsregel steht in `AUFBEWAHRUNG_LOESCHKONZEPT.md`.
+
+## Aufbewahrung und Loeschung
+
+Das Projekt hat jetzt ein eigenes Aufbewahrungs- und Loeschkonzept:
+
+- Datei: `AUFBEWAHRUNG_LOESCHKONZEPT.md`
+- Kundengalerien nach Abschluss auf `Abgeschlossen` setzen.
+- Ablaufdatum oder interne Notiz setzen, wann die Galerie erneut geprueft wird.
+- Downloads nur aktiv lassen, wenn der Kunde sie wirklich braucht.
+- Abgeschlossene Kundengalerien nach 3 bis 12 Monaten pruefen, je nach Absprache.
+- Konto-Loeschung entfernt Kundenkonto, Sessions, Profilbild, Favoriten und Galerie-Verknuepfungen.
+- Bewertungen bleiben nach Konto-Loeschung bestehen, aber ohne Konto-Verknuepfung.
+- Code-Backups und Uebergabe-ZIPs duerfen keine Secrets enthalten und sollten nicht in GitHub hochgeladen werden.
 
 ## Bilder und Galerien
 
@@ -45,6 +58,6 @@ Noch manuell/offiziell pruefen:
 - Impressum mit vollstaendiger ladungsfaehiger Anschrift und aktuellen Anbieterangaben nach § 5 DDG.
 - Datenschutzerklaerung rechtlich pruefen lassen, bevor echte Kundendaten in groesserem Umfang verarbeitet werden.
 - AVV/Auftragsverarbeitungsvertraege fuer Supabase, Vercel und Formspree pruefen/abschliessen.
-- Loesch- und Aufbewahrungsfristen fuer Shootings, Kundengalerien, Rechnungen und Bewertungen schriftlich festlegen.
+- Loesch- und Aufbewahrungsfristen aus `AUFBEWAHRUNG_LOESCHKONZEPT.md` regelmaessig pruefen und bei Bedarf an echte Kundenabsprachen anpassen.
 - Supabase Auth E-Mail-Texte, Absender und Links passend zur Domain konfigurieren.
 - Vorlagen fuer Supabase Auth liegen in `SUPABASE_EMAIL_TEMPLATES.md`.

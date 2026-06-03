@@ -64,6 +64,9 @@ Supabase-Hilfe:
 - `app/api/_lib/supabase.js`
 - `app/api/_lib/storage.js`
 
+Aufbewahrung und Löschung:
+- `AUFBEWAHRUNG_LOESCHKONZEPT.md`
+
 Admin-Auth:
 - `app/api/admin/_lib/auth.js`
 
@@ -310,16 +313,19 @@ Aktueller Stand:
 - Kunden werden darauf hingewiesen, dass Bewertungs-Löschung per E-Mail angefragt werden kann.
 - Neue Kundengalerie-Bilder werden privat gespeichert und über signierte Links angezeigt.
 - Direkter öffentlicher Zugriff auf Kundengalerie-Tabellen wurde über RLS/Policies gehärtet.
+- Aufbewahrungs- und Löschregeln sind in `AUFBEWAHRUNG_LOESCHKONZEPT.md` dokumentiert.
+- Es gibt bewusst noch keine automatische Galerie-Löschung. Löschungen sollen manuell im Admin geprüft werden.
 
 Noch sinnvoll zu prüfen:
 - Impressum und Datenschutzerklärung rechtlich final prüfen lassen.
 - Supabase-E-Mail-Texte anpassen.
-- Backup- und Löschfristen schriftlich festlegen.
+- Backup- und Löschfristen regelmäßig anhand von `AUFBEWAHRUNG_LOESCHKONZEPT.md` prüfen.
 - Alte Kundengalerie-Bilder aus dem früheren öffentlichen Bucket migrieren oder neu hochladen.
 
 ## Letzter technischer Stand
 
 Letzte größere Änderungen:
+- Aufbewahrungs- und Löschkonzept für Kundengalerien, Kundenkonten, Bewertungen, Kontaktanfragen und Backups ergänzt.
 - Admin-Kundenbereich wurde optisch vereinfacht und weniger gequetscht.
 - Kundengalerie-Übersicht zeigt wichtige Werte kompakt statt als große Kartenwand.
 - Status, Downloads, Abschluss-Checkliste, interne Notiz und Löschbereich sind im Admin untergeordnet.
