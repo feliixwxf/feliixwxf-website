@@ -348,12 +348,9 @@ export default function FeliixWxfPhotography() {
       "/images/audi.jpg",
       "/images/goldcar.jpg",
     ],
-    portrait: ["/images/fw.jpg", "/images/ju.jpg"],
-    nature: ["/images/ski.jpg", "/images/startpoint.jpg", "/images/bw.jpg"],
-    event: [
-      "/images/abititel.jpg",
-      "/images/zeugnis.jpg",
-    ],
+    portrait: [],
+    nature: [],
+    event: ["/images/zeugnis.jpg", "/images/ski.jpg", "/images/startpoint.jpg"],
   };
 
   const uploadedImagesByCategory = uploadedImages.reduce((groups, image) => {
