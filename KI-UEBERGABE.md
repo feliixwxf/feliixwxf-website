@@ -1,6 +1,6 @@
 # feliix.wxf Website - KI-Übergabe
 
-Stand: 31.05.2026
+Stand: 03.06.2026
 
 Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt ohne langes Einlesen weitergeführt werden kann.
 
@@ -254,6 +254,12 @@ Sicherheitsdetails:
 - Admin-Login nutzt HTTP-only Session-Cookie
 - Admin-Löschaktionen sind zusätzlich abgesichert
 - gefährliche Löschaktionen verlangen Bestätigung
+- Kundengalerie-Detailbereich wurde am 03.06.2026 entzerrt:
+  - aktive Galerie oben nur noch als Kurzüberblick
+  - Status, Freigaben und Checkliste in einem untergeordneten Bereich
+  - interne Notiz eingeklappt
+  - Galerie-Löschung in eigenem Sicherheitsbereich
+- Kundenkonten können im Adminbereich per E-Mail gesucht werden.
 
 ## Portfolio
 
@@ -314,6 +320,11 @@ Noch sinnvoll zu prüfen:
 ## Letzter technischer Stand
 
 Letzte größere Änderungen:
+- Admin-Kundenbereich wurde optisch vereinfacht und weniger gequetscht.
+- Kundengalerie-Übersicht zeigt wichtige Werte kompakt statt als große Kartenwand.
+- Status, Downloads, Abschluss-Checkliste, interne Notiz und Löschbereich sind im Admin untergeordnet.
+- Kundenkonto-Suche per E-Mail wurde im Admin ergänzt.
+- Löschdialoge für Bewertungen, Kundengalerien und Kundenbilder erklären genauer, welche Daten betroffen sind.
 - Supabase-Auth-Mailvorlagen fuer Kundenkonto-Mails wurden in `SUPABASE_EMAIL_TEMPLATES.md` vorbereitet.
 - Kundengalerie-Uploads wurden auf den privaten Supabase-Bucket `client-galleries` umgestellt.
 - Kundengalerie-Bilder werden in Adminbereich, Kundenkonto und Kundengalerie über signierte URLs angezeigt.
@@ -335,7 +346,14 @@ git push
 ```
 
 Letzter bekannter Build:
-- `npm run build` erfolgreich am 31.05.2026.
+- `npm run build` erfolgreich am 03.06.2026.
+
+Letzte bekannte Commits:
+- `c4bbee3 Simplify admin client workspace`
+- `bebfec4 Simplify admin customer account search`
+- `5e6a6fa Clarify privacy policy for customer accounts`
+- `3ee13de Redesign customer account dashboard`
+- `5a3e7fa Redesign customer account mobile view`
 
 ## Wichtige Hinweise für eine nächste KI
 
