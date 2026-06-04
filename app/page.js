@@ -260,6 +260,8 @@ export default function FeliixWxfPhotography() {
     "Konto";
 
   const navItems = ["Startseite", "Info", "Portfolio", "Bewertung", "Kontakt"];
+  const contactEmailHref = `mailto:${siteSettings.contact_email}`;
+  const contactPhoneHref = `tel:${siteSettings.contact_phone.replace(/[^\d+]/g, "")}`;
 
   const pageStyle = dark
     ? "bg-[linear-gradient(135deg,#080808,#151515,#242427)] text-white"
@@ -503,8 +505,7 @@ export default function FeliixWxfPhotography() {
           <div className={`rounded-[2rem] border p-8 ${glass}`}>
             <h1 className="text-5xl font-black">{current.title}</h1>
             <p className={`mt-4 max-w-2xl ${muted}`}>
-              Eine kuratierte Galerie meiner Arbeiten. Später ersetzen wir diese
-              Platzhalter durch deine eigenen Bilder.
+              Klare Motive, starke Details und echte Momente im Fokus.
             </p>
           </div>
 
@@ -994,7 +995,10 @@ export default function FeliixWxfPhotography() {
               </p>
 
               <div className={`mt-8 space-y-5 ${muted}`}>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4">
+                <a
+                  href={contactEmailHref}
+                  className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-white/[0.09]"
+                >
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
                     <Mail className="h-5 w-5" />
                   </div>
@@ -1004,11 +1008,16 @@ export default function FeliixWxfPhotography() {
                       E-Mail
                     </span>
 
-                    <span className="font-medium">{siteSettings.contact_email}</span>
+                    <span className="break-all font-medium transition group-hover:text-yellow-200">
+                      {siteSettings.contact_email}
+                    </span>
                   </div>
-                </div>
+                </a>
 
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4">
+                <a
+                  href={contactPhoneHref}
+                  className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-white/[0.09]"
+                >
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
                     <Phone className="h-5 w-5" />
                   </div>
@@ -1018,9 +1027,11 @@ export default function FeliixWxfPhotography() {
                       Telefon
                     </span>
 
-                    <span className="font-medium">{siteSettings.contact_phone}</span>
+                    <span className="font-medium transition group-hover:text-yellow-200">
+                      {siteSettings.contact_phone}
+                    </span>
                   </div>
-                </div>
+                </a>
 
                 <a
                   href={siteSettings.instagram_url}
