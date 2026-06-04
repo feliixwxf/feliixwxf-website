@@ -26,6 +26,11 @@ function getDisplayName(user) {
   );
 }
 
+function getPhone(user) {
+  const metadata = user.user_metadata || {};
+  return String(metadata.phone || "").trim();
+}
+
 export async function GET(request) {
   if (!(await isAdminAuthenticated())) return unauthorized();
 
@@ -65,6 +70,7 @@ export async function GET(request) {
         id: user.id,
         email: normalize(user.email),
         name: getDisplayName(user),
+        phone: getPhone(user),
         created_at: user.created_at || "",
         last_sign_in_at: user.last_sign_in_at || "",
         email_confirmed_at: user.email_confirmed_at || "",

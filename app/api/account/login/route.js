@@ -48,6 +48,7 @@ export async function POST(request) {
       id: data.user?.id,
       email: data.user?.email || email,
       name: data.user?.user_metadata?.name || "",
+      phone: data.user?.user_metadata?.phone || "",
       avatar_url: data.user?.user_metadata?.avatar_url || "",
     },
   });

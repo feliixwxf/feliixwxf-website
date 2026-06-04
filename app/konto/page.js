@@ -73,7 +73,9 @@ export default function AccountPage() {
   });
   const [newPassword, setNewPassword] = useState("");
   const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [theme, setTheme] = useState("dark");
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -98,6 +100,26 @@ export default function AccountPage() {
       : messageType === "error"
         ? "border-red-400/30 bg-red-500/10 text-red-100"
         : "border-yellow-400/30 bg-yellow-400/10 text-yellow-100";
+
+  const dark = theme === "dark";
+  const pageStyle = dark
+    ? "bg-[linear-gradient(135deg,#070707,#161616,#222)] text-white"
+    : "bg-[linear-gradient(135deg,#f4f4f5,#e7e5e4,#fafafa)] text-neutral-950";
+  const panelStyle = dark
+    ? "border-white/10 bg-white/[0.04] shadow-2xl"
+    : "border-black/10 bg-white/80 shadow-xl";
+  const softPanelStyle = dark
+    ? "border-white/10 bg-white/[0.06]"
+    : "border-black/10 bg-white/70";
+  const subtlePanelStyle = dark
+    ? "border-white/10 bg-black/25"
+    : "border-black/10 bg-neutral-100/80";
+  const muted = dark ? "text-neutral-400" : "text-neutral-600";
+  const softMuted = dark ? "text-neutral-300" : "text-neutral-700";
+  const titleText = dark ? "text-white" : "text-neutral-950";
+  const backButtonStyle = dark
+    ? "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
+    : "border-black/10 bg-white/80 text-neutral-800 shadow-sm hover:bg-white";
 
   const updateForm = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -175,12 +197,14 @@ export default function AccountPage() {
     if (data.authenticated) {
       setUser(data.user);
       setProfileName(data.user?.name || "");
+      setProfilePhone(data.user?.phone || "");
       setAvatarPreview(data.user?.avatar_url || "");
       await linkSavedGalleryCode();
       await loadGalleries();
     } else {
       setUser(null);
       setProfileName("");
+      setProfilePhone("");
       setAvatarPreview("");
       setGalleries([]);
     }
@@ -189,6 +213,11 @@ export default function AccountPage() {
   };
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem("feliix-theme");
+    if (savedTheme === "light" || savedTheme === "dark") {
+      setTheme(savedTheme);
+    }
+
     const params = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const confirmed = params.get("verified") === "1";
@@ -262,6 +291,7 @@ export default function AccountPage() {
 
     setUser(data.user);
     setProfileName(data.user?.name || form.name || "");
+    setProfilePhone(data.user?.phone || "");
     setAvatarPreview(data.user?.avatar_url || "");
     const linkedGallery = await linkSavedGalleryCode();
     if (!linkedGallery) {
@@ -372,6 +402,7 @@ export default function AccountPage() {
 
     setUser(data.user);
     setProfileName(data.user?.name || "");
+    setProfilePhone(data.user?.phone || "");
     setAvatarPreview(data.user?.avatar_url || "");
     setNewPassword("");
     setResetTokens({ accessToken: "", refreshToken: "" });
@@ -386,6 +417,7 @@ export default function AccountPage() {
     await fetch("/api/account/logout", { method: "POST" });
     setUser(null);
     setProfileName("");
+    setProfilePhone("");
     setAvatarPreview("");
     setGalleries([]);
     showMessage("Du wurdest ausgeloggt.", "success");
@@ -416,6 +448,7 @@ export default function AccountPage() {
     setUser(null);
     setGalleries([]);
     setProfileName("");
+    setProfilePhone("");
     setAvatarPreview("");
     setGalleryCode("");
     setDeleteConfirmText("");
@@ -432,7 +465,7 @@ export default function AccountPage() {
     const response = await fetch("/api/account/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: profileName }),
+      body: JSON.stringify({ name: profileName, phone: profilePhone }),
     });
     const data = await response.json().catch(() => ({}));
 
@@ -444,8 +477,9 @@ export default function AccountPage() {
 
     setUser(data.user);
     setProfileName(data.user?.name || "");
+    setProfilePhone(data.user?.phone || "");
     setAvatarPreview(data.user?.avatar_url || "");
-    showMessage("Benutzername wurde gespeichert.", "success");
+    showMessage("Profil wurde gespeichert.", "success");
     setProfileSaving(false);
   };
 
@@ -588,24 +622,16 @@ export default function AccountPage() {
     ? `Hallo, ${accountDisplayName}.`
     : "Dein Konto.";
   const accountIntro = user
-    ? "Hier findest du deine persönlichen Shooting-Galerien, Favoriten und freigegebenen Downloads gesammelt an einem Ort."
+    ? "Deine Shootings, Bilder und Downloads gesammelt an einem ruhigen Ort."
     : "Melde dich an, um deine freigegebenen Galerien gesammelt an einem Ort zu sehen.";
-  const totalFavoriteCount = galleries.reduce(
-    (sum, gallery) => sum + (gallery.favorite_count || 0),
-    0
-  );
-  const totalImageCount = galleries.reduce(
-    (sum, gallery) => sum + (gallery.image_count || 0),
-    0
-  );
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#070707,#161616,#222)] px-3 py-3 text-white sm:px-5 sm:py-8">
+    <main className={`min-h-screen px-3 py-3 sm:px-5 sm:py-8 ${pageStyle}`}>
       <div className="mx-auto max-w-7xl">
         <div className="flex items-center justify-between gap-3">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15"
+            className={`inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${backButtonStyle}`}
           >
             <ArrowLeft className="h-4 w-4" />
             Zur Website
@@ -613,9 +639,9 @@ export default function AccountPage() {
 
         </div>
 
-        <section className="mt-3 overflow-hidden rounded-[1.15rem] border border-white/10 bg-white/[0.04] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
+        <section className={`mt-3 overflow-hidden rounded-[1.15rem] border backdrop-blur-xl sm:mt-8 sm:rounded-[2rem] ${panelStyle}`}>
           <div className="grid gap-3 p-2 sm:gap-5 sm:p-5">
-            <div className={`relative overflow-hidden rounded-[1rem] border border-white/10 bg-black/30 p-3 sm:rounded-[1.5rem] sm:p-5 ${user ? "hidden" : ""}`}>
+            <div className={`relative overflow-hidden rounded-[1rem] border p-3 sm:rounded-[1.5rem] sm:p-5 ${user ? "hidden" : ""} ${dark ? "border-white/10 bg-black/30" : "border-black/10 bg-white/70"}`}>
               {accountHeroGallery?.cover_url && (
                 <img
                   src={accountHeroGallery.cover_url}
@@ -642,7 +668,7 @@ export default function AccountPage() {
                       Kundenkonto
                     </p>
                     {user && (
-                      <p className="mt-1 truncate text-sm text-neutral-300">
+                      <p className={`mt-1 truncate text-sm ${softMuted}`}>
                         {user.email}
                       </p>
                     )}
@@ -670,7 +696,7 @@ export default function AccountPage() {
                 </div>
               ) : user ? (
                 <div>
-                  <div className="mb-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] p-3 sm:mb-5 sm:p-5">
+                  <div className={`mb-3 overflow-hidden rounded-2xl border p-3 sm:mb-5 sm:p-5 ${softPanelStyle}`}>
                     <div className="flex items-start gap-3 sm:items-center sm:gap-5">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:h-20 sm:w-20">
                         {avatarPreview ? (
@@ -684,52 +710,27 @@ export default function AccountPage() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                        <p className={`text-xs uppercase tracking-[0.2em] ${muted}`}>
                           Kundenkonto
                         </p>
-                        <h1 className="mt-1 text-xl font-black leading-tight sm:text-4xl">
+                        <h1 className={`mt-1 text-xl font-black leading-tight sm:text-4xl ${titleText}`}>
                           {accountGreeting}
                         </h1>
-                        <p className="mt-1 truncate text-xs text-neutral-400 sm:text-sm">
+                        <p className={`mt-1 truncate text-xs sm:text-sm ${muted}`}>
                           {user.email}
                         </p>
-                        <p className="mt-3 hidden max-w-2xl text-sm leading-6 text-neutral-400 sm:block">
+                        <p className={`mt-3 hidden max-w-2xl text-sm leading-6 sm:block ${muted}`}>
                           {accountIntro}
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={logout}
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-neutral-200 transition hover:bg-white/15 sm:h-12 sm:w-12"
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition sm:h-12 sm:w-12 ${backButtonStyle}`}
                         aria-label="Ausloggen"
                       >
                         <LogOut className="h-4 w-4" />
                       </button>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                      <div className="rounded-xl bg-black/25 p-2.5 sm:p-4">
-                        <p className="text-lg font-black sm:text-3xl">{galleries.length}</p>
-                        <p className="mt-0.5 text-[0.68rem] text-neutral-500 sm:text-xs">
-                          Galerien
-                        </p>
-                      </div>
-                      <div className="rounded-xl bg-black/25 p-2.5 sm:p-4">
-                        <p className="text-lg font-black sm:text-3xl">
-                          {completedGalleries.length}
-                        </p>
-                        <p className="mt-0.5 text-[0.68rem] text-neutral-500 sm:text-xs">
-                          fertig
-                        </p>
-                      </div>
-                      <div className="rounded-xl bg-yellow-400/10 p-2.5 text-yellow-100 sm:p-4">
-                        <p className="text-lg font-black sm:text-3xl">{totalFavoriteCount}</p>
-                        <p className="mt-0.5 text-[0.68rem] sm:text-xs">Favoriten</p>
-                      </div>
-                      <div className="hidden rounded-xl bg-black/25 p-4 sm:block">
-                        <p className="text-3xl font-black">{downloadableGalleries.length}</p>
-                        <p className="mt-0.5 text-xs text-neutral-500">Downloads</p>
-                      </div>
                     </div>
 
                     {nextGallery && (
@@ -744,7 +745,7 @@ export default function AccountPage() {
                     )}
                   </div>
 
-                  <div className="sticky top-2 z-20 rounded-2xl border border-white/10 bg-neutral-950/90 p-1.5 backdrop-blur-xl sm:top-4">
+                  <div className={`sticky top-2 z-20 rounded-2xl border p-1.5 backdrop-blur-xl sm:top-4 ${dark ? "border-white/10 bg-neutral-950/90" : "border-black/10 bg-white/90"}`}>
                     <div className="grid grid-cols-2 gap-2">
                       {accountSections.map((section) => {
                         const SectionIcon = section.icon;
@@ -758,12 +759,14 @@ export default function AccountPage() {
                             className={`flex items-center justify-center gap-2 rounded-xl px-2.5 py-3 text-center transition sm:px-4 ${
                               active
                                 ? "bg-white text-neutral-950 shadow-xl"
-                                : "bg-white/[0.06] text-neutral-300"
+                                : dark
+                                  ? "bg-white/[0.06] text-neutral-300"
+                                  : "bg-neutral-100 text-neutral-700"
                             }`}
                           >
                             <span
                               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                                  active ? "bg-neutral-950 text-white" : "bg-white/10"
+                                  active ? "bg-neutral-950 text-white" : dark ? "bg-white/10" : "bg-white"
                               }`}
                             >
                               <SectionIcon className="h-4 w-4" />
@@ -788,7 +791,7 @@ export default function AccountPage() {
 
                   {accountSection === "profile" && (
                     <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4 sm:p-5">
+                      <div className={`rounded-2xl border p-4 sm:p-5 ${softPanelStyle}`}>
                         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
                           <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
                             {avatarPreview ? (
@@ -801,7 +804,7 @@ export default function AccountPage() {
                               <UserRound className="h-8 w-8 text-neutral-400" />
                             )}
                           </div>
-                          <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black transition hover:bg-white/15 sm:w-fit">
+                          <label className={`inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-black transition sm:w-fit ${backButtonStyle}`}>
                             {avatarUploading ? (
                               <RefreshCw className="h-4 w-4 animate-spin" />
                             ) : (
@@ -832,6 +835,24 @@ export default function AccountPage() {
                             className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
                           />
                         </label>
+                        <label className="mt-4 block">
+                          <span className={`text-xs font-bold uppercase tracking-[0.2em] ${muted}`}>
+                            Telefonnummer optional
+                          </span>
+                          <input
+                            type="tel"
+                            value={profilePhone}
+                            onChange={(event) => {
+                              setProfilePhone(event.target.value);
+                              setMessage("");
+                            }}
+                            placeholder="+49 ..."
+                            className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                          />
+                          <p className={`mt-2 text-xs leading-5 ${muted}`}>
+                            Nur für Rückfragen sichtbar, wenn dein Konto im Adminbereich per E-Mail gesucht wird.
+                          </p>
+                        </label>
                         <button
                           type="button"
                           onClick={saveProfile}
@@ -841,17 +862,17 @@ export default function AccountPage() {
                           {profileSaving && (
                             <RefreshCw className="h-4 w-4 animate-spin" />
                           )}
-                          Benutzername speichern
+                          Profil speichern
                         </button>
                       </div>
 
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4 sm:p-5">
+                      <div className={`rounded-2xl border p-4 sm:p-5 ${softPanelStyle}`}>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div>
-                            <h3 className="font-black text-white">
+                            <h3 className={`font-black ${titleText}`}>
                               Passwort zurücksetzen
                             </h3>
-                            <p className="mt-2 text-sm leading-6 text-neutral-400">
+                            <p className={`mt-2 text-sm leading-6 ${muted}`}>
                               Wir senden dir eine E-Mail, mit der du ein neues
                               Passwort festlegen kannst.
                             </p>
@@ -876,11 +897,11 @@ export default function AccountPage() {
 
                   {accountSection === "galleries" && (
                     <div className="mt-4 sm:mt-5">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 sm:p-5">
+                  <div className={`rounded-2xl border p-3 sm:p-5 ${softPanelStyle}`}>
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <h3 className="text-lg font-black sm:text-2xl">Meine Galerien</h3>
-                        <p className="mt-1 text-sm text-neutral-400">
+                        <h3 className={`text-lg font-black sm:text-2xl ${titleText}`}>Meine Galerien</h3>
+                        <p className={`mt-1 text-sm ${muted}`}>
                           {galleries.length} Galerie
                           {galleries.length === 1 ? "" : "n"} gefunden
                         </p>
@@ -888,7 +909,7 @@ export default function AccountPage() {
                       <button
                         type="button"
                         onClick={loadGalleries}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 transition hover:bg-white/15"
+                        className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${backButtonStyle}`}
                         aria-label="Galerien neu laden"
                       >
                         <RefreshCw className="h-4 w-4" />
@@ -896,46 +917,13 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  {galleries.length > 0 && (
-                    <div className="mt-3 hidden grid-cols-2 gap-2 sm:mt-4 sm:grid sm:grid-cols-4">
-                      <div className="rounded-xl border border-white/10 bg-white/[0.06] p-3 sm:rounded-2xl">
-                        <p className="text-xl font-black sm:text-2xl">
-                          {totalImageCount}
-                        </p>
-                        <p className="mt-1 text-xs text-neutral-400">Bilder</p>
-                      </div>
-                      <div className="rounded-xl border border-white/10 bg-white/[0.06] p-3 sm:rounded-2xl">
-                        <p className="text-xl font-black sm:text-2xl">
-                          {completedGalleries.length}
-                        </p>
-                        <p className="mt-1 text-xs text-neutral-400">
-                          Abgeschlossen
-                        </p>
-                      </div>
-                      <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-100 sm:rounded-2xl">
-                        <p className="text-xl font-black sm:text-2xl">
-                          {totalFavoriteCount}
-                        </p>
-                        <p className="mt-1 text-xs">Favoriten</p>
-                      </div>
-                      <div className="rounded-xl border border-white/10 bg-white/[0.06] p-3 sm:rounded-2xl">
-                        <p className="text-xl font-black sm:text-2xl">
-                          {downloadableGalleries.length}
-                        </p>
-                        <p className="mt-1 text-xs text-neutral-400">
-                          Downloads
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
                   <form
                     onSubmit={linkGalleryByCode}
                     className="mt-3 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.08] p-3 sm:mt-5 sm:p-5"
                   >
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
                       <label className="min-w-0 flex-1">
-                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-yellow-100/75">
+                        <span className={`text-xs font-bold uppercase tracking-[0.2em] ${dark ? "text-yellow-100/75" : "text-yellow-800"}`}>
                           Galerie-Code hinzufügen
                         </span>
                         <input
@@ -969,8 +957,8 @@ export default function AccountPage() {
                   </form>
 
                   <div className="mt-4 grid gap-4 sm:mt-5">
-                    {galleries.length === 0 && (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 sm:p-5">
+	                    {galleries.length === 0 && (
+	                      <div className={`rounded-2xl border p-4 sm:p-5 ${softPanelStyle}`}>
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                           <div>
                             <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
@@ -979,7 +967,7 @@ export default function AccountPage() {
                             <h4 className="mt-2 text-xl font-black">
                               Verbinde dein erstes Shooting
                             </h4>
-                            <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-300">
+	                            <p className={`mt-2 max-w-xl text-sm leading-6 ${softMuted}`}>
                               Sobald eine Galerie mit deiner E-Mail verbunden
                               ist oder du einen Code eingibst, erscheint sie
                               hier automatisch.
@@ -1011,12 +999,12 @@ export default function AccountPage() {
                           ].map((item, index) => (
                             <div
                               key={item.title}
-                              className="rounded-2xl border border-white/10 bg-black/20 p-4"
+                              className={`rounded-2xl border p-4 ${subtlePanelStyle}`}
                             >
                               <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-black text-neutral-950">
                                 {index + 1}
                               </span>
-                              <p className="mt-3 font-black text-white">
+                              <p className={`mt-3 font-black ${titleText}`}>
                                 {item.title}
                               </p>
                               <p className="mt-1 text-xs leading-5 text-neutral-400">
@@ -1029,7 +1017,7 @@ export default function AccountPage() {
                     )}
 
                     {galleries.length > 0 && (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-2 sm:p-3">
+                      <div className={`rounded-2xl border p-2 sm:p-3 ${softPanelStyle}`}>
                         <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:grid-cols-4">
                           {galleryFilters.map((filter) => (
                             <button
@@ -1039,13 +1027,12 @@ export default function AccountPage() {
                               className={`rounded-xl px-2 py-2 text-xs font-black transition sm:px-3 sm:text-sm ${
                                 galleryFilter === filter.key
                                   ? "bg-white text-neutral-950"
-                                  : "bg-white/5 text-neutral-300 hover:bg-white/10"
+                                  : dark
+                                    ? "bg-white/5 text-neutral-300 hover:bg-white/10"
+                                    : "bg-neutral-100 text-neutral-700 hover:bg-white"
                               }`}
                             >
                               {filter.label}
-                              <span className="ml-1 rounded-full bg-black/10 px-1.5 py-0.5 text-[0.65rem] sm:ml-2 sm:px-2 sm:text-xs">
-                                {filter.count}
-                              </span>
                             </button>
                           ))}
                         </div>
@@ -1053,7 +1040,7 @@ export default function AccountPage() {
                     )}
 
                     {galleries.length > 0 && visibleGalleryCount === 0 && (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 text-sm leading-6 text-neutral-300">
+                      <div className={`rounded-2xl border p-5 text-sm leading-6 ${softPanelStyle} ${softMuted}`}>
                         Für diesen Filter gibt es aktuell keine Galerien.
                       </div>
                     )}
@@ -1076,14 +1063,14 @@ export default function AccountPage() {
                         <section key={section.title} className="grid gap-3">
                           <div className="flex items-end justify-between gap-3 px-1">
                             <div>
-                              <h4 className="text-sm font-black uppercase tracking-[0.2em] text-neutral-300">
+                              <h4 className={`text-sm font-black uppercase tracking-[0.2em] ${softMuted}`}>
                                 {section.title}
                               </h4>
                               <p className="mt-1 text-xs text-neutral-500">
                                 {section.description}
                               </p>
                             </div>
-                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black text-neutral-300">
+                            <span className={`rounded-full px-3 py-1 text-xs font-black ${dark ? "bg-white/10 text-neutral-300" : "bg-neutral-100 text-neutral-700"}`}>
                               {section.items.length}
                             </span>
                           </div>
@@ -1095,7 +1082,7 @@ export default function AccountPage() {
                               return (
                                 <article
                                   key={gallery.id}
-                                  className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.09]"
+                                  className={`overflow-hidden rounded-2xl border transition hover:-translate-y-0.5 ${dark ? "border-white/10 bg-white/[0.06] hover:border-white/20 hover:bg-white/[0.09]" : "border-black/10 bg-white/80 hover:border-black/20 hover:bg-white"}`}
                                 >
                                   <div className="grid gap-0">
                                   <button
@@ -1164,12 +1151,12 @@ export default function AccountPage() {
                                           bis {formatDate(gallery.expires_at)}
                                         </p>
                                       )}
-                                      <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold text-neutral-300 sm:mt-4">
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-3 py-1">
+                                      <div className={`mt-3 flex flex-wrap gap-2 text-xs font-bold sm:mt-4 ${softMuted}`}>
+                                        <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 ${dark ? "bg-black/25" : "bg-neutral-100"}`}>
                                           <ImageIcon className="h-3.5 w-3.5" />
                                           {gallery.image_count || 0} Bilder
                                         </span>
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-3 py-1 text-yellow-100">
+                                        <span className={`inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-3 py-1 ${dark ? "text-yellow-100" : "text-yellow-800"}`}>
                                           <Heart className="h-3.5 w-3.5" />
                                           {gallery.favorite_count || 0} Favoriten
                                         </span>

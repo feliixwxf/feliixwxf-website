@@ -24,6 +24,7 @@ export async function PATCH(request) {
 
   const body = await request.json().catch(() => ({}));
   const name = String(body.name || "").trim().slice(0, 100);
+  const phone = String(body.phone || "").trim().slice(0, 40);
 
   if (!name) {
     return NextResponse.json(
@@ -39,7 +40,11 @@ export async function PATCH(request) {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      data: { name, avatar_url: currentUser.avatar_url || "" },
+      data: {
+        name,
+        phone,
+        avatar_url: currentUser.avatar_url || "",
+      },
     }),
   });
   const data = await response.json().catch(() => ({}));
@@ -62,6 +67,7 @@ export async function PATCH(request) {
       id: data.id || currentUser.id,
       email: data.email || currentUser.email,
       name: data.user_metadata?.name || name,
+      phone: data.user_metadata?.phone || phone,
       avatar_url: data.user_metadata?.avatar_url || currentUser.avatar_url || "",
     },
   });

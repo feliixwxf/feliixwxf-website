@@ -103,6 +103,7 @@ export async function POST(request) {
     body: JSON.stringify({
       data: {
         name: user.name || "",
+        phone: user.phone || "",
         avatar_url: avatarUrl,
       },
     }),
@@ -127,6 +128,7 @@ export async function POST(request) {
       id: data.id || user.id,
       email: data.email || user.email,
       name: data.user_metadata?.name || user.name || "",
+      phone: data.user_metadata?.phone || user.phone || "",
       avatar_url: data.user_metadata?.avatar_url || avatarUrl,
     },
   });

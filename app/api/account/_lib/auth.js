@@ -72,6 +72,7 @@ async function readCustomerUser(token) {
     id: user.id,
     email: user.email,
     name: user.user_metadata?.name || "",
+    phone: user.user_metadata?.phone || "",
     avatar_url: user.user_metadata?.avatar_url || "",
   };
 }
@@ -142,6 +143,7 @@ export async function getCustomerSession(request) {
           id: session.user.id,
           email: session.user.email,
           name: session.user.user_metadata?.name || "",
+          phone: session.user.user_metadata?.phone || "",
           avatar_url: session.user.user_metadata?.avatar_url || "",
         }
       : await readCustomerUser(session.access_token);

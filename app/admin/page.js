@@ -3264,6 +3264,14 @@ export default function AdminPage() {
 	                              <p className="mt-1 text-sm text-neutral-400">
 	                                {account.name || "Kein Benutzername hinterlegt"}
 	                              </p>
+	                              {account.phone && (
+	                                <a
+	                                  href={`tel:${account.phone.replace(/[^\d+]/g, "")}`}
+	                                  className="mt-1 inline-flex text-sm font-semibold text-emerald-200 transition hover:text-emerald-100"
+	                                >
+	                                  {account.phone}
+	                                </a>
+	                              )}
 	                              <div className="mt-3 flex flex-wrap gap-2 text-xs text-neutral-400">
 	                                <span className="rounded-full bg-white/10 px-3 py-1">
 	                                  Erstellt: {formatDate(account.created_at)}

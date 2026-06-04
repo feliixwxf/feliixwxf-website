@@ -56,6 +56,7 @@ export async function POST(request) {
       id: data.id,
       email: data.email || "",
       name: data.user_metadata?.name || "",
+      phone: data.user_metadata?.phone || "",
       avatar_url: data.user_metadata?.avatar_url || "",
     },
     message: "Passwort wurde geändert. Du bist jetzt eingeloggt.",
