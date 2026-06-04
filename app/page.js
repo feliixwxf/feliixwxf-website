@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Camera,
-  Mail,
   Phone,
   Star,
   Menu,
@@ -85,6 +84,45 @@ function InstagramIcon({ className = "h-5 w-5" }) {
       />
       <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
       <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function GmailIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4.5 6.5h15v11h-15v-11Z"
+        fill="white"
+        stroke="#e5e7eb"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5 7l7 5.2L19 7"
+        stroke="#ea4335"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5 17V8.2"
+        stroke="#34a853"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M19 17V8.2"
+        stroke="#4285f4"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M5 17h14"
+        stroke="#fbbc05"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -999,8 +1037,8 @@ export default function FeliixWxfPhotography() {
                   href={contactEmailHref}
                   className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-white/[0.09]"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
-                    <Mail className="h-5 w-5" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-md transition group-hover:scale-105">
+                    <GmailIcon className="h-6 w-6" />
                   </div>
 
                   <div className="flex flex-col">
@@ -1018,8 +1056,8 @@ export default function FeliixWxfPhotography() {
                   href={contactPhoneHref}
                   className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-4 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-white/[0.09]"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
-                    <Phone className="h-5 w-5" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-green-500 text-white shadow-md shadow-green-500/25 transition group-hover:scale-105 group-hover:bg-green-400">
+                    <Phone className="h-5 w-5 fill-current" />
                   </div>
 
                   <div className="flex flex-col">
