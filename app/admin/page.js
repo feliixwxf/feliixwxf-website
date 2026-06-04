@@ -31,6 +31,7 @@ import {
   Trash2,
   Type,
   Upload,
+  UserRound,
   Users,
   X,
 } from "lucide-react";
@@ -389,7 +390,7 @@ function getClientProjectStep(gallery) {
   if (!gallery?.archive_prepared) {
     return {
       label: "Archiv vorbereiten",
-      helper: "Projekt für späteren Download/Account vorbereiten.",
+      helper: "ZIP oder finale Dateien vorbereiten.",
       tone: "border-yellow-400/25 bg-yellow-400/10 text-yellow-100",
     };
   }
@@ -454,6 +455,7 @@ export default function AdminPage() {
   const [customerAccounts, setCustomerAccounts] = useState([]);
   const [customerAccountLoading, setCustomerAccountLoading] = useState(false);
   const [customerAccountSearched, setCustomerAccountSearched] = useState(false);
+  const [selectedCustomerAccount, setSelectedCustomerAccount] = useState(null);
   const [clientGalleryStatusFilter, setClientGalleryStatusFilter] =
     useState("all");
   const [clientGallerySortMode, setClientGallerySortMode] = useState("newest");
@@ -607,17 +609,14 @@ export default function AdminPage() {
   const tabGroups = [
     {
       title: "Alltag",
-      description: "Das brauchst du am häufigsten.",
       values: ["dashboard", "clients", "reviews"],
     },
     {
       title: "Website",
-      description: "Alles, was Besucher direkt sehen.",
       values: ["portfolio", "covers", "texts", "contact"],
     },
     {
       title: "System",
-      description: "Kontrolle und Hinweise.",
       values: ["settings"],
     },
   ].map((group) => ({
@@ -1326,6 +1325,7 @@ export default function AdminPage() {
 
       const accounts = data.accounts || [];
       setCustomerAccounts(accounts);
+      setSelectedCustomerAccount(accounts[0] || null);
       showMessage(
         accounts.length === 1
           ? "1 Kundenkonto gefunden."
@@ -1360,6 +1360,14 @@ export default function AdminPage() {
 
     showMessage("Keine Galerie mit dieser E-Mail gefunden.", "info");
   };
+
+  const customerAccountGalleries = selectedCustomerAccount
+    ? clientGalleries.filter(
+        (gallery) =>
+          String(gallery.client_email || "").trim().toLowerCase() ===
+          selectedCustomerAccount.email
+      )
+    : [];
 
   const prepareGalleryForAccount = (account) => {
     setClientGalleryForm((current) => ({
@@ -2454,10 +2462,6 @@ export default function AdminPage() {
                       <h3 className="mt-2 text-2xl font-black">
                         Projekt-Pipeline
                       </h3>
-                      <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
-                        Schlanke Übersicht für laufende Kundengalerien. Das ist
-                        die Basis für spätere Kundenkonten.
-                      </p>
                     </div>
                     <button
                       type="button"
@@ -3193,7 +3197,7 @@ export default function AdminPage() {
 	                </div>
 
 	                <section className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
-	                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+	                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 	                    <div className="min-w-0">
 	                      <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
 	                        Kundenkonto suchen
@@ -3201,18 +3205,7 @@ export default function AdminPage() {
 	                      <h3 className="mt-2 text-xl font-black">
 	                        Per E-Mail finden
 	                      </h3>
-	                      <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
-	                        Findet echte registrierte Kundenkonten aus Supabase.
-	                        Danach kannst du direkt nach der passenden Galerie
-	                        filtern oder eine neue Galerie mit dieser E-Mail
-	                        vorbereiten.
-	                      </p>
 	                    </div>
-
-	                    <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-bold text-neutral-300">
-	                      <Users className="h-3.5 w-3.5" />
-	                      Konto-Datenbank
-	                    </span>
 	                  </div>
 
 	                  <form
@@ -3250,73 +3243,148 @@ export default function AdminPage() {
 	                  )}
 
 	                  {customerAccounts.length > 0 && (
-	                    <div className="mt-4 grid gap-3">
-	                      {customerAccounts.map((account) => (
-	                        <article
-	                          key={account.id}
-	                          className="rounded-2xl border border-white/10 bg-black/20 p-4"
-	                        >
-	                          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-	                            <div className="min-w-0">
-	                              <p className="break-all font-black text-white">
-	                                {account.email}
-	                              </p>
-	                              <p className="mt-1 text-sm text-neutral-400">
-	                                {account.name || "Kein Benutzername hinterlegt"}
-	                              </p>
-	                              {account.phone && (
+	                    <div className="mt-4 grid gap-4 xl:grid-cols-[0.75fr_1.25fr]">
+	                      <div className="grid gap-2">
+	                        {customerAccounts.map((account) => {
+	                          const active = selectedCustomerAccount?.id === account.id;
+
+	                          return (
+	                            <button
+	                              key={account.id}
+	                              type="button"
+	                              onClick={() => setSelectedCustomerAccount(account)}
+	                              className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition ${
+	                                active
+	                                  ? "border-yellow-400/50 bg-yellow-400/10"
+	                                  : "border-white/10 bg-black/20 hover:bg-white/[0.06]"
+	                              }`}
+	                            >
+	                              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10">
+	                                {account.avatar_url ? (
+	                                  <img
+	                                    src={account.avatar_url}
+	                                    alt=""
+	                                    className="h-full w-full object-cover"
+	                                  />
+	                                ) : (
+	                                  <UserRound className="h-5 w-5 text-neutral-400" />
+	                                )}
+	                              </div>
+	                              <div className="min-w-0">
+	                                <p className="truncate font-black text-white">
+	                                  {account.name || "Ohne Namen"}
+	                                </p>
+	                                <p className="truncate text-sm text-neutral-400">
+	                                  {account.email}
+	                                </p>
+	                              </div>
+	                            </button>
+	                          );
+	                        })}
+	                      </div>
+
+	                      {selectedCustomerAccount && (
+	                        <article className="rounded-2xl border border-white/10 bg-black/25 p-4">
+	                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+	                            <div className="flex min-w-0 gap-4">
+	                              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+	                                {selectedCustomerAccount.avatar_url ? (
+	                                  <img
+	                                    src={selectedCustomerAccount.avatar_url}
+	                                    alt=""
+	                                    className="h-full w-full object-cover"
+	                                  />
+	                                ) : (
+	                                  <UserRound className="h-7 w-7 text-neutral-400" />
+	                                )}
+	                              </div>
+	                              <div className="min-w-0">
+	                                <h4 className="truncate text-xl font-black">
+	                                  {selectedCustomerAccount.name || "Ohne Namen"}
+	                                </h4>
 	                                <a
-	                                  href={`tel:${account.phone.replace(/[^\d+]/g, "")}`}
-	                                  className="mt-1 inline-flex text-sm font-semibold text-emerald-200 transition hover:text-emerald-100"
+	                                  href={`mailto:${selectedCustomerAccount.email}`}
+	                                  className="mt-1 block break-all text-sm font-semibold text-sky-200 transition hover:text-sky-100"
 	                                >
-	                                  {account.phone}
+	                                  {selectedCustomerAccount.email}
 	                                </a>
-	                              )}
-	                              <div className="mt-3 flex flex-wrap gap-2 text-xs text-neutral-400">
-	                                <span className="rounded-full bg-white/10 px-3 py-1">
-	                                  Erstellt: {formatDate(account.created_at)}
-	                                </span>
-	                                <span className="rounded-full bg-white/10 px-3 py-1">
-	                                  Letzter Login:{" "}
-	                                  {account.last_sign_in_at
-	                                    ? formatDate(account.last_sign_in_at)
-	                                    : "Noch nie"}
-	                                </span>
-	                                <span
-	                                  className={`rounded-full px-3 py-1 font-bold ${
-	                                    account.email_confirmed_at
-	                                      ? "bg-emerald-400/15 text-emerald-100"
-	                                      : "bg-yellow-400/15 text-yellow-100"
-	                                  }`}
-	                                >
-	                                  {account.email_confirmed_at
-	                                    ? "E-Mail bestätigt"
-	                                    : "E-Mail offen"}
-	                                </span>
+	                                {selectedCustomerAccount.phone ? (
+	                                  <a
+	                                    href={`tel:${selectedCustomerAccount.phone.replace(/[^\d+]/g, "")}`}
+	                                    className="mt-1 inline-flex text-sm font-semibold text-emerald-200 transition hover:text-emerald-100"
+	                                  >
+	                                    {selectedCustomerAccount.phone}
+	                                  </a>
+	                                ) : (
+	                                  <p className="mt-1 text-sm text-neutral-500">
+	                                    Keine Telefonnummer
+	                                  </p>
+	                                )}
 	                              </div>
 	                            </div>
 
-	                            <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
-	                              <button
-	                                type="button"
-	                                onClick={() => focusClientAccountEmail(account)}
-	                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
-	                              >
-	                                <Search className="h-4 w-4" />
-	                                Galerie suchen
-	                              </button>
-	                              <button
-	                                type="button"
-	                                onClick={() => prepareGalleryForAccount(account)}
-	                                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
-	                              >
-	                                <Plus className="h-4 w-4" />
-	                                Galerie vorbereiten
-	                              </button>
+	                            <span
+	                              className={`w-fit rounded-full px-3 py-1 text-xs font-black ${
+	                                selectedCustomerAccount.email_confirmed_at
+	                                  ? "bg-emerald-400/15 text-emerald-100"
+	                                  : "bg-yellow-400/15 text-yellow-100"
+	                              }`}
+	                            >
+	                              {selectedCustomerAccount.email_confirmed_at
+	                                ? "Bestätigt"
+	                                : "Offen"}
+	                            </span>
+	                          </div>
+
+	                          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+	                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+	                              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+	                                Erstellt
+	                              </p>
+	                              <p className="mt-2 font-black">
+	                                {formatDate(selectedCustomerAccount.created_at)}
+	                              </p>
+	                            </div>
+	                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+	                              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+	                                Zuletzt aktiv
+	                              </p>
+	                              <p className="mt-2 font-black">
+	                                {selectedCustomerAccount.last_sign_in_at
+	                                  ? formatDate(selectedCustomerAccount.last_sign_in_at)
+	                                  : "Noch nie"}
+	                              </p>
+	                            </div>
+	                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+	                              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+	                                Galerien
+	                              </p>
+	                              <p className="mt-2 font-black">
+	                                {customerAccountGalleries.length}
+	                              </p>
 	                            </div>
 	                          </div>
+
+	                          <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+	                            <button
+	                              type="button"
+	                              onClick={() => focusClientAccountEmail(selectedCustomerAccount)}
+	                              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+	                            >
+	                              <Search className="h-4 w-4" />
+	                              Galerien anzeigen
+	                            </button>
+	                            <button
+	                              type="button"
+	                              onClick={() => prepareGalleryForAccount(selectedCustomerAccount)}
+	                              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+	                            >
+	                              <Plus className="h-4 w-4" />
+	                              Galerie vorbereiten
+	                            </button>
+	                          </div>
 	                        </article>
-	                      ))}
+	                      )}
 	                    </div>
 	                  )}
 	                </section>
@@ -3372,7 +3440,7 @@ export default function AdminPage() {
                             event.target.value
                           )
                         }
-                        placeholder="Optional, später fürs Kundenkonto"
+                        placeholder="Optional"
                         className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
                       />
                     </label>
@@ -3695,7 +3763,7 @@ export default function AdminPage() {
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <div className="min-w-0">
                                 <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
-                                  Nächster sinnvoller Schritt
+                                  Status
                                 </p>
                                 <h4 className="mt-1 font-black text-neutral-100">
                                   {activeClientProjectStep.label}
@@ -4590,9 +4658,6 @@ export default function AdminPage() {
                       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                         <div>
                           <h3 className="text-2xl font-black">{group.title}</h3>
-                          <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-300">
-                            {group.description}
-                          </p>
                         </div>
                       </div>
 
@@ -4729,9 +4794,6 @@ export default function AdminPage() {
                       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                         <div>
                           <h3 className="text-2xl font-black">{group.title}</h3>
-                          <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-300">
-                            {group.description}
-                          </p>
                         </div>
                       </div>
 
@@ -5067,7 +5129,7 @@ export default function AdminPage() {
                   Einstellungen
                 </p>
                 <h2 className="mt-3 text-3xl font-black">
-                  Admin-Status und wichtige Hinweise
+                  Status
                 </h2>
 
                 <div className="mt-6 grid gap-4 lg:grid-cols-3">
@@ -5076,11 +5138,7 @@ export default function AdminPage() {
                       <ShieldCheck className="h-5 w-5 text-emerald-100" />
                     </div>
                     <h3 className="mt-5 text-xl font-black">Admin-Schutz</h3>
-                    <p className="mt-3 text-sm leading-6 text-emerald-100/80">
-                      Der Admin-Bereich ist mit Passwort und Session-Cookie
-                      geschützt. Nach mehreren falschen Login-Versuchen wird
-                      kurz gebremst.
-                    </p>
+                    <p className="mt-3 text-sm text-emerald-100/80">Aktiv</p>
                   </div>
 
                   <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
@@ -5088,10 +5146,7 @@ export default function AdminPage() {
                       <Upload className="h-5 w-5" />
                     </div>
                     <h3 className="mt-5 text-xl font-black">Uploads</h3>
-                    <p className="mt-3 text-sm leading-6 text-neutral-300">
-                      Bilder werden in Supabase Storage gespeichert. Erlaubt
-                      sind JPG, PNG und WebP bis 10 MB pro Datei.
-                    </p>
+                    <p className="mt-3 text-sm text-neutral-300">JPG, PNG, WebP</p>
                   </div>
 
                   <div className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-6">
@@ -5099,28 +5154,21 @@ export default function AdminPage() {
                       <MessageSquare className="h-5 w-5 text-yellow-100" />
                     </div>
                     <h3 className="mt-5 text-xl font-black">Bewertungen</h3>
-                    <p className="mt-3 text-sm leading-6 text-yellow-100/80">
-                      Neue Bewertungen werden gespeichert, sind aber erst nach
-                      deiner Freigabe für Besucher sichtbar.
+                    <p className="mt-3 text-sm text-yellow-100/80">
+                      {pendingReviews.length} offen
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-6 rounded-[1.5rem] border border-sky-300/20 bg-sky-300/10 p-6">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-100/70">
-                        Datenschutz & Datenpflege
+                        Datenpflege
                       </p>
                       <h3 className="mt-3 text-2xl font-black">
-                        Schnell prüfen, ohne extra Fenster
+                        Offene Punkte
                       </h3>
-                      <p className="mt-3 max-w-3xl text-sm leading-6 text-sky-100/75">
-                        Hier siehst du die wichtigsten Punkte für Kundendaten:
-                        aktive Downloads, Galerien ohne Ablaufdatum und
-                        sichtbare Bewertungen. Die Aktionen bleiben klein und
-                        direkt im Admin-Bereich.
-                      </p>
                     </div>
 
                     <button
@@ -5148,10 +5196,10 @@ export default function AdminPage() {
                     ))}
                   </div>
 
-                  <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                  <div className="mt-5">
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                       <div className="flex items-center justify-between gap-3">
-                        <h4 className="font-black">Datenpflege-Fokus</h4>
+                        <h4 className="font-black">Galerien prüfen</h4>
                         <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-sky-100/80">
                           {privacyFocusGalleries.length} offen
                         </span>
@@ -5253,91 +5301,6 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      <h4 className="font-black">Kurze DSGVO-Routine</h4>
-                      <div className="mt-4 space-y-3 text-sm leading-6 text-sky-100/75">
-                        <p className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                          Kundengalerien nach Projektende pausieren oder ein
-                          Ablaufdatum setzen.
-                        </p>
-                        <p className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                          Downloads nur aktiv lassen, wenn der Kunde sie gerade
-                          braucht.
-                        </p>
-                        <p className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                          Bewertungen nur freigeben, wenn Name und Text so
-                          veröffentlicht werden dürfen.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <h4 className="font-black">
-                          AVV / Auftragsverarbeitung prüfen
-                        </h4>
-                        <p className="mt-2 max-w-3xl text-sm leading-6 text-sky-100/70">
-                          Prüfe in deinen Accounts, ob die
-                          Auftragsverarbeitungsverträge für die Dienste
-                          abgeschlossen oder verfügbar sind. Das ist eine
-                          organisatorische Aufgabe, kein Website-Popup.
-                        </p>
-                      </div>
-                      <span className="w-fit rounded-full border border-yellow-400/25 bg-yellow-400/10 px-3 py-1 text-xs font-black text-yellow-100">
-                        manuell prüfen
-                      </span>
-                    </div>
-
-                    <div className="mt-4 grid gap-3 md:grid-cols-3">
-                      {[
-                        {
-                          name: "Supabase",
-                          helper:
-                            "Datenbank, Kundenkonten, Bewertungen und Bildspeicher.",
-                        },
-                        {
-                          name: "Vercel",
-                          helper:
-                            "Hosting, Deployment und Auslieferung der Website.",
-                        },
-                        {
-                          name: "Formspree",
-                          helper:
-                            "Kontaktformular, falls der Formspree-Link aktiv bleibt.",
-                        },
-                      ].map((processor) => (
-                        <div
-                          key={processor.name}
-                          className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Lock className="h-4 w-4 text-sky-100/80" />
-                            <h5 className="font-black">{processor.name}</h5>
-                          </div>
-                          <p className="mt-2 text-xs leading-5 text-sky-100/65">
-                            {processor.helper}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
-                  <h3 className="text-xl font-black">Nächste sinnvolle Admin-Funktionen</h3>
-                  <div className="mt-4 grid gap-3 text-sm text-neutral-300 md:grid-cols-2">
-                    <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      Startseitenbilder und Portfolio-Titelbilder sind jetzt
-                      direkt im Admin pflegbar.
-                    </p>
-                    <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      Kontaktinfos ohne Code-Änderung bearbeiten.
-                    </p>
-                    <p className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      Später Kundenkonten und Download-Galerien anbinden.
-                    </p>
                   </div>
                 </div>
               </div>

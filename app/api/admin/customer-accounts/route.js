@@ -71,6 +71,7 @@ export async function GET(request) {
         email: normalize(user.email),
         name: getDisplayName(user),
         phone: getPhone(user),
+        avatar_url: user.user_metadata?.avatar_url || "",
         created_at: user.created_at || "",
         last_sign_in_at: user.last_sign_in_at || "",
         email_confirmed_at: user.email_confirmed_at || "",

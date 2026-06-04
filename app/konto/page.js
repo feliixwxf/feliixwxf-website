@@ -13,7 +13,9 @@ import {
   Lock,
   LogOut,
   Mail,
+  Moon,
   RefreshCw,
+  Sun,
   Trash2,
   Upload,
   UserRound,
@@ -104,22 +106,25 @@ export default function AccountPage() {
   const dark = theme === "dark";
   const pageStyle = dark
     ? "bg-[linear-gradient(135deg,#070707,#161616,#222)] text-white"
-    : "bg-[linear-gradient(135deg,#f4f4f5,#e7e5e4,#fafafa)] text-neutral-950";
+    : "bg-[linear-gradient(135deg,#eef2f7,#f8fafc_42%,#e5e7eb)] text-neutral-950";
   const panelStyle = dark
     ? "border-white/10 bg-white/[0.04] shadow-2xl"
-    : "border-black/10 bg-white/80 shadow-xl";
+    : "border-slate-300 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.14)]";
   const softPanelStyle = dark
     ? "border-white/10 bg-white/[0.06]"
-    : "border-black/10 bg-white/70";
+    : "border-slate-200 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.08)]";
   const subtlePanelStyle = dark
     ? "border-white/10 bg-black/25"
-    : "border-black/10 bg-neutral-100/80";
+    : "border-slate-200 bg-slate-50";
   const muted = dark ? "text-neutral-400" : "text-neutral-600";
   const softMuted = dark ? "text-neutral-300" : "text-neutral-700";
   const titleText = dark ? "text-white" : "text-neutral-950";
   const backButtonStyle = dark
     ? "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
-    : "border-black/10 bg-white/80 text-neutral-800 shadow-sm hover:bg-white";
+    : "border-slate-300 bg-white text-slate-800 shadow-sm hover:bg-slate-50";
+  const themeButtonStyle = dark
+    ? "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
+    : "border-slate-300 bg-white text-slate-800 shadow-sm hover:bg-slate-50";
 
   const updateForm = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -137,6 +142,12 @@ export default function AccountPage() {
     setResetTokens({ accessToken: "", refreshToken: "" });
     setNewPassword("");
     setMessage("");
+  };
+
+  const toggleTheme = () => {
+    const nextTheme = dark ? "light" : "dark";
+    setTheme(nextTheme);
+    localStorage.setItem("feliix-theme", nextTheme);
   };
 
   const linkSavedGalleryCode = async () => {
@@ -637,6 +648,17 @@ export default function AccountPage() {
             Zur Website
           </Link>
 
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition sm:w-auto sm:px-4 ${themeButtonStyle}`}
+            aria-label="Darstellung wechseln"
+          >
+            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            <span className="ml-2 hidden text-sm font-semibold sm:inline">
+              {dark ? "Hell" : "Dunkel"}
+            </span>
+          </button>
         </div>
 
         <section className={`mt-3 overflow-hidden rounded-[1.15rem] border backdrop-blur-xl sm:mt-8 sm:rounded-[2rem] ${panelStyle}`}>
@@ -698,7 +720,7 @@ export default function AccountPage() {
                 <div>
                   <div className={`mb-3 overflow-hidden rounded-2xl border p-3 sm:mb-5 sm:p-5 ${softPanelStyle}`}>
                     <div className="flex items-start gap-3 sm:items-center sm:gap-5">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:h-20 sm:w-20">
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border sm:h-20 sm:w-20 ${dark ? "border-white/10 bg-white/10" : "border-slate-200 bg-slate-100"}`}>
                         {avatarPreview ? (
                           <img
                             src={avatarPreview}
@@ -849,9 +871,6 @@ export default function AccountPage() {
                             placeholder="+49 ..."
                             className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
                           />
-                          <p className={`mt-2 text-xs leading-5 ${muted}`}>
-                            Nur für Rückfragen sichtbar, wenn dein Konto im Adminbereich per E-Mail gesucht wird.
-                          </p>
                         </label>
                         <button
                           type="button"
