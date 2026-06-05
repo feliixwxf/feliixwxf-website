@@ -18,6 +18,9 @@ function encodeStoragePath(path) {
 function normalizeSignedUrl(signedUrl) {
   if (!signedUrl) return "";
   if (signedUrl.startsWith("http")) return signedUrl;
+  if (signedUrl.startsWith("/object/")) {
+    return `${supabaseBaseUrl}/storage/v1${signedUrl}`;
+  }
   return `${supabaseBaseUrl}${signedUrl.startsWith("/") ? "" : "/"}${signedUrl}`;
 }
 
