@@ -812,8 +812,17 @@ export default function AccountPage() {
                   </div>
 
                   {accountSection === "profile" && (
-                    <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
+                    <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_0.9fr]">
                       <div className={`rounded-2xl border p-4 sm:p-5 ${softPanelStyle}`}>
+                        <div className="mb-5">
+                          <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
+                            Profil
+                          </p>
+                          <h3 className={`mt-2 text-xl font-black ${titleText}`}>
+                            Deine Daten
+                          </h3>
+                        </div>
+
                         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
                           <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
                             {avatarPreview ? (
@@ -886,29 +895,96 @@ export default function AccountPage() {
                       </div>
 
                       <div className={`rounded-2xl border p-4 sm:p-5 ${softPanelStyle}`}>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="mb-5">
+                          <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
+                            Sicherheit
+                          </p>
+                          <h3 className={`mt-2 text-xl font-black ${titleText}`}>
+                            Passwort & Konto
+                          </h3>
+                        </div>
+
+                        <div className={`rounded-2xl border p-4 ${subtlePanelStyle}`}>
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <h4 className={`font-black ${titleText}`}>
+                                Passwort zurücksetzen
+                              </h4>
+                              <p className={`mt-1 text-sm leading-6 ${muted}`}>
+                                Du bekommst eine Reset-Mail an deine E-Mail.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={requestCurrentAccountPasswordReset}
+                              disabled={submitting}
+                              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 sm:w-fit"
+                            >
+                              {submitting ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Mail className="h-4 w-4" />
+                              )}
+                              Reset-Mail senden
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
                           <div>
-                            <h3 className={`font-black ${titleText}`}>
-                              Passwort zurücksetzen
-                            </h3>
-                            <p className={`mt-2 text-sm leading-6 ${muted}`}>
-                              Wir senden dir eine E-Mail, mit der du ein neues
-                              Passwort festlegen kannst.
+                            <h4 className="font-black text-red-50">
+                              Konto löschen
+                            </h4>
+                            <p className="mt-1 text-sm leading-6 text-red-100/75">
+                              Löscht Konto, Profilbild und Favoriten. Bewertungen bleiben ohne Konto-Verknüpfung bestehen.
                             </p>
                           </div>
+
                           <button
                             type="button"
-                            onClick={requestCurrentAccountPasswordReset}
-                            disabled={submitting}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 sm:w-fit"
+                            onClick={() =>
+                              setDeletePanelOpen((current) => !current)
+                            }
+                            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-300/30 bg-red-300/10 px-4 py-2 text-sm font-black text-red-50 transition hover:bg-red-300/20"
                           >
-                            {submitting ? (
-                              <RefreshCw className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Mail className="h-4 w-4" />
-                            )}
-                            Reset-Mail senden
+                            <Trash2 className="h-4 w-4" />
+                            {deletePanelOpen ? "Schließen" : "Konto löschen"}
                           </button>
+
+                          {deletePanelOpen && (
+                            <div className="mt-4 rounded-xl border border-red-300/20 bg-black/25 p-4">
+                              <label className="block">
+                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-100/70">
+                                  Zur Bestätigung LÖSCHEN eingeben
+                                </span>
+                                <input
+                                  value={deleteConfirmText}
+                                  onChange={(event) => {
+                                    setDeleteConfirmText(event.target.value);
+                                    setMessage("");
+                                  }}
+                                  placeholder="LÖSCHEN"
+                                  className="mt-2 w-full rounded-xl border border-red-300/20 bg-white px-3 py-2 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
+                                />
+                              </label>
+
+                              <button
+                                type="button"
+                                onClick={deleteAccount}
+                                disabled={
+                                  deletingAccount || deleteConfirmText !== "LÖSCHEN"
+                                }
+                                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-black text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {deletingAccount ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                                Endgültig löschen
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1200,70 +1276,6 @@ export default function AccountPage() {
                     })}
                   </div>
                     </div>
-                  )}
-
-                  {accountSection === "profile" && (
-                    <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 sm:p-5">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <h3 className="font-black text-red-50">
-                          Konto löschen
-                        </h3>
-                        <p className="mt-2 text-sm leading-6 text-red-100/75">
-                          Löscht dein Kundenkonto, Profilbild, Favoriten und
-                          die Verknüpfung zu Kundengalerien. Bewertungen
-                          bleiben ohne Konto-Verknüpfung bestehen. Wenn eine
-                          Bewertung gelöscht werden soll, schreibe bitte an
-                          felixwolff411@gmail.com.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDeletePanelOpen((current) => !current)
-                        }
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-300/30 bg-red-300/10 px-4 py-2 text-sm font-black text-red-50 transition hover:bg-red-300/20 sm:w-fit"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        {deletePanelOpen ? "Schließen" : "Löschen"}
-                      </button>
-                    </div>
-
-                    {deletePanelOpen && (
-                      <div className="mt-4 rounded-xl border border-red-300/20 bg-black/25 p-4">
-                        <label className="block">
-                          <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-100/70">
-                            Zur Bestätigung LÖSCHEN eingeben
-                          </span>
-                          <input
-                            value={deleteConfirmText}
-                            onChange={(event) => {
-                              setDeleteConfirmText(event.target.value);
-                              setMessage("");
-                            }}
-                            placeholder="LÖSCHEN"
-                            className="mt-2 w-full rounded-xl border border-red-300/20 bg-white px-3 py-2 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
-                          />
-                        </label>
-
-                        <button
-                          type="button"
-                          onClick={deleteAccount}
-                          disabled={
-                            deletingAccount || deleteConfirmText !== "LÖSCHEN"
-                          }
-                          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-black text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {deletingAccount ? (
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                          Konto endgültig löschen
-                        </button>
-                      </div>
-                    )}
-                  </div>
                   )}
                 </div>
               ) : mode === "resetConfirm" ? (
