@@ -1515,8 +1515,8 @@ export default function AdminPage() {
 
         showMessage(
           missingArchiveField
-            ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen. Danach nochmal ZIP erstellen."
-            : data.error || "ZIP konnte nicht erstellt werden.",
+            ? `Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen. Danach nochmal ZIP erstellen.${details ? ` Details: ${details}` : ""}`
+            : `${data.error || "ZIP konnte nicht erstellt werden."}${details ? ` Details: ${details}` : ""}`,
           "error"
         );
         return;

@@ -17,6 +17,7 @@ export const runtime = "nodejs";
 
 const GALLERY_SELECT =
   "id,title,access_code,archive_path,archive_size,archive_created_at";
+const GALLERY_BASE_SELECT = "id,title,access_code";
 const IMAGE_SELECT =
   "id,gallery_id,url,path,filename,sort_order,created_at";
 
@@ -216,7 +217,7 @@ async function ensureArchiveMimeType() {
 }
 
 async function loadGallery(id) {
-  const response = await fetch(
+  let response = await fetch(
     `${supabaseRestUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&id=eq.${encodeURIComponent(
       id
     )}&limit=1`,
@@ -225,6 +226,30 @@ async function loadGallery(id) {
       cache: "no-store",
     }
   );
+
+  if (!response.ok) {
+    const details = await response.text();
+    const normalizedDetails = details.toLowerCase();
+
+    if (
+      normalizedDetails.includes("archive_path") ||
+      normalizedDetails.includes("archive_size") ||
+      normalizedDetails.includes("archive_created") ||
+      normalizedDetails.includes("schema cache")
+    ) {
+      response = await fetch(
+        `${supabaseRestUrl}/rest/v1/client_galleries?select=${GALLERY_BASE_SELECT}&id=eq.${encodeURIComponent(
+          id
+        )}&limit=1`,
+        {
+          headers: supabaseServiceHeaders,
+          cache: "no-store",
+        }
+      );
+    } else {
+      return { error: details };
+    }
+  }
 
   if (!response.ok) return { error: await response.text() };
 
@@ -396,11 +421,21 @@ export async function POST(request) {
   );
 
   if (!updateResponse.ok) {
+    const details = await updateResponse.text();
+    const normalizedDetails = details.toLowerCase();
+    const missingArchiveFields =
+      normalizedDetails.includes("archive_path") ||
+      normalizedDetails.includes("archive_size") ||
+      normalizedDetails.includes("archive_created") ||
+      normalizedDetails.includes("schema cache");
+
     return NextResponse.json(
       {
         error:
-          "ZIP wurde erstellt, aber die Galerie konnte nicht aktualisiert werden.",
-        details: await updateResponse.text(),
+          missingArchiveFields
+            ? "ZIP wurde erstellt, aber Supabase kennt die Archiv-Spalten noch nicht."
+            : "ZIP wurde erstellt, aber die Galerie konnte nicht aktualisiert werden.",
+        details,
       },
       { status: 500 }
     );
