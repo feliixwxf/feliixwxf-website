@@ -3723,7 +3723,7 @@ export default function AdminPage() {
                           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div className="flex min-w-0 gap-4">
                               <div className="hidden h-24 w-32 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] sm:block">
-                                {activeClientCoverImage ? (
+                                {activeClientCoverImage?.url ? (
                                   <img
                                     src={activeClientCoverImage.url}
                                     alt=""
@@ -4542,13 +4542,19 @@ export default function AdminPage() {
                                     className="overflow-hidden rounded-lg bg-black/30"
                                     aria-label="Favoritenbild ansehen"
                                   >
-                                    <img
-                                      src={image.url}
-                                      alt=""
-                                      loading="lazy"
-                                      decoding="async"
-                                      className="aspect-square h-full w-full object-cover"
-                                    />
+                                    {image.url ? (
+                                      <img
+                                        src={image.url}
+                                        alt=""
+                                        loading="lazy"
+                                        decoding="async"
+                                        className="aspect-square h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <span className="flex aspect-square h-full w-full items-center justify-center px-2 text-center text-[10px] font-bold leading-4 text-neutral-500">
+                                        Bildlink fehlt
+                                      </span>
+                                    )}
                                   </button>
 
                                   <div className="min-w-0">
@@ -4614,13 +4620,19 @@ export default function AdminPage() {
                                 className="overflow-hidden rounded-2xl border border-white/10 bg-black/20"
                               >
                                 <div className="relative aspect-[4/3]">
-                                  <img
-                                    src={image.url}
-                                    alt=""
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="h-full w-full object-cover"
-                                  />
+                                  {image.url ? (
+                                    <img
+                                      src={image.url}
+                                      alt=""
+                                      loading="lazy"
+                                      decoding="async"
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center bg-black/30 px-4 text-center text-sm font-bold text-neutral-500">
+                                      Bildlink konnte nicht erstellt werden
+                                    </div>
+                                  )}
                                   {favoriteCount > 0 && (
                                     <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-yellow-400 px-3 py-1 text-xs font-black text-black">
                                       <Heart className="h-3.5 w-3.5 fill-current" />
@@ -5481,11 +5493,18 @@ export default function AdminPage() {
               </button>
             </div>
 
-            <img
-              src={selectedImage.url}
-              alt=""
-              className="max-h-[72vh] w-full object-contain bg-black"
-            />
+            {selectedImage.url ? (
+              <img
+                src={selectedImage.url}
+                alt=""
+                className="max-h-[72vh] w-full object-contain bg-black"
+              />
+            ) : (
+              <div className="flex min-h-[320px] items-center justify-center bg-black px-6 text-center text-sm font-bold text-neutral-400">
+                Bildlink konnte nicht erstellt werden. Bitte Galerie neu laden
+                oder Supabase Storage prüfen.
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 p-4">
               <p className="text-sm text-neutral-400">
@@ -5497,20 +5516,23 @@ export default function AdminPage() {
                   onClick={() =>
                     copyText(selectedImage.url, "Bild-URL wurde kopiert.")
                   }
+                  disabled={!selectedImage.url}
                   className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
                 >
                   <Copy className="h-4 w-4" />
                   URL kopieren
                 </button>
-                <a
-                  href={selectedImage.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Original öffnen
-                </a>
+                {selectedImage.url && (
+                  <a
+                    href={selectedImage.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Original öffnen
+                  </a>
+                )}
               </div>
             </div>
           </div>

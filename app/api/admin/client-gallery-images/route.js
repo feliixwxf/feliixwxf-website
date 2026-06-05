@@ -197,11 +197,16 @@ export async function POST(request) {
   }
 
   const [image] = await insertResponse.json();
+  const signedUrl = await createSignedImageUrl(image.path);
+
   return NextResponse.json({
     image: {
       ...image,
       public_url: image.url,
-      url: await createSignedImageUrl(image.path, image.url),
+      url: signedUrl,
+      image_load_error: signedUrl
+        ? ""
+        : "Bild wurde hochgeladen, aber der private Bildlink konnte nicht erstellt werden.",
     },
   });
 }

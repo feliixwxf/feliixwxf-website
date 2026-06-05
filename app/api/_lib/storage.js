@@ -7,8 +7,6 @@ import {
 
 const SIGNED_IMAGE_EXPIRES_IN = 60 * 60 * 6;
 const SIGNED_ARCHIVE_EXPIRES_IN = 60 * 15;
-const signedClientImageUrlsEnabled =
-  process.env.SUPABASE_SIGN_CLIENT_IMAGES !== "false";
 
 function encodeStoragePath(path) {
   return String(path || "")
@@ -57,6 +55,14 @@ export async function createSignedStorageUrl(
   } catch {
     return fallbackUrl || "";
   }
+}
+
+function isPublicStorageUrl(url) {
+  return String(url || "").includes("/storage/v1/object/public/");
+}
+
+function safeClientImageFallback(url) {
+  return isPublicStorageUrl(url) ? url : "";
 }
 
 export async function downloadClientGalleryStorageObject(path, fallbackUrl = "") {
@@ -113,19 +119,12 @@ export async function withSignedImageUrls(images) {
   return Promise.all(
     images.map(async (image) => {
       const publicUrl = image.url || "";
-
-      if (!signedClientImageUrlsEnabled) {
-        return {
-          ...image,
-          public_url: publicUrl,
-          url: publicUrl,
-        };
-      }
+      const fallbackUrl = safeClientImageFallback(publicUrl);
 
       return {
         ...image,
         public_url: publicUrl,
-        url: await createSignedImageUrl(image.path, publicUrl),
+        url: await createSignedImageUrl(image.path, fallbackUrl),
       };
     })
   );

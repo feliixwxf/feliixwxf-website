@@ -576,14 +576,20 @@ export default function CustomerGalleryPage() {
                           onClick={() => setSelectedImage(image)}
                           className="relative block aspect-[4/3] w-full overflow-hidden bg-black/30"
                         >
-                          <img
-                            src={image.url}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                            draggable="false"
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                          />
+                          {image.url ? (
+                            <img
+                              src={image.url}
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                              draggable="false"
+                              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center px-4 text-center text-sm font-bold text-neutral-500">
+                              Bildlink konnte nicht geladen werden
+                            </div>
+                          )}
                           {!gallery.downloads_enabled && (
                             <WatermarkOverlay gallery={gallery} />
                           )}
@@ -608,7 +614,7 @@ export default function CustomerGalleryPage() {
                           </button>
 
                           <div className="flex gap-2">
-                            {gallery.downloads_enabled && (
+                            {gallery.downloads_enabled && image.url && (
                               <a
                                 href={image.url}
                                 download
@@ -716,13 +722,20 @@ export default function CustomerGalleryPage() {
               </div>
 
               <div className="relative overflow-hidden rounded-[1.2rem] bg-black/30">
-                <img
-                  src={selectedImage.url}
-                  alt=""
-                  decoding="async"
-                  draggable="false"
-                  className="max-h-[80vh] w-full object-contain"
-                />
+                {selectedImage.url ? (
+                  <img
+                    src={selectedImage.url}
+                    alt=""
+                    decoding="async"
+                    draggable="false"
+                    className="max-h-[80vh] w-full object-contain"
+                  />
+                ) : (
+                  <div className="flex min-h-[320px] items-center justify-center px-6 text-center text-sm font-bold text-neutral-400">
+                    Bildlink konnte nicht geladen werden. Bitte später erneut
+                    öffnen.
+                  </div>
+                )}
                 {!gallery?.downloads_enabled && (
                   <WatermarkOverlay gallery={gallery} />
                 )}
@@ -749,7 +762,7 @@ export default function CustomerGalleryPage() {
                     : "Als Favorit markieren"}
                 </button>
 
-                {gallery?.downloads_enabled && (
+                {gallery?.downloads_enabled && selectedImage.url && (
                   <a
                     href={selectedImage.url}
                     download
