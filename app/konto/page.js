@@ -106,25 +106,25 @@ export default function AccountPage() {
   const dark = theme === "dark";
   const pageStyle = dark
     ? "bg-[linear-gradient(135deg,#070707,#161616,#222)] text-white"
-    : "bg-[linear-gradient(135deg,#eef2f7,#f8fafc_42%,#e5e7eb)] text-neutral-950";
+    : "bg-[linear-gradient(135deg,#d9dee7,#eef1f5_45%,#cfd6df)] text-slate-950";
   const panelStyle = dark
     ? "border-white/10 bg-white/[0.04] shadow-2xl"
-    : "border-slate-300 bg-white/90 shadow-[0_24px_80px_rgba(15,23,42,0.14)]";
+    : "border-slate-400/50 bg-slate-100/90 shadow-[0_24px_80px_rgba(15,23,42,0.16)]";
   const softPanelStyle = dark
     ? "border-white/10 bg-white/[0.06]"
-    : "border-slate-200 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.08)]";
+    : "border-slate-300 bg-slate-50/90 shadow-[0_14px_40px_rgba(15,23,42,0.09)]";
   const subtlePanelStyle = dark
     ? "border-white/10 bg-black/25"
-    : "border-slate-200 bg-slate-50";
+    : "border-slate-300 bg-slate-200/60";
   const muted = dark ? "text-neutral-400" : "text-neutral-600";
   const softMuted = dark ? "text-neutral-300" : "text-neutral-700";
   const titleText = dark ? "text-white" : "text-neutral-950";
   const backButtonStyle = dark
     ? "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
-    : "border-slate-300 bg-white text-slate-800 shadow-sm hover:bg-slate-50";
+    : "border-slate-400/60 bg-slate-100 text-slate-800 shadow-sm hover:bg-white";
   const themeButtonStyle = dark
     ? "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
-    : "border-slate-300 bg-white text-slate-800 shadow-sm hover:bg-slate-50";
+    : "border-slate-400/60 bg-slate-100 text-slate-800 shadow-sm hover:bg-white";
 
   const updateForm = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));
