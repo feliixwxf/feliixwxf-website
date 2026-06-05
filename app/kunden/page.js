@@ -534,6 +534,16 @@ export default function CustomerGalleryPage() {
                       <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                       Neu laden
                     </button>
+                    {gallery.archive_download_url && (
+                      <a
+                        href={gallery.archive_download_url}
+                        download
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-sky-300 px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:w-fit"
+                      >
+                        <Download className="h-4 w-4" />
+                        ZIP herunterladen
+                      </a>
+                    )}
                   </div>
                 </div>
 

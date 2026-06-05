@@ -3,7 +3,7 @@ import {
   supabaseBaseUrl,
   supabaseServiceHeaders,
 } from "../../_lib/supabase";
-import { withSignedImageUrls } from "../../_lib/storage";
+import { createSignedArchiveUrl, withSignedImageUrls } from "../../_lib/storage";
 import {
   accountConfigMissing,
   applyCustomerSessionCookies,
@@ -12,7 +12,7 @@ import {
 } from "../_lib/auth";
 
 const GALLERY_SELECT =
-  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,expires_at,created_at";
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,archive_path,archive_size,archive_created_at,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,welcome_message,expires_at,created_at";
 const LINK_GALLERY_SELECT =
@@ -70,7 +70,14 @@ export async function GET(request) {
   if (!response.ok) {
     const details = await response.text();
 
-    if (details.toLowerCase().includes("cover_image_id")) {
+    const normalizedDetails = details.toLowerCase();
+
+    if (
+      normalizedDetails.includes("cover_image_id") ||
+      normalizedDetails.includes("archive_path") ||
+      normalizedDetails.includes("archive_size") ||
+      normalizedDetails.includes("archive_created")
+    ) {
       response = await fetch(
         `${supabaseBaseUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&client_email=ilike.${encodeURIComponent(
           user.email.toLowerCase()
@@ -136,15 +143,21 @@ export async function GET(request) {
     : {};
 
   const result = NextResponse.json({
-    galleries: visibleGalleries.map((gallery) => ({
-      ...gallery,
-      image_count: imageCounts[gallery.id] || 0,
-      favorite_count: favoriteCounts[gallery.id] || 0,
-      cover_url:
-        galleryImages.find((image) => image.id === gallery.cover_image_id)?.url ||
-        fallbackCoverImages[gallery.id] ||
-        "",
-    })),
+    galleries: await Promise.all(
+      visibleGalleries.map(async (gallery) => ({
+        ...gallery,
+        image_count: imageCounts[gallery.id] || 0,
+        favorite_count: favoriteCounts[gallery.id] || 0,
+        cover_url:
+          galleryImages.find((image) => image.id === gallery.cover_image_id)?.url ||
+          fallbackCoverImages[gallery.id] ||
+          "",
+        archive_download_url:
+          gallery.status === "completed" && gallery.archive_path
+            ? await createSignedArchiveUrl(gallery.archive_path)
+            : "",
+      }))
+    ),
   });
 
   return applyCustomerSessionCookies(result, customerSession);

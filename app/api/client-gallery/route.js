@@ -4,10 +4,10 @@ import {
   supabaseBaseUrl,
   supabaseServiceHeaders,
 } from "../_lib/supabase";
-import { withSignedImageUrls } from "../_lib/storage";
+import { createSignedArchiveUrl, withSignedImageUrls } from "../_lib/storage";
 
 const GALLERY_SELECT =
-  "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,welcome_message,expires_at,created_at";
+  "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,welcome_message,archive_path,archive_size,archive_created_at,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,downloads_enabled,welcome_message,expires_at,created_at";
 
@@ -54,7 +54,10 @@ export async function POST(request) {
 
     if (
       normalizedDetails.includes("status") ||
-      normalizedDetails.includes("cover_image_id")
+      normalizedDetails.includes("cover_image_id") ||
+      normalizedDetails.includes("archive_path") ||
+      normalizedDetails.includes("archive_size") ||
+      normalizedDetails.includes("archive_created")
     ) {
       galleryResponse = await fetch(
         `${supabaseBaseUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&access_code=eq.${encodeURIComponent(
@@ -127,6 +130,10 @@ export async function POST(request) {
     gallery: {
       ...gallery,
       cover_url: coverImage?.url || "",
+      archive_download_url:
+        gallery.status === "completed" && gallery.archive_path
+          ? await createSignedArchiveUrl(gallery.archive_path)
+          : "",
     },
     images,
     favorites: await favoriteResponse.json(),

@@ -11,7 +11,7 @@ import {
 } from "../../_lib/storage";
 
 const GALLERY_SELECT =
-  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,archive_path,archive_url,archive_size,archive_created_at,client_informed,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,is_active,downloads_enabled,welcome_message,expires_at,created_at";
 const IMAGE_SELECT =
@@ -79,6 +79,9 @@ async function loadGalleries() {
       normalizedDetails.includes("favorites_reviewed") ||
       normalizedDetails.includes("finals_exported") ||
       normalizedDetails.includes("archive_prepared") ||
+      normalizedDetails.includes("archive_path") ||
+      normalizedDetails.includes("archive_size") ||
+      normalizedDetails.includes("archive_created") ||
       normalizedDetails.includes("client_informed") ||
       normalizedDetails.includes("cover_image_id")
     ) {
@@ -333,6 +336,18 @@ export async function PATCH(request) {
   if ("archive_prepared" in body) {
     update.archive_prepared = Boolean(body.archive_prepared);
   }
+  if ("archive_path" in body) {
+    update.archive_path = body.archive_path ? String(body.archive_path) : null;
+  }
+  if ("archive_url" in body) {
+    update.archive_url = body.archive_url ? String(body.archive_url) : null;
+  }
+  if ("archive_size" in body) {
+    update.archive_size = body.archive_size ? Number(body.archive_size) : null;
+  }
+  if ("archive_created_at" in body) {
+    update.archive_created_at = body.archive_created_at || null;
+  }
   if ("client_informed" in body) {
     update.client_informed = Boolean(body.client_informed);
   }
@@ -389,23 +404,41 @@ export async function DELETE(request) {
     );
   }
 
-  const imagesResponse = await fetch(
-    `${supabaseRestUrl}/rest/v1/client_gallery_images?select=path&gallery_id=eq.${encodeURIComponent(
+  const [imagesResponse, galleryResponse] = await Promise.all([
+    fetch(
+      `${supabaseRestUrl}/rest/v1/client_gallery_images?select=path&gallery_id=eq.${encodeURIComponent(
       id
     )}`,
-    {
-      headers: supabaseServiceHeaders,
-      cache: "no-store",
-    }
-  );
+      {
+        headers: supabaseServiceHeaders,
+        cache: "no-store",
+      }
+    ),
+    fetch(
+      `${supabaseRestUrl}/rest/v1/client_galleries?select=archive_path&id=eq.${encodeURIComponent(
+        id
+      )}&limit=1`,
+      {
+        headers: supabaseServiceHeaders,
+        cache: "no-store",
+      }
+    ),
+  ]);
+
+  const storagePaths = [];
 
   if (imagesResponse.ok) {
     const images = await imagesResponse.json();
-    const paths = images.map((image) => image.path).filter(Boolean);
+    storagePaths.push(...images.map((image) => image.path).filter(Boolean));
+  }
 
-    if (paths.length > 0) {
-      await deleteClientGalleryStoragePaths(paths);
-    }
+  if (galleryResponse.ok) {
+    const [gallery] = await galleryResponse.json();
+    if (gallery?.archive_path) storagePaths.push(gallery.archive_path);
+  }
+
+  if (storagePaths.length > 0) {
+    await deleteClientGalleryStoragePaths(storagePaths);
   }
 
   const deleteResponse = await fetch(

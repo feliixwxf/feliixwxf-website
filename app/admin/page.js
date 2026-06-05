@@ -1419,6 +1419,9 @@ export default function AdminPage() {
           "favorites_reviewed",
           "finals_exported",
           "archive_prepared",
+          "archive_path",
+          "archive_size",
+          "archive_created",
           "client_informed",
           "cover_image_id",
           "welcome_message",
@@ -1482,6 +1485,62 @@ export default function AdminPage() {
           : gallery
       )
     );
+  };
+
+  const prepareClientGalleryArchive = async (gallery) => {
+    const previousGalleries = clientGalleries;
+
+    setBusyClientGalleryId(gallery.id);
+    setMessage("");
+    showMessage("ZIP wird erstellt. Das kann je nach Bildanzahl kurz dauern.", "info");
+
+    try {
+      const response = await fetch("/api/admin/client-galleries/archive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: gallery.id }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const details = String(data.details || "");
+        const missingArchiveField = [
+          "archive_path",
+          "archive_size",
+          "archive_created",
+          "schema cache",
+        ].some((field) => details.toLowerCase().includes(field));
+
+        showMessage(
+          missingArchiveField
+            ? "Bitte die aktualisierte supabase-client-galleries.sql in Supabase ausführen. Danach nochmal ZIP erstellen."
+            : data.error || "ZIP konnte nicht erstellt werden.",
+          "error"
+        );
+        return;
+      }
+
+      setClientGalleries((current) =>
+        current.map((item) =>
+          item.id === gallery.id
+            ? {
+                ...item,
+                ...(data.gallery || {}),
+                images: item.images || [],
+                favorites: item.favorites || [],
+                image_count: item.image_count || 0,
+                favorite_count: item.favorite_count || 0,
+              }
+            : item
+        )
+      );
+      showMessage("Galerie wurde abgeschlossen und als ZIP vorbereitet.", "success");
+    } catch (error) {
+      setClientGalleries(previousGalleries);
+      showMessage(error.message || "ZIP konnte nicht erstellt werden.", "error");
+    } finally {
+      setBusyClientGalleryId(null);
+    }
   };
 
   const setClientGalleryCover = async (gallery, image) => {
@@ -4164,24 +4223,24 @@ export default function AdminPage() {
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() =>
-                                      updateClientGallery(
-                                        activeClientGallery,
+                                    onClick={() => {
+                                      if (
                                         getClientGalleryStatus(
                                           activeClientGallery
                                         ) === "completed"
-                                          ? { status: "active", is_active: true }
-                                          : {
-                                              status: "completed",
-                                              is_active: true,
-                                            },
-                                        getClientGalleryStatus(
-                                          activeClientGallery
-                                        ) === "completed"
-                                          ? "Kundengalerie ist wieder aktiv."
-                                          : "Kundengalerie wurde abgeschlossen."
-                                      )
-                                    }
+                                      ) {
+                                        updateClientGallery(
+                                          activeClientGallery,
+                                          { status: "active", is_active: true },
+                                          "Kundengalerie ist wieder aktiv."
+                                        );
+                                        return;
+                                      }
+
+                                      prepareClientGalleryArchive(
+                                        activeClientGallery
+                                      );
+                                    }}
                                     disabled={
                                       busyClientGalleryId ===
                                       activeClientGallery.id
@@ -4193,10 +4252,23 @@ export default function AdminPage() {
                                         activeClientGallery
                                       ) === "completed"
                                         ? "Wieder aktiv setzen"
-                                        : "Als abgeschlossen markieren"}
+                                        : "Abschließen & ZIP erstellen"}
                                     </span>
                                     <CheckCircle2 className="h-4 w-4" />
                                   </button>
+                                  {activeClientGallery.archive_path && (
+                                    <p className="rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-xs font-bold leading-5 text-emerald-100">
+                                      ZIP ist vorbereitet
+                                      {activeClientGallery.archive_size
+                                        ? ` (${(
+                                            activeClientGallery.archive_size /
+                                            1024 /
+                                            1024
+                                          ).toFixed(1)} MB)`
+                                        : ""}
+                                      .
+                                    </p>
+                                  )}
                                 </div>
                               </div>
 

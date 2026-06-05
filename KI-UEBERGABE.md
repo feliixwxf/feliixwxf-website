@@ -1,6 +1,6 @@
 # feliix.wxf Website - KI-Übergabe
 
-Stand: 03.06.2026
+Stand: 05.06.2026
 
 Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt ohne langes Einlesen weitergeführt werden kann.
 
@@ -165,14 +165,17 @@ Kunden können ein Konto erstellen, sich einloggen und Galerien mit ihrem Konto 
 Funktionen:
 - Registrierung mit Datenschutz-Haken
 - Login und Logout
+- Passwort-zurücksetzen über Supabase Auth-Mail
 - Passwort anzeigen/ausblenden
 - Benutzername
 - Profilbild
+- optionale Telefonnummer
 - Galerie-Code mit Konto verknüpfen
 - aktive und abgeschlossene Galerien sehen
 - Favoriten zählen
 - Downloadstatus sehen
 - Konto löschen
+- Light/Dark Mode im Konto
 
 Konto löschen:
 - löscht Kundenkonto, Session, Profilbild, Favoriten und Galerie-Verknüpfungen
@@ -201,6 +204,7 @@ Workflow:
 4. Admin kann Cover, Hero-Banner, Titel, persönliche Nachricht und Status pflegen.
 5. Kunde öffnet `/kunden` per Code oder QR-Link.
 6. Kunde kann Galerie später im Konto verknüpfen.
+7. Beim Abschließen kann automatisch ein ZIP-Archiv aus allen Galerie-Bildern erstellt werden.
 
 Funktionen:
 - QR-Code für Galerie-Zugriff
@@ -211,6 +215,9 @@ Funktionen:
 - Galerie kann über Kundenkonto erneut geöffnet werden
 - neue Kundenbilder liegen im privaten Supabase-Bucket `client-galleries`
 - Kundenbilder werden über signierte URLs ausgeliefert
+- abgeschlossene Galerien können ein privates ZIP-Archiv haben
+- ZIP-Archive liegen ebenfalls im privaten Bucket und werden nur über kurz gültige signierte Links heruntergeladen
+- ZIP-Download erscheint im Kundenkonto bei abgeschlossenen Galerien und zusätzlich auf `/kunden`, wenn ein Archiv vorhanden ist
 
 Wichtig zu alten Kundengalerie-Bildern:
 - Bilder, die vor der privaten Bucket-Umstellung hochgeladen wurden, können noch im öffentlichen `portfolio`-Bucket liegen.
@@ -224,6 +231,7 @@ Wichtige Dateien:
 - `app/api/account/galleries/route.js`
 - `app/api/_lib/storage.js`
 - `app/api/admin/client-galleries/route.js`
+- `app/api/admin/client-galleries/archive/route.js`
 - `app/api/admin/client-gallery-images/route.js`
 - `supabase-client-galleries.sql`
 
@@ -250,19 +258,22 @@ Admin kann:
 - Galerie-Codes und QR-Codes verwenden
 - Downloads aktivieren/deaktivieren
 - Checklisten und Abschlussstatus pflegen
+- beim Abschließen einer Kundengalerie automatisch ein ZIP-Archiv erstellen
 - Bewertungen freigeben oder löschen
 - Website-Texte und Kontaktinfos ändern
+- Kundenkonten per E-Mail suchen und Profile kompakt öffnen
+- Kundendaten wie E-Mail, Benutzername, Telefonnummer, Profilbild, Erstelldatum und letzte Aktivität einsehen
 
 Sicherheitsdetails:
 - Admin-Login nutzt HTTP-only Session-Cookie
 - Admin-Löschaktionen sind zusätzlich abgesichert
 - gefährliche Löschaktionen verlangen Bestätigung
-- Kundengalerie-Detailbereich wurde am 03.06.2026 entzerrt:
+- Kundengalerie-Detailbereich wurde entzerrt:
   - aktive Galerie oben nur noch als Kurzüberblick
   - Status, Freigaben und Checkliste in einem untergeordneten Bereich
   - interne Notiz eingeklappt
   - Galerie-Löschung in eigenem Sicherheitsbereich
-- Kundenkonten können im Adminbereich per E-Mail gesucht werden.
+- Adminbereiche wurden vereinfacht und unnötige Erklärungstexte entfernt.
 
 ## Portfolio
 
@@ -277,6 +288,9 @@ Wichtig:
 - Uploads ändern nicht automatisch die Kacheln auf der Startseite.
 - Die Reihenfolge kann im Adminbereich sortiert werden.
 - Mehrfachauswahl für sichtbare Bilder ist vorhanden.
+- Portfolio-Uploads unterstützen mehrere Dateien.
+- Upload-Vorschau zeigt Bildformat und Größe, damit Bilder besser passend vorbereitet werden können.
+- Alte KI-/Platzhalterbilder wurden aus den sichtbaren Standardgalerien entfernt; eigene Bilder bleiben erhalten.
 
 Wichtige Dateien:
 - `app/api/portfolio-images/route.js`
@@ -294,6 +308,11 @@ Admin kann ändern:
 - Kontaktinfos
 - Formspree-Link des Kontaktformulars
 - Datenschutz- und Impressumstexte innerhalb der Website
+
+Kontakt:
+- Telefonnummer ist klickbar (`tel:`), damit Mobilgeräte direkt anrufen können.
+- E-Mail ist klickbar (`mailto:`), damit die Mail-App mit Felix als Empfänger öffnet.
+- Telefon- und Mail-Icons sind farbig hervorgehoben.
 
 Wichtige Dateien:
 - `app/api/site-assets/route.js`
@@ -315,6 +334,8 @@ Aktueller Stand:
 - Direkter öffentlicher Zugriff auf Kundengalerie-Tabellen wurde über RLS/Policies gehärtet.
 - Aufbewahrungs- und Löschregeln sind in `AUFBEWAHRUNG_LOESCHKONZEPT.md` dokumentiert.
 - Es gibt bewusst noch keine automatische Galerie-Löschung. Löschungen sollen manuell im Admin geprüft werden.
+- Kundenkonto-Löschung ist im Konto klarer getrennt vom restlichen Profilbereich.
+- Sicherheitsbereich im Kundenkonto enthält Passwort- und Löschfunktionen ohne große Zusatzfenster.
 
 Noch sinnvoll zu prüfen:
 - Impressum und Datenschutzerklärung rechtlich final prüfen lassen.
@@ -325,6 +346,17 @@ Noch sinnvoll zu prüfen:
 ## Letzter technischer Stand
 
 Letzte größere Änderungen:
+- Kundenkonto wurde optisch reduziert und übersichtlicher gemacht.
+- Kundenkonto passt sich dem Light/Dark Mode an; Light Mode ist bewusst etwas grauer und abgegrenzter.
+- Konto-Header zeigt bei eingeloggten Nutzern den Benutzernamen in der Website-Navigation.
+- Admin-Kundenkontosuche öffnet kompakte Kundenprofile mit E-Mail, Telefon, Profilbild und Aktivitätsdaten.
+- Adminbereich wurde von unnötigen Hinweistexten befreit und stärker nach Arbeitsbereichen gegliedert.
+- Kontaktkarten auf der Website sind klickbar für Telefon und E-Mail.
+- Portfolio-Uploads können mehrere Dateien verarbeiten und zeigen Dateigröße/Bildformat.
+- Sichtbare KI-/Platzhalterbilder wurden entfernt, ohne die bestehende Kategorie-Struktur umzubauen.
+- Admin-Abschluss erzeugt jetzt ein ZIP-Archiv aus Kundengalerie-Bildern.
+- Kunden können ZIP-Archive abgeschlossener Galerien im Konto oder direkt über `/kunden` herunterladen.
+- ZIPs werden privat in Supabase Storage gespeichert und pro Abruf signiert.
 - Aufbewahrungs- und Löschkonzept für Kundengalerien, Kundenkonten, Bewertungen, Kontaktanfragen und Backups ergänzt.
 - Admin-Kundenbereich wurde optisch vereinfacht und weniger gequetscht.
 - Kundengalerie-Übersicht zeigt wichtige Werte kompakt statt als große Kartenwand.
@@ -352,14 +384,19 @@ git push
 ```
 
 Letzter bekannter Build:
-- `npm run build` erfolgreich am 03.06.2026.
+- `npm run build` erfolgreich am 05.06.2026.
 
 Letzte bekannte Commits:
-- `c4bbee3 Simplify admin client workspace`
-- `bebfec4 Simplify admin customer account search`
-- `5e6a6fa Clarify privacy policy for customer accounts`
-- `3ee13de Redesign customer account dashboard`
-- `5a3e7fa Redesign customer account mobile view`
+- `aa638cf Clarify account security controls`
+- `7a7e187 Darken customer account light mode`
+- `5649943 Tune customer account light mode`
+- `934499b Simplify customer account admin`
+- `f5c1861 Simplify customer account profile`
+- `ee37f90 Style contact icons`
+- `388e877 Improve gallery copy and contact links`
+- `1635a6d Improve portfolio image uploads`
+- `817f354 Preserve portfolio image categories`
+- `f44ac85 Remove placeholder images and improve upload preview`
 
 ## Wichtige Hinweise für eine nächste KI
 

@@ -12,6 +12,10 @@ create table if not exists public.client_galleries (
   favorites_reviewed boolean not null default false,
   finals_exported boolean not null default false,
   archive_prepared boolean not null default false,
+  archive_path text,
+  archive_url text,
+  archive_size bigint,
+  archive_created_at timestamptz,
   client_informed boolean not null default false,
   downloads_enabled boolean not null default false,
   expires_at timestamptz,
@@ -78,6 +82,18 @@ alter table public.client_galleries
 
 alter table public.client_galleries
   add column if not exists archive_prepared boolean default false;
+
+alter table public.client_galleries
+  add column if not exists archive_path text;
+
+alter table public.client_galleries
+  add column if not exists archive_url text;
+
+alter table public.client_galleries
+  add column if not exists archive_size bigint;
+
+alter table public.client_galleries
+  add column if not exists archive_created_at timestamptz;
 
 alter table public.client_galleries
   add column if not exists client_informed boolean default false;
@@ -147,13 +163,13 @@ values (
   'client-galleries',
   false,
   52428800,
-  array['image/jpeg', 'image/png', 'image/webp']
+  array['image/jpeg', 'image/png', 'image/webp', 'application/zip']
 )
 on conflict (id) do update
 set
   public = false,
   file_size_limit = 52428800,
-  allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
+  allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'application/zip'];
 
 alter table public.client_galleries enable row level security;
 alter table public.client_gallery_images enable row level security;

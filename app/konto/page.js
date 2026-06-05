@@ -1218,8 +1218,15 @@ export default function AccountPage() {
                                             Downloads
                                           </span>
                                         )}
+                                        {gallery.archive_download_url && (
+                                          <span className="inline-flex items-center gap-1 rounded-full bg-sky-300/10 px-3 py-1 text-xs font-black text-sky-100">
+                                            <Download className="h-3.5 w-3.5" />
+                                            ZIP
+                                          </span>
+                                        )}
                                         {gallery.status === "completed" &&
-                                          !gallery.downloads_enabled && (
+                                          !gallery.downloads_enabled &&
+                                          !gallery.archive_download_url && (
                                             <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-black text-neutral-300">
                                               Downloads gesperrt
                                             </span>
@@ -1265,6 +1272,16 @@ export default function AccountPage() {
                                       <ImageIcon className="h-4 w-4" />
                                       Galerie öffnen
                                     </button>
+                                    {gallery.archive_download_url && (
+                                      <a
+                                        href={gallery.archive_download_url}
+                                        download
+                                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-sky-300/25 bg-sky-300/10 px-4 py-2.5 text-sm font-black text-sky-100 transition hover:-translate-y-0.5 hover:bg-sky-300/15 hover:shadow-xl"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                        ZIP herunterladen
+                                      </a>
+                                    )}
                                   </div>
                                 </div>
                                 </article>
