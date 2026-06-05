@@ -35,12 +35,16 @@ function createCode() {
 }
 
 async function loadCustomerAccountEmails() {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 1500);
+
   try {
     const response = await fetch(
       `${supabaseRestUrl}/auth/v1/admin/users?per_page=1000`,
       {
         headers: supabaseServiceHeaders,
         cache: "no-store",
+        signal: controller.signal,
       }
     );
 
@@ -56,6 +60,8 @@ async function loadCustomerAccountEmails() {
     );
   } catch {
     return new Set();
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

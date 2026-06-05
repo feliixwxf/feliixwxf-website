@@ -6,8 +6,10 @@ import {
   ArrowDown,
   ArrowUp,
   CheckCircle2,
+  CircleHelp,
   Clock,
   Copy,
+  Download,
   ExternalLink,
   EyeOff,
   Eye,
@@ -3805,12 +3807,13 @@ export default function AdminPage() {
                               {activeClientAccountState.label}
                             </span>
                             <span
-                              className={`rounded-full px-3 py-1 font-bold ${
+                              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-bold ${
                                 activeClientGallery.downloads_enabled
                                   ? "bg-emerald-400/15 text-emerald-100"
                                   : "bg-white/10 text-neutral-300"
                               }`}
                             >
+                              <Download className="h-3.5 w-3.5" />
                               Downloads{" "}
                               {activeClientGallery.downloads_enabled
                                 ? "an"
@@ -3821,8 +3824,9 @@ export default function AdminPage() {
                           <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.06] p-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <div className="min-w-0">
-                                <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
-                                  Status
+                                <p className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                                  <CircleHelp className="h-3.5 w-3.5" />
+                                  Nächster Schritt
                                 </p>
                                 <h4 className="mt-1 font-black text-neutral-100">
                                   {activeClientProjectStep.label}
@@ -4204,6 +4208,7 @@ export default function AdminPage() {
                                     className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3 text-sm font-bold transition hover:bg-white/10 disabled:opacity-60"
                                   >
                                     <span>
+                                      <Download className="mr-2 inline h-4 w-4" />
                                       Downloads{" "}
                                       {activeClientGallery.downloads_enabled
                                         ? "deaktivieren"
