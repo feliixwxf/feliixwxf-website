@@ -7,6 +7,7 @@ import {
 } from "../_lib/supabase";
 import {
   deleteClientGalleryStoragePaths,
+  getClientGalleryArchivePath,
   withSignedImageUrls,
 } from "../../_lib/storage";
 
@@ -186,6 +187,11 @@ async function loadGalleries() {
 
       return {
         ...gallery,
+        archive_path:
+          gallery.archive_path ||
+          (gallery.status === "completed" || gallery.archive_prepared
+            ? getClientGalleryArchivePath(gallery)
+            : ""),
         images: galleryImages,
         favorites: galleryFavorites,
         cover_url: coverImage?.url || "",

@@ -10,6 +10,7 @@ import {
 import {
   createSignedArchiveUrl,
   downloadClientGalleryStorageObject,
+  getClientGalleryArchivePath,
   uploadClientGalleryStorageObject,
 } from "../../../_lib/storage";
 
@@ -273,8 +274,22 @@ async function loadImages(galleryId) {
 }
 
 async function updateGalleryArchiveState(id, updatePayload) {
-  const { archive_created_at, archive_size, archive_url, ...withoutArchiveCreatedAtSizeUrl } =
+  const {
+    archive_created_at,
+    archive_size,
+    archive_url,
+    archive_path,
+    archive_prepared,
+    finals_exported,
+    ...statusPayload
+  } =
     updatePayload;
+  const withoutArchiveCreatedAtSizeUrl = {
+    ...statusPayload,
+    finals_exported,
+    archive_prepared,
+    archive_path,
+  };
   const withoutArchiveCreatedAt = {
     ...withoutArchiveCreatedAtSizeUrl,
     archive_url,
@@ -290,6 +305,12 @@ async function updateGalleryArchiveState(id, updatePayload) {
     withoutArchiveCreatedAt,
     withoutArchiveCreatedAtSize,
     withoutArchiveCreatedAtSizeUrl,
+    {
+      ...statusPayload,
+      finals_exported,
+      archive_prepared,
+    },
+    statusPayload,
   ];
 
   let details = "";
@@ -313,11 +334,13 @@ async function updateGalleryArchiveState(id, updatePayload) {
     const normalizedDetails = details.toLowerCase();
 
     if (
-      normalizedDetails.includes("archive_path") ||
-      (!normalizedDetails.includes("archive_created_at") &&
+      !normalizedDetails.includes("archive_path") &&
+      !normalizedDetails.includes("archive_prepared") &&
+      !normalizedDetails.includes("finals_exported") &&
+      !normalizedDetails.includes("archive_created_at") &&
         !normalizedDetails.includes("archive_size") &&
         !normalizedDetails.includes("archive_url") &&
-        !normalizedDetails.includes("schema cache"))
+        !normalizedDetails.includes("schema cache")
     ) {
       break;
     }
@@ -431,11 +454,7 @@ export async function POST(request) {
   }
 
   const archive = createZip(entries);
-  const archiveName = `${sanitizeFileName(gallery.title, "kundengalerie")}-${sanitizeFileName(
-    gallery.access_code,
-    "galerie"
-  )}.zip`;
-  const archivePath = `client-galleries/${id}/archive/${archiveName}`;
+  const archivePath = getClientGalleryArchivePath(gallery);
 
   const uploadResult = await uploadClientGalleryStorageObject(
     archivePath,
@@ -492,6 +511,7 @@ export async function POST(request) {
     gallery: {
       ...gallery,
       ...savedPayload,
+      archive_path: savedPayload.archive_path || archivePath,
       archive_size: savedPayload.archive_size ?? archive.length,
       archive_created_at: savedPayload.archive_created_at || archiveCreatedAt,
       archive_download_url: archiveUrl,

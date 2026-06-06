@@ -8,6 +8,29 @@ import {
 const SIGNED_IMAGE_EXPIRES_IN = 60 * 60 * 6;
 const SIGNED_ARCHIVE_EXPIRES_IN = 60 * 15;
 
+function sanitizeArchivePart(value, fallback = "galerie") {
+  const cleaned = String(value || "")
+    .trim()
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+
+  return cleaned || fallback;
+}
+
+export function getClientGalleryArchivePath(gallery) {
+  if (gallery?.archive_path) return gallery.archive_path;
+  if (!gallery?.id) return "";
+
+  const archiveName = `${sanitizeArchivePart(
+    gallery.title,
+    "kundengalerie"
+  )}-${sanitizeArchivePart(gallery.access_code, "galerie")}.zip`;
+
+  return `client-galleries/${gallery.id}/archive/${archiveName}`;
+}
+
 function encodeStoragePath(path) {
   return String(path || "")
     .split("/")

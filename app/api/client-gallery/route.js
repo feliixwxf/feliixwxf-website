@@ -4,7 +4,11 @@ import {
   supabaseBaseUrl,
   supabaseServiceHeaders,
 } from "../_lib/supabase";
-import { createSignedArchiveUrl, withSignedImageUrls } from "../_lib/storage";
+import {
+  createSignedArchiveUrl,
+  getClientGalleryArchivePath,
+  withSignedImageUrls,
+} from "../_lib/storage";
 
 const GALLERY_SELECT =
   "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,welcome_message,archive_path,archive_size,archive_created_at,expires_at,created_at";
@@ -125,14 +129,16 @@ export async function POST(request) {
   const images = await withSignedImageUrls(await imageResponse.json());
   const coverImage =
     images.find((image) => image.id === gallery.cover_image_id) || images[0];
+  const archivePath =
+    gallery.status === "completed" ? getClientGalleryArchivePath(gallery) : "";
 
   return NextResponse.json({
     gallery: {
       ...gallery,
       cover_url: coverImage?.url || "",
       archive_download_url:
-        gallery.status === "completed" && gallery.archive_path
-          ? await createSignedArchiveUrl(gallery.archive_path)
+        gallery.status === "completed" && archivePath
+          ? await createSignedArchiveUrl(archivePath)
           : "",
     },
     images,

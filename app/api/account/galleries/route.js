@@ -3,7 +3,11 @@ import {
   supabaseBaseUrl,
   supabaseServiceHeaders,
 } from "../../_lib/supabase";
-import { createSignedArchiveUrl, withSignedImageUrls } from "../../_lib/storage";
+import {
+  createSignedArchiveUrl,
+  getClientGalleryArchivePath,
+  withSignedImageUrls,
+} from "../../_lib/storage";
 import {
   accountConfigMissing,
   applyCustomerSessionCookies,
@@ -144,19 +148,26 @@ export async function GET(request) {
 
   const result = NextResponse.json({
     galleries: await Promise.all(
-      visibleGalleries.map(async (gallery) => ({
-        ...gallery,
-        image_count: imageCounts[gallery.id] || 0,
-        favorite_count: favoriteCounts[gallery.id] || 0,
-        cover_url:
-          galleryImages.find((image) => image.id === gallery.cover_image_id)?.url ||
-          fallbackCoverImages[gallery.id] ||
-          "",
-        archive_download_url:
-          gallery.status === "completed" && gallery.archive_path
-            ? await createSignedArchiveUrl(gallery.archive_path)
-            : "",
-      }))
+      visibleGalleries.map(async (gallery) => {
+        const archivePath =
+          gallery.status === "completed"
+            ? getClientGalleryArchivePath(gallery)
+            : "";
+
+        return {
+          ...gallery,
+          image_count: imageCounts[gallery.id] || 0,
+          favorite_count: favoriteCounts[gallery.id] || 0,
+          cover_url:
+            galleryImages.find((image) => image.id === gallery.cover_image_id)?.url ||
+            fallbackCoverImages[gallery.id] ||
+            "",
+          archive_download_url:
+            gallery.status === "completed" && archivePath
+              ? await createSignedArchiveUrl(archivePath)
+              : "",
+        };
+      })
     ),
   });
 
