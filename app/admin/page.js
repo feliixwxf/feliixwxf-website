@@ -96,6 +96,8 @@ const SITE_ASSET_LABELS = Object.fromEntries(
   )
 );
 
+const BUSINESS_CARD_URL = "https://www.feliixwxf.de";
+
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
   hero_title_line_1: "Bilder mit Charakter.",
@@ -464,6 +466,7 @@ export default function AdminPage() {
   const [activeClientPanel, setActiveClientPanel] = useState("overview");
   const [publicOrigin, setPublicOrigin] = useState("");
   const [activeClientGalleryQrUrl, setActiveClientGalleryQrUrl] = useState("");
+  const [businessCardQrUrl, setBusinessCardQrUrl] = useState("");
   const [clientGalleryFile, setClientGalleryFile] = useState(null);
   const [clientGalleryFiles, setClientGalleryFiles] = useState([]);
   const [imageCategory, setImageCategory] = useState("car");
@@ -1001,6 +1004,30 @@ export default function AdminPage() {
 
   useEffect(() => {
     setPublicOrigin(window.location.origin);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    QRCode.toDataURL(BUSINESS_CARD_URL, {
+      errorCorrectionLevel: "H",
+      margin: 3,
+      width: 1000,
+      color: {
+        dark: "#0a0a0a",
+        light: "#ffffff",
+      },
+    })
+      .then((url) => {
+        if (!cancelled) setBusinessCardQrUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) setBusinessCardQrUrl("");
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -5047,6 +5074,69 @@ export default function AdminPage() {
                     </button>
                   </div>
                 </form>
+
+                <section className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="max-w-xl">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
+                          <QrCode className="h-5 w-5" />
+                        </span>
+                        <div>
+                          <h3 className="text-xl font-black">
+                            QR-Code für Visitenkarten
+                          </h3>
+                          <p className="mt-1 break-all text-sm text-neutral-400">
+                            {BUSINESS_CARD_URL}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="w-full max-w-xs rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
+                      {businessCardQrUrl ? (
+                        <>
+                          <div className="rounded-2xl bg-white p-4">
+                            <img
+                              src={businessCardQrUrl}
+                              alt="QR-Code für feliixwxf.de"
+                              className="mx-auto aspect-square w-full"
+                            />
+                          </div>
+
+                          <div className="mt-4 grid gap-2">
+                            <a
+                              href={businessCardQrUrl}
+                              download="feliixwxf-website-qr.png"
+                              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                            >
+                              <Download className="h-4 w-4" />
+                              QR herunterladen
+                            </a>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                copyText(
+                                  BUSINESS_CARD_URL,
+                                  "Website-Link wurde kopiert."
+                                )
+                              }
+                              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                            >
+                              <Copy className="h-4 w-4" />
+                              Link kopieren
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 text-sm text-neutral-400">
+                          QR-Code wird geladen.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </section>
               </div>
             )}
 
