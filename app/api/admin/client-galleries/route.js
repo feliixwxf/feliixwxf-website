@@ -12,6 +12,8 @@ import {
 
 const GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,archive_path,archive_url,archive_size,archive_created_at,client_informed,expires_at,created_at";
+const NO_ARCHIVE_GALLERY_SELECT =
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,is_active,downloads_enabled,welcome_message,expires_at,created_at";
 const IMAGE_SELECT =
@@ -66,38 +68,61 @@ async function loadCustomerAccountEmails() {
 }
 
 async function loadGalleries() {
-  let galleryResponse = await fetch(
-    `${supabaseRestUrl}/rest/v1/client_galleries?select=${GALLERY_SELECT}&order=created_at.desc&limit=100`,
-    {
-      headers: supabaseServiceHeaders,
-      cache: "no-store",
-    }
-  );
+  const fetchGalleries = (select) =>
+    fetch(
+      `${supabaseRestUrl}/rest/v1/client_galleries?select=${select}&order=created_at.desc&limit=100`,
+      {
+        headers: supabaseServiceHeaders,
+        cache: "no-store",
+      }
+    );
+
+  let galleryResponse = await fetchGalleries(GALLERY_SELECT);
+
   if (!galleryResponse.ok) {
     const details = await galleryResponse.text();
-
     const normalizedDetails = details.toLowerCase();
 
     if (
+      normalizedDetails.includes("archive_path") ||
+      normalizedDetails.includes("archive_url") ||
+      normalizedDetails.includes("archive_size") ||
+      normalizedDetails.includes("archive_created") ||
+      normalizedDetails.includes("schema cache")
+    ) {
+      galleryResponse = await fetchGalleries(NO_ARCHIVE_GALLERY_SELECT);
+
+      if (!galleryResponse.ok) {
+        const fallbackDetails = await galleryResponse.text();
+        const normalizedFallbackDetails = fallbackDetails.toLowerCase();
+
+        if (
+          normalizedFallbackDetails.includes("status") ||
+          normalizedFallbackDetails.includes("internal_note") ||
+          normalizedFallbackDetails.includes("client_email") ||
+          normalizedFallbackDetails.includes("favorites_reviewed") ||
+          normalizedFallbackDetails.includes("finals_exported") ||
+          normalizedFallbackDetails.includes("archive_prepared") ||
+          normalizedFallbackDetails.includes("client_informed") ||
+          normalizedFallbackDetails.includes("cover_image_id") ||
+          normalizedFallbackDetails.includes("schema cache")
+        ) {
+          galleryResponse = await fetchGalleries(LEGACY_GALLERY_SELECT);
+        } else {
+          return { error: fallbackDetails };
+        }
+      }
+    } else if (
       normalizedDetails.includes("status") ||
       normalizedDetails.includes("internal_note") ||
       normalizedDetails.includes("client_email") ||
       normalizedDetails.includes("favorites_reviewed") ||
       normalizedDetails.includes("finals_exported") ||
       normalizedDetails.includes("archive_prepared") ||
-      normalizedDetails.includes("archive_path") ||
-      normalizedDetails.includes("archive_size") ||
-      normalizedDetails.includes("archive_created") ||
       normalizedDetails.includes("client_informed") ||
       normalizedDetails.includes("cover_image_id")
     ) {
-      galleryResponse = await fetch(
-        `${supabaseRestUrl}/rest/v1/client_galleries?select=${LEGACY_GALLERY_SELECT}&order=created_at.desc&limit=100`,
-        {
-          headers: supabaseServiceHeaders,
-          cache: "no-store",
-        }
-      );
+      galleryResponse = await fetchGalleries(LEGACY_GALLERY_SELECT);
     } else {
       return { error: details };
     }

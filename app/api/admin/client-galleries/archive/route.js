@@ -272,6 +272,60 @@ async function loadImages(galleryId) {
   return { images: await response.json() };
 }
 
+async function updateGalleryArchiveState(id, updatePayload) {
+  const { archive_created_at, archive_size, archive_url, ...withoutArchiveCreatedAtSizeUrl } =
+    updatePayload;
+  const withoutArchiveCreatedAt = {
+    ...withoutArchiveCreatedAtSizeUrl,
+    archive_url,
+    archive_size,
+  };
+  const withoutArchiveCreatedAtSize = {
+    ...withoutArchiveCreatedAtSizeUrl,
+    archive_url,
+  };
+
+  const attempts = [
+    updatePayload,
+    withoutArchiveCreatedAt,
+    withoutArchiveCreatedAtSize,
+    withoutArchiveCreatedAtSizeUrl,
+  ];
+
+  let details = "";
+
+  for (const payload of attempts) {
+    const response = await fetch(
+      `${supabaseRestUrl}/rest/v1/client_galleries?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        headers: {
+          ...supabaseServiceHeaders,
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (response.ok) return { payload };
+
+    details = await response.text();
+    const normalizedDetails = details.toLowerCase();
+
+    if (
+      normalizedDetails.includes("archive_path") ||
+      (!normalizedDetails.includes("archive_created_at") &&
+        !normalizedDetails.includes("archive_size") &&
+        !normalizedDetails.includes("archive_url") &&
+        !normalizedDetails.includes("schema cache"))
+    ) {
+      break;
+    }
+  }
+
+  return { error: details };
+}
+
 export async function POST(request) {
   if (!(await isAdminAuthenticated())) return unauthorized();
 
@@ -409,53 +463,14 @@ export async function POST(request) {
     archive_created_at: archiveCreatedAt,
   };
 
-  let updateResponse = await fetch(
-    `${supabaseRestUrl}/rest/v1/client_galleries?id=eq.${encodeURIComponent(id)}`,
-    {
-      method: "PATCH",
-      headers: {
-        ...supabaseServiceHeaders,
-        Prefer: "return=representation",
-      },
-      body: JSON.stringify(updatePayload),
-    }
-  );
+  const updateResult = await updateGalleryArchiveState(id, updatePayload);
 
-  if (!updateResponse.ok) {
-    const details = await updateResponse.text();
-    const normalizedDetails = details.toLowerCase();
-
-    if (normalizedDetails.includes("archive_created_at")) {
-      const { archive_created_at, ...fallbackPayload } = updatePayload;
-
-      updateResponse = await fetch(
-        `${supabaseRestUrl}/rest/v1/client_galleries?id=eq.${encodeURIComponent(id)}`,
-        {
-          method: "PATCH",
-          headers: {
-            ...supabaseServiceHeaders,
-            Prefer: "return=representation",
-          },
-          body: JSON.stringify(fallbackPayload),
-        }
-      );
-
-      if (updateResponse.ok) {
-        const [updatedGallery] = await updateResponse.json();
-
-        return NextResponse.json({
-          gallery: {
-            ...updatedGallery,
-            archive_created_at: archiveCreatedAt,
-            archive_download_url: archiveUrl,
-          },
-        });
-      }
-    }
-
+  if (updateResult.error) {
+    const normalizedDetails = updateResult.error.toLowerCase();
     const missingArchiveFields =
       normalizedDetails.includes("archive_path") ||
       normalizedDetails.includes("archive_size") ||
+      normalizedDetails.includes("archive_url") ||
       normalizedDetails.includes("archive_created") ||
       normalizedDetails.includes("schema cache");
 
@@ -465,17 +480,20 @@ export async function POST(request) {
           missingArchiveFields
             ? "ZIP wurde erstellt, aber Supabase kennt die Archiv-Spalten noch nicht."
             : "ZIP wurde erstellt, aber die Galerie konnte nicht aktualisiert werden.",
-        details,
+        details: updateResult.error,
       },
       { status: 500 }
     );
   }
 
-  const [updatedGallery] = await updateResponse.json();
+  const savedPayload = updateResult.payload;
 
   return NextResponse.json({
     gallery: {
-      ...updatedGallery,
+      ...gallery,
+      ...savedPayload,
+      archive_size: savedPayload.archive_size ?? archive.length,
+      archive_created_at: savedPayload.archive_created_at || archiveCreatedAt,
       archive_download_url: archiveUrl,
     },
   });
