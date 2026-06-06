@@ -43,6 +43,8 @@ const DEFAULT_SITE_ASSETS = {
   cover_event: { url: "/images/abititel.jpg" },
 };
 
+const ARCHIVED_PORTFOLIO_KEYS = new Set(["portrait", "nature"]);
+
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
   hero_title_line_1: "Bilder mit Charakter.",
@@ -387,6 +389,9 @@ export default function FeliixWxfPhotography() {
         : siteAssets.cover_event?.url || DEFAULT_SITE_ASSETS.cover_event.url,
     },
   ];
+  const visiblePortfolioItems = portfolioItems.filter(
+    (item) => !ARCHIVED_PORTFOLIO_KEYS.has(item.key)
+  );
 
   const galleryImages = {
     car: uniqueImageList([
@@ -850,8 +855,8 @@ export default function FeliixWxfPhotography() {
               {siteSettings.portfolio_heading}
             </h2>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {portfolioItems.map((item) => (
+            <div className="mt-12 grid gap-6 md:grid-cols-2">
+              {visiblePortfolioItems.map((item) => (
                 <Card
                   key={item.key}
                   onClick={() => setActiveGallery(item.key)}
