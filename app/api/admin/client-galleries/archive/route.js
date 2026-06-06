@@ -398,8 +398,18 @@ export async function POST(request) {
 
   const archiveUrl = await createSignedArchiveUrl(archivePath);
   const archiveCreatedAt = new Date().toISOString();
+  const updatePayload = {
+    status: "completed",
+    is_active: true,
+    finals_exported: true,
+    archive_prepared: true,
+    archive_path: archivePath,
+    archive_url: null,
+    archive_size: archive.length,
+    archive_created_at: archiveCreatedAt,
+  };
 
-  const updateResponse = await fetch(
+  let updateResponse = await fetch(
     `${supabaseRestUrl}/rest/v1/client_galleries?id=eq.${encodeURIComponent(id)}`,
     {
       method: "PATCH",
@@ -407,22 +417,42 @@ export async function POST(request) {
         ...supabaseServiceHeaders,
         Prefer: "return=representation",
       },
-      body: JSON.stringify({
-        status: "completed",
-        is_active: true,
-        finals_exported: true,
-        archive_prepared: true,
-        archive_path: archivePath,
-        archive_url: null,
-        archive_size: archive.length,
-        archive_created_at: archiveCreatedAt,
-      }),
+      body: JSON.stringify(updatePayload),
     }
   );
 
   if (!updateResponse.ok) {
     const details = await updateResponse.text();
     const normalizedDetails = details.toLowerCase();
+
+    if (normalizedDetails.includes("archive_created_at")) {
+      const { archive_created_at, ...fallbackPayload } = updatePayload;
+
+      updateResponse = await fetch(
+        `${supabaseRestUrl}/rest/v1/client_galleries?id=eq.${encodeURIComponent(id)}`,
+        {
+          method: "PATCH",
+          headers: {
+            ...supabaseServiceHeaders,
+            Prefer: "return=representation",
+          },
+          body: JSON.stringify(fallbackPayload),
+        }
+      );
+
+      if (updateResponse.ok) {
+        const [updatedGallery] = await updateResponse.json();
+
+        return NextResponse.json({
+          gallery: {
+            ...updatedGallery,
+            archive_created_at: archiveCreatedAt,
+            archive_download_url: archiveUrl,
+          },
+        });
+      }
+    }
+
     const missingArchiveFields =
       normalizedDetails.includes("archive_path") ||
       normalizedDetails.includes("archive_size") ||
