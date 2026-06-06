@@ -15,6 +15,8 @@ const GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,archive_path,archive_url,archive_size,archive_created_at,client_informed,expires_at,created_at";
 const NO_ARCHIVE_GALLERY_SELECT =
   "id,title,client_name,client_email,access_code,is_active,downloads_enabled,status,cover_image_id,welcome_message,internal_note,favorites_reviewed,finals_exported,archive_prepared,client_informed,expires_at,created_at";
+const BASIC_EMAIL_GALLERY_SELECT =
+  "id,title,client_name,client_email,access_code,is_active,downloads_enabled,welcome_message,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,is_active,downloads_enabled,welcome_message,expires_at,created_at";
 const IMAGE_SELECT =
@@ -100,7 +102,6 @@ async function loadGalleries() {
         if (
           normalizedFallbackDetails.includes("status") ||
           normalizedFallbackDetails.includes("internal_note") ||
-          normalizedFallbackDetails.includes("client_email") ||
           normalizedFallbackDetails.includes("favorites_reviewed") ||
           normalizedFallbackDetails.includes("finals_exported") ||
           normalizedFallbackDetails.includes("archive_prepared") ||
@@ -108,7 +109,22 @@ async function loadGalleries() {
           normalizedFallbackDetails.includes("cover_image_id") ||
           normalizedFallbackDetails.includes("schema cache")
         ) {
-          galleryResponse = await fetchGalleries(LEGACY_GALLERY_SELECT);
+          galleryResponse = await fetchGalleries(BASIC_EMAIL_GALLERY_SELECT);
+
+          if (!galleryResponse.ok) {
+            const basicDetails = await galleryResponse.text();
+            const normalizedBasicDetails = basicDetails.toLowerCase();
+
+            if (
+              normalizedBasicDetails.includes("client_email") ||
+              normalizedBasicDetails.includes("downloads_enabled") ||
+              normalizedBasicDetails.includes("schema cache")
+            ) {
+              galleryResponse = await fetchGalleries(LEGACY_GALLERY_SELECT);
+            } else {
+              return { error: basicDetails };
+            }
+          }
         } else {
           return { error: fallbackDetails };
         }
@@ -123,7 +139,22 @@ async function loadGalleries() {
       normalizedDetails.includes("client_informed") ||
       normalizedDetails.includes("cover_image_id")
     ) {
-      galleryResponse = await fetchGalleries(LEGACY_GALLERY_SELECT);
+      galleryResponse = await fetchGalleries(BASIC_EMAIL_GALLERY_SELECT);
+
+      if (!galleryResponse.ok) {
+        const basicDetails = await galleryResponse.text();
+        const normalizedBasicDetails = basicDetails.toLowerCase();
+
+        if (
+          normalizedBasicDetails.includes("client_email") ||
+          normalizedBasicDetails.includes("downloads_enabled") ||
+          normalizedBasicDetails.includes("schema cache")
+        ) {
+          galleryResponse = await fetchGalleries(LEGACY_GALLERY_SELECT);
+        } else {
+          return { error: basicDetails };
+        }
+      }
     } else {
       return { error: details };
     }
