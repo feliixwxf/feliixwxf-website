@@ -559,6 +559,8 @@ export default function AdminPage() {
   const [imageCategoryFilter, setImageCategoryFilter] = useState("all");
   const [imageSortMode, setImageSortMode] = useState("manual");
   const [selectedImageIds, setSelectedImageIds] = useState([]);
+  const [collapsedPortfolioCategories, setCollapsedPortfolioCategories] =
+    useState({});
   const [siteAssetFiles, setSiteAssetFiles] = useState({});
   const [siteAssetPreviews, setSiteAssetPreviews] = useState({});
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -2225,6 +2227,13 @@ export default function AdminPage() {
     );
   };
 
+  const togglePortfolioCategory = (categoryKey) => {
+    setCollapsedPortfolioCategories((current) => ({
+      ...current,
+      [categoryKey]: !current[categoryKey],
+    }));
+  };
+
   const toggleVisibleImageSelection = () => {
     setSelectedImageIds((current) => {
       if (allVisibleImagesSelected) {
@@ -3186,21 +3195,50 @@ export default function AdminPage() {
                     </div>
                   )}
 
-                  {displayedImageCategories.map((category) => (
-                    <div key={category.value}>
-                      <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-xl font-black">{category.label}</h3>
-                        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-neutral-300">
-                          {category.images.length} Bilder
-                        </span>
-                      </div>
+                  {displayedImageCategories.map((category) => {
+                    const categoryCollapsed =
+                      collapsedPortfolioCategories[category.value];
 
-                      {category.images.length === 0 ? (
-                        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5 text-sm text-neutral-400">
-                          Noch keine Uploads in dieser Kategorie.
-                        </div>
-                      ) : (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    return (
+                      <div
+                        key={category.value}
+                        className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => togglePortfolioCategory(category.value)}
+                          className="flex w-full items-center justify-between gap-4 rounded-[1.1rem] px-1 py-1 text-left transition hover:bg-white/[0.04] sm:px-2"
+                        >
+                          <div>
+                            <h3 className="text-xl font-black">
+                              {category.label}
+                            </h3>
+                            <p className="mt-1 text-xs text-neutral-500">
+                              {categoryCollapsed
+                                ? "Eingeklappt"
+                                : "Bilder sichtbar"}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-neutral-300">
+                              {category.images.length} Bilder
+                            </span>
+                            <ArrowDown
+                              className={`h-4 w-4 text-neutral-400 transition ${
+                                categoryCollapsed ? "-rotate-90" : "rotate-0"
+                              }`}
+                            />
+                          </div>
+                        </button>
+
+                        {!categoryCollapsed &&
+                          (category.images.length === 0 ? (
+                            <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-black/10 p-5 text-sm text-neutral-400">
+                              Noch keine Uploads in dieser Kategorie.
+                            </div>
+                          ) : (
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {category.images.map((image, index) => (
                             <article
                               key={image.id}
@@ -3383,10 +3421,11 @@ export default function AdminPage() {
                               </div>
                             </article>
                           ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                            </div>
+                          ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
