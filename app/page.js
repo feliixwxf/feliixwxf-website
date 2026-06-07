@@ -168,6 +168,18 @@ function parseArchivedPortfolioKeys(value) {
   );
 }
 
+function normalizePortfolioImage(image) {
+  if (typeof image === "string") {
+    return { url: image, width: null, height: null };
+  }
+
+  return image || { url: "", width: null, height: null };
+}
+
+function getPortfolioImageUrl(image) {
+  return normalizePortfolioImage(image).url;
+}
+
 export default function FeliixWxfPhotography() {
   const sliderRef = useRef(null);
   const beforeRef = useRef(null);
@@ -432,7 +444,14 @@ export default function FeliixWxfPhotography() {
 
     return {
       ...groups,
-      [image.category]: [...(groups[image.category] || []), image.url],
+      [image.category]: [
+        ...(groups[image.category] || []),
+        {
+          url: image.url,
+          width: image.width || null,
+          height: image.height || null,
+        },
+      ],
     };
   }, {});
 
@@ -565,10 +584,13 @@ export default function FeliixWxfPhotography() {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleGalleryImages[activeGallery].map((image, index) => (
+          <div className="mt-10 columns-1 gap-5 sm:columns-2 lg:columns-3">
+            {visibleGalleryImages[activeGallery].map((image, index) => {
+              const imageUrl = getPortfolioImageUrl(image);
+
+              return (
               <motion.button
-                key={index}
+                key={`${imageUrl}-${index}`}
                 type="button"
                 onClick={() => {
                   setSelectedPortfolioImage(image);
@@ -577,17 +599,18 @@ export default function FeliixWxfPhotography() {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.025, duration: 0.35 }}
-                className="group overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.06] p-2 text-left shadow-lg outline-none ring-white/50 transition-transform duration-200 hover:-translate-y-1 focus-visible:ring-2"
+                className="group mb-5 w-full break-inside-avoid overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.06] p-2 text-left shadow-lg outline-none ring-white/50 transition-transform duration-200 hover:-translate-y-1 focus-visible:ring-2"
               >
                 <img
-                  src={image}
+                  src={imageUrl}
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="aspect-[3/4] h-full w-full rounded-[1.5rem] object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  className="h-auto w-full rounded-[1.5rem] object-contain transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               </motion.button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -637,7 +660,7 @@ export default function FeliixWxfPhotography() {
                 }
               >
                 <img
-                  src={selectedPortfolioImage}
+                  src={getPortfolioImageUrl(selectedPortfolioImage)}
                   alt=""
                   className={`mx-auto rounded-[1.5rem] object-contain shadow-2xl transition-[width,max-height] duration-200 ${
                     portfolioImageZoomed

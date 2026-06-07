@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
@@ -10,8 +11,10 @@ import {
 
 const CATEGORIES = new Set(["car", "portrait", "nature", "event"]);
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const COMPRESSED_IMAGE_QUALITY = 82;
+const COMPRESSED_IMAGE_MAX_EDGE = 1800;
 const IMAGE_SELECT_WITH_META =
-  "id,category,url,path,sort_order,created_at,title,note";
+  "id,category,url,path,sort_order,created_at,title,note,width,height";
 const IMAGE_SELECT_BASE = "id,category,url,path,sort_order,created_at";
 
 function unauthorized() {
@@ -22,11 +25,37 @@ function unauthorized() {
 }
 
 function safeFileName(name) {
-  const extension = name.includes(".") ? name.split(".").pop() : "jpg";
+  const baseName = name.includes(".") ? name.split(".").slice(0, -1).join(".") : name;
+  const cleanedBaseName =
+    baseName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "portfolio";
 
   return `${Date.now()}-${Math.random()
     .toString(36)
-    .slice(2)}.${String(extension || "jpg").toLowerCase()}`;
+    .slice(2)}-${cleanedBaseName}.webp`;
+}
+
+async function compressPortfolioImage(file) {
+  const input = Buffer.from(await file.arrayBuffer());
+  const result = await sharp(input, { failOn: "none" })
+    .rotate()
+    .resize({
+      width: COMPRESSED_IMAGE_MAX_EDGE,
+      height: COMPRESSED_IMAGE_MAX_EDGE,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .webp({ quality: COMPRESSED_IMAGE_QUALITY })
+    .toBuffer({ resolveWithObject: true });
+
+  return {
+    buffer: result.data,
+    width: result.info.width || null,
+    height: result.info.height || null,
+  };
 }
 
 async function ensurePortfolioBucket() {
@@ -186,7 +215,21 @@ export async function POST(request) {
   }
 
   const path = `${category}/${safeFileName(file.name)}`;
-  const bytes = await file.arrayBuffer();
+  let processedImage;
+
+  try {
+    processedImage = await compressPortfolioImage(file);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error:
+          "Bild konnte nicht komprimiert werden. Bitte JPG, PNG oder WebP verwenden.",
+        details: error.message,
+      },
+      { status: 400 }
+    );
+  }
+
   const countResponse = await fetch(
     `${supabaseRestUrl}/rest/v1/portfolio_images?select=id&category=eq.${encodeURIComponent(
       category
@@ -212,10 +255,10 @@ export async function POST(request) {
         apikey: supabaseServiceHeaders.apikey,
         Authorization: supabaseServiceHeaders.Authorization,
         "Cache-Control": "31536000",
-        "Content-Type": file.type || "image/jpeg",
+        "Content-Type": "image/webp",
         "x-upsert": "false",
       },
-      body: bytes,
+      body: processedImage.buffer,
     }
   );
 
@@ -233,7 +276,7 @@ export async function POST(request) {
 
   const url = `${supabaseRestUrl}/storage/v1/object/public/${storageBucket}/${path}`;
 
-  const insertResponse = await fetch(
+  let insertResponse = await fetch(
     `${supabaseRestUrl}/rest/v1/portfolio_images`,
     {
       method: "POST",
@@ -246,9 +289,42 @@ export async function POST(request) {
         url,
         path,
         sort_order: imageCount,
+        width: processedImage.width,
+        height: processedImage.height,
       }),
     }
   );
+
+  if (!insertResponse.ok) {
+    const details = await insertResponse.text();
+    const missingDimensionColumns =
+      details.includes("width") || details.includes("height");
+
+    if (missingDimensionColumns) {
+      insertResponse = await fetch(`${supabaseRestUrl}/rest/v1/portfolio_images`, {
+        method: "POST",
+        headers: {
+          ...supabaseServiceHeaders,
+          Prefer: "return=representation",
+        },
+        body: JSON.stringify({
+          category,
+          url,
+          path,
+          sort_order: imageCount,
+        }),
+      });
+    } else {
+      return NextResponse.json(
+        {
+          error:
+            "Bild wurde hochgeladen, aber nicht in der Galerie gespeichert. Fehlt die Tabelle portfolio_images?",
+          details,
+        },
+        { status: 500 }
+      );
+    }
+  }
 
   if (!insertResponse.ok) {
     const details = await insertResponse.text();

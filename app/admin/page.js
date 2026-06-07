@@ -3136,7 +3136,14 @@ export default function AdminPage() {
                                   : "border-white/10"
                               }`}
                             >
-                              <div className="relative aspect-[4/3] bg-black/30">
+                              <div
+                                className={`relative bg-black/30 ${
+                                  Number(image.width || 0) >
+                                  Number(image.height || 0)
+                                    ? "aspect-[4/3]"
+                                    : "aspect-[3/4]"
+                                }`}
+                              >
                                 <label className="absolute left-3 top-3 z-10 flex items-center gap-2 rounded-full border border-white/20 bg-black/55 px-3 py-2 text-xs font-bold text-white backdrop-blur-md">
                                   <input
                                     type="checkbox"
