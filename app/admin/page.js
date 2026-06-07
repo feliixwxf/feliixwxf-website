@@ -1224,7 +1224,7 @@ export default function AdminPage() {
 
     const form = event.currentTarget;
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 180000);
 
     setImageUploading(true);
     setMessage("");
@@ -1283,7 +1283,7 @@ export default function AdminPage() {
     } catch (error) {
       showMessage(
         error?.name === "AbortError"
-          ? "Upload dauert zu lange. Bitte Bild verkleinern und erneut versuchen."
+          ? "Upload dauert zu lange. Bitte Internetverbindung prüfen oder Bild verkleinern."
           : error.message || "Bild konnte nicht hochgeladen werden.",
         "error"
       );

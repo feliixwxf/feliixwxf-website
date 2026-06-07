@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
+  hasSupabaseServiceConfig,
   storageBucket,
   supabaseRestUrl,
   supabaseServiceHeaders,
 } from "../_lib/supabase";
 
 const CATEGORIES = new Set(["car", "portrait", "nature", "event"]);
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const IMAGE_SELECT_WITH_META =
   "id,category,url,path,sort_order,created_at,title,note";
 const IMAGE_SELECT_BASE = "id,category,url,path,sort_order,created_at";
@@ -26,6 +27,51 @@ function safeFileName(name) {
   return `${Date.now()}-${Math.random()
     .toString(36)
     .slice(2)}.${String(extension || "jpg").toLowerCase()}`;
+}
+
+async function ensurePortfolioBucket() {
+  const bucketResponse = await fetch(
+    `${supabaseRestUrl}/storage/v1/bucket/${storageBucket}`,
+    {
+      headers: supabaseServiceHeaders,
+      cache: "no-store",
+    }
+  );
+
+  if (bucketResponse.ok) {
+    const updateResponse = await fetch(
+      `${supabaseRestUrl}/storage/v1/bucket/${storageBucket}`,
+      {
+        method: "PUT",
+        headers: supabaseServiceHeaders,
+        body: JSON.stringify({
+          public: true,
+          file_size_limit: MAX_FILE_SIZE,
+          allowed_mime_types: ["image/jpeg", "image/png", "image/webp"],
+        }),
+      }
+    );
+
+    return updateResponse.ok ? "" : updateResponse.text();
+  }
+
+  if (bucketResponse.status !== 404) {
+    return bucketResponse.text();
+  }
+
+  const createResponse = await fetch(`${supabaseRestUrl}/storage/v1/bucket`, {
+    method: "POST",
+    headers: supabaseServiceHeaders,
+    body: JSON.stringify({
+      id: storageBucket,
+      name: storageBucket,
+      public: true,
+      file_size_limit: MAX_FILE_SIZE,
+      allowed_mime_types: ["image/jpeg", "image/png", "image/webp"],
+    }),
+  });
+
+  return createResponse.ok ? "" : createResponse.text();
 }
 
 export async function GET() {
@@ -85,6 +131,16 @@ export async function POST(request) {
     );
   }
 
+  if (!hasSupabaseServiceConfig) {
+    return NextResponse.json(
+      {
+        error:
+          "Portfolio-Uploads brauchen den SUPABASE_SERVICE_ROLE_KEY in Vercel.",
+      },
+      { status: 503 }
+    );
+  }
+
   const formData = await request.formData();
   const category = String(formData.get("category") || "");
   const file = formData.get("file");
@@ -112,8 +168,20 @@ export async function POST(request) {
 
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json(
-      { error: "Das Bild darf maximal 10 MB gross sein." },
+      { error: "Das Bild darf maximal 50 MB gross sein." },
       { status: 400 }
+    );
+  }
+
+  const bucketError = await ensurePortfolioBucket();
+
+  if (bucketError) {
+    return NextResponse.json(
+      {
+        error: "Der Portfolio-Bucket konnte nicht vorbereitet werden.",
+        details: bucketError,
+      },
+      { status: 500 }
     );
   }
 

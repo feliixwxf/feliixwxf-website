@@ -30,11 +30,11 @@ values (
   'portfolio',
   'portfolio',
   true,
-  10485760,
+  52428800,
   array['image/jpeg', 'image/png', 'image/webp']
 )
 on conflict (id) do update
 set
   public = true,
-  file_size_limit = 10485760,
+  file_size_limit = 52428800,
   allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
