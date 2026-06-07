@@ -47,6 +47,9 @@ const CATEGORIES = [
   { value: "event", label: "Event" },
 ];
 
+const PORTFOLIO_UPLOAD_MAX_EDGE = 1800;
+const PORTFOLIO_UPLOAD_QUALITY = 0.86;
+
 const CLIENT_GALLERY_STATUSES = {
   active: {
     label: "Aktiv",
@@ -89,6 +92,76 @@ const SITE_ASSET_GROUPS = [
     ],
   },
 ];
+
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const previewUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(previewUrl);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(previewUrl);
+      reject(new Error(`${file.name} konnte nicht im Browser vorbereitet werden.`));
+    };
+
+    image.src = previewUrl;
+  });
+}
+
+function canvasToBlob(canvas, type, quality) {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), type, quality);
+  });
+}
+
+async function compressPortfolioFile(file) {
+  if (!file.type?.startsWith("image/")) return file;
+
+  const image = await loadImageFromFile(file);
+  const originalWidth = image.naturalWidth || image.width;
+  const originalHeight = image.naturalHeight || image.height;
+  const scale = Math.min(
+    1,
+    PORTFOLIO_UPLOAD_MAX_EDGE / Math.max(originalWidth, originalHeight)
+  );
+  const width = Math.max(1, Math.round(originalWidth * scale));
+  const height = Math.max(1, Math.round(originalHeight * scale));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error(`${file.name} konnte nicht für den Upload vorbereitet werden.`);
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  context.drawImage(image, 0, 0, width, height);
+
+  let outputType = "image/webp";
+  let extension = "webp";
+  let blob = await canvasToBlob(canvas, outputType, PORTFOLIO_UPLOAD_QUALITY);
+
+  if (!blob) {
+    outputType = "image/jpeg";
+    extension = "jpg";
+    blob = await canvasToBlob(canvas, outputType, 0.9);
+  }
+
+  if (!blob) {
+    throw new Error(`${file.name} konnte nicht komprimiert werden.`);
+  }
+
+  const baseName = file.name.replace(/\.[^.]+$/, "") || "portfolio";
+
+  return new File([blob], `${baseName}.${extension}`, {
+    type: outputType,
+    lastModified: Date.now(),
+  });
+}
 
 const SITE_ASSET_LABELS = Object.fromEntries(
   SITE_ASSET_GROUPS.flatMap((group) =>
@@ -1227,15 +1300,16 @@ export default function AdminPage() {
     const timeoutId = window.setTimeout(() => controller.abort(), 180000);
 
     setImageUploading(true);
-    setMessage("");
+    showMessage("Bilder werden vorbereitet und hochgeladen...", "info");
 
     try {
       const uploadedImages = [];
 
       for (const file of filesToUpload) {
+        const preparedFile = await compressPortfolioFile(file);
         const formData = new FormData();
         formData.append("category", imageCategory);
-        formData.append("file", file);
+        formData.append("file", preparedFile);
 
         const response = await fetch("/api/admin/images", {
           method: "POST",
