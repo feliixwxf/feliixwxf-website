@@ -16,6 +16,7 @@ const SETTING_KEYS = new Set([
   "info_text",
   "portfolio_eyebrow",
   "portfolio_heading",
+  "portfolio_archived_keys",
   "reviews_eyebrow",
   "reviews_heading",
   "review_form_eyebrow",

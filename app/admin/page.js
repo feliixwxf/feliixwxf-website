@@ -97,6 +97,7 @@ const SITE_ASSET_LABELS = Object.fromEntries(
 );
 
 const BUSINESS_CARD_URL = "https://www.feliixwxf.de";
+const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "portrait,nature";
 
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
@@ -110,6 +111,7 @@ const DEFAULT_SITE_SETTINGS = {
     "Hinter feliix.wxf steckt viel Erfahrung in Fotografie und Bildbearbeitung. Mein Fokus liegt auf klaren Looks, sauberer Retusche, starken Kontrasten und Bildern, die natürlich wirken, aber trotzdem einen professionellen Wiedererkennungswert haben.",
   portfolio_eyebrow: "Portfolio",
   portfolio_heading: "Ausgewählte Arbeiten",
+  portfolio_archived_keys: DEFAULT_ARCHIVED_PORTFOLIO_KEYS,
   reviews_eyebrow: "Bewertung",
   reviews_heading: "Kundenstimmen",
   review_form_eyebrow: "Deine Meinung",
@@ -124,6 +126,13 @@ const DEFAULT_SITE_SETTINGS = {
   instagram_label: "@feliix.wxf",
   form_action: "https://formspree.io/f/xqennvyy",
 };
+
+function parseArchivedPortfolioKeys(value) {
+  return String(value || "")
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+}
 
 const TEXT_FIELD_GROUPS = [
   {
@@ -485,6 +494,8 @@ export default function AdminPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [clientGalleryUploading, setClientGalleryUploading] = useState(false);
   const [siteAssetUploadingKey, setSiteAssetUploadingKey] = useState(null);
+  const [portfolioVisibilitySaving, setPortfolioVisibilitySaving] =
+    useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
@@ -557,6 +568,9 @@ export default function AdminPage() {
     visibleImageIds.every((id) => selectedImageIds.includes(id));
   const missingCoverAssets = SITE_ASSET_GROUPS.flatMap((group) =>
     group.assets.filter((asset) => !siteAssets[asset.key])
+  );
+  const archivedPortfolioKeys = parseArchivedPortfolioKeys(
+    settingsDraft.portfolio_archived_keys
   );
   const tabs = [
     {
@@ -1878,6 +1892,65 @@ export default function AdminPage() {
       [key]: value,
     }));
     setMessage("");
+  };
+
+  const togglePortfolioArchive = (categoryKey) => {
+    setSettingsDraft((current) => {
+      const archived = new Set(
+        parseArchivedPortfolioKeys(current.portfolio_archived_keys)
+      );
+
+      if (archived.has(categoryKey)) {
+        archived.delete(categoryKey);
+      } else {
+        archived.add(categoryKey);
+      }
+
+      return {
+        ...current,
+        portfolio_archived_keys: Array.from(archived).join(","),
+      };
+    });
+    setMessage("");
+  };
+
+  const savePortfolioArchiveSettings = async () => {
+    setPortfolioVisibilitySaving(true);
+    setMessage("");
+
+    const response = await fetch("/api/admin/site-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        settings: {
+          portfolio_archived_keys: settingsDraft.portfolio_archived_keys,
+        },
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Portfolio-Archiv konnte nicht gespeichert werden.",
+        "error"
+      );
+      setPortfolioVisibilitySaving(false);
+      return;
+    }
+
+    const nextSettings = {
+      ...siteSettings,
+      ...(data.settings || {}),
+      portfolio_archived_keys: settingsDraft.portfolio_archived_keys,
+    };
+
+    setSiteSettings(nextSettings);
+    setSettingsDraft((current) => ({
+      ...current,
+      portfolio_archived_keys: nextSettings.portfolio_archived_keys,
+    }));
+    showMessage("Portfolio-Archiv wurde gespeichert.", "success");
+    setPortfolioVisibilitySaving(false);
   };
 
   const updateImageDraft = (imageId, key, value) => {
@@ -4766,6 +4839,68 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mt-8 space-y-8">
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-6">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                      <div>
+                        <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
+                          Archiv
+                        </p>
+                        <h3 className="mt-2 text-2xl font-black">
+                          Portfolio-Reiter anzeigen
+                        </h3>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={savePortfolioArchiveSettings}
+                        disabled={portfolioVisibilitySaving}
+                        className="inline-flex w-fit items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-bold text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Save className="h-4 w-4" />
+                        {portfolioVisibilitySaving
+                          ? "Speichert..."
+                          : "Archiv speichern"}
+                      </button>
+                    </div>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      {CATEGORIES.map((category) => {
+                        const isArchived = archivedPortfolioKeys.includes(
+                          category.value
+                        );
+
+                        return (
+                          <button
+                            key={category.value}
+                            type="button"
+                            onClick={() =>
+                              togglePortfolioArchive(category.value)
+                            }
+                            className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left transition ${
+                              isArchived
+                                ? "border-white/10 bg-black/25 text-neutral-400 hover:bg-white/10"
+                                : "border-emerald-300/30 bg-emerald-400/10 text-white hover:bg-emerald-400/15"
+                            }`}
+                          >
+                            <span>
+                              <span className="block font-black">
+                                {category.label}
+                              </span>
+                              <span className="mt-1 block text-xs">
+                                {isArchived ? "Archiviert" : "Sichtbar"}
+                              </span>
+                            </span>
+                            {isArchived ? (
+                              <EyeOff className="h-5 w-5" />
+                            ) : (
+                              <Eye className="h-5 w-5 text-emerald-300" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+
                   {SITE_ASSET_GROUPS.map((group) => (
                     <section
                       key={group.title}

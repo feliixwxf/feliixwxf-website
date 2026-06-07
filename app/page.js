@@ -43,7 +43,7 @@ const DEFAULT_SITE_ASSETS = {
   cover_event: { url: "/images/abititel.jpg" },
 };
 
-const ARCHIVED_PORTFOLIO_KEYS = new Set(["portrait", "nature"]);
+const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "portrait,nature";
 
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
@@ -57,6 +57,7 @@ const DEFAULT_SITE_SETTINGS = {
     "Hinter feliix.wxf steckt viel Erfahrung in Fotografie und Bildbearbeitung. Mein Fokus liegt auf klaren Looks, sauberer Retusche, starken Kontrasten und Bildern, die natürlich wirken, aber trotzdem einen professionellen Wiedererkennungswert haben.",
   portfolio_eyebrow: "Portfolio",
   portfolio_heading: "Ausgewählte Arbeiten",
+  portfolio_archived_keys: DEFAULT_ARCHIVED_PORTFOLIO_KEYS,
   reviews_eyebrow: "Bewertung",
   reviews_heading: "Kundenstimmen",
   review_form_eyebrow: "Deine Meinung",
@@ -156,6 +157,15 @@ function uniqueImageList(images) {
     seen.add(image);
     return true;
   });
+}
+
+function parseArchivedPortfolioKeys(value) {
+  return new Set(
+    String(value || "")
+      .split(",")
+      .map((key) => key.trim())
+      .filter(Boolean)
+  );
 }
 
 export default function FeliixWxfPhotography() {
@@ -389,8 +399,11 @@ export default function FeliixWxfPhotography() {
         : siteAssets.cover_event?.url || DEFAULT_SITE_ASSETS.cover_event.url,
     },
   ];
+  const archivedPortfolioKeys = parseArchivedPortfolioKeys(
+    siteSettings.portfolio_archived_keys
+  );
   const visiblePortfolioItems = portfolioItems.filter(
-    (item) => !ARCHIVED_PORTFOLIO_KEYS.has(item.key)
+    (item) => !archivedPortfolioKeys.has(item.key)
   );
 
   const galleryImages = {
