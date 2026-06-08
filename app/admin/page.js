@@ -49,6 +49,7 @@ const CATEGORIES = [
 
 const PORTFOLIO_UPLOAD_MAX_EDGE = 2200;
 const PORTFOLIO_UPLOAD_QUALITY = 0.92;
+const PORTFOLIO_UPLOAD_TARGET_SIZE = 3.8 * 1024 * 1024;
 
 const CLIENT_GALLERY_STATUSES = {
   active: {
@@ -124,12 +125,6 @@ async function compressPortfolioFile(file) {
   const image = await loadImageFromFile(file);
   const originalWidth = image.naturalWidth || image.width;
   const originalHeight = image.naturalHeight || image.height;
-  const scale = Math.min(
-    1,
-    PORTFOLIO_UPLOAD_MAX_EDGE / Math.max(originalWidth, originalHeight)
-  );
-  const width = Math.max(1, Math.round(originalWidth * scale));
-  const height = Math.max(1, Math.round(originalHeight * scale));
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
 
@@ -137,13 +132,33 @@ async function compressPortfolioFile(file) {
     throw new Error(`${file.name} konnte nicht für den Upload vorbereitet werden.`);
   }
 
-  canvas.width = width;
-  canvas.height = height;
-  context.drawImage(image, 0, 0, width, height);
-
   let outputType = "image/webp";
   let extension = "webp";
-  let blob = await canvasToBlob(canvas, outputType, PORTFOLIO_UPLOAD_QUALITY);
+  let blob = null;
+  const attempts = [
+    { maxEdge: PORTFOLIO_UPLOAD_MAX_EDGE, quality: PORTFOLIO_UPLOAD_QUALITY },
+    { maxEdge: 2000, quality: 0.9 },
+    { maxEdge: 1800, quality: 0.88 },
+    { maxEdge: 1600, quality: 0.86 },
+  ];
+
+  for (const attempt of attempts) {
+    const scale = Math.min(
+      1,
+      attempt.maxEdge / Math.max(originalWidth, originalHeight)
+    );
+    const width = Math.max(1, Math.round(originalWidth * scale));
+    const height = Math.max(1, Math.round(originalHeight * scale));
+
+    canvas.width = width;
+    canvas.height = height;
+    context.clearRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+
+    blob = await canvasToBlob(canvas, outputType, attempt.quality);
+
+    if (blob && blob.size <= PORTFOLIO_UPLOAD_TARGET_SIZE) break;
+  }
 
   if (!blob) {
     outputType = "image/jpeg";
