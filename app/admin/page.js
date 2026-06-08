@@ -47,8 +47,8 @@ const CATEGORIES = [
   { value: "event", label: "Event" },
 ];
 
-const PORTFOLIO_UPLOAD_MAX_EDGE = 1800;
-const PORTFOLIO_UPLOAD_QUALITY = 0.86;
+const PORTFOLIO_UPLOAD_MAX_EDGE = 2200;
+const PORTFOLIO_UPLOAD_QUALITY = 0.92;
 
 const CLIENT_GALLERY_STATUSES = {
   active: {

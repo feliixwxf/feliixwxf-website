@@ -11,8 +11,8 @@ import {
 
 const CATEGORIES = new Set(["car", "portrait", "nature", "event"]);
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
-const COMPRESSED_IMAGE_QUALITY = 82;
-const COMPRESSED_IMAGE_MAX_EDGE = 1800;
+const COMPRESSED_IMAGE_QUALITY = 90;
+const COMPRESSED_IMAGE_MAX_EDGE = 2200;
 const IMAGE_SELECT_WITH_META =
   "id,category,url,path,sort_order,created_at,title,note,width,height";
 const IMAGE_SELECT_BASE = "id,category,url,path,sort_order,created_at";
