@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   ArrowLeft,
+  ArrowRight,
   Sun,
   Moon,
   UserRound,
@@ -206,6 +207,8 @@ export default function FeliixWxfPhotography() {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedPortfolioImage, setSelectedPortfolioImage] = useState(null);
+  const [selectedPortfolioImageIndex, setSelectedPortfolioImageIndex] =
+    useState(null);
   const [portfolioImageZoomed, setPortfolioImageZoomed] = useState(false);
   const [showImpressum, setShowImpressum] = useState(false);
   const [showDatenschutz, setShowDatenschutz] = useState(false);
@@ -461,6 +464,56 @@ export default function FeliixWxfPhotography() {
       [...(uploadedImagesByCategory[category] || []), ...images],
     ])
   );
+  const activePortfolioImages = activeGallery
+    ? visibleGalleryImages[activeGallery] || []
+    : [];
+
+  const closePortfolioImage = () => {
+    setSelectedPortfolioImage(null);
+    setSelectedPortfolioImageIndex(null);
+    setPortfolioImageZoomed(false);
+  };
+
+  const selectPortfolioImageAt = (index) => {
+    if (!activePortfolioImages.length) return;
+
+    const nextIndex =
+      (index + activePortfolioImages.length) % activePortfolioImages.length;
+
+    setSelectedPortfolioImage(activePortfolioImages[nextIndex]);
+    setSelectedPortfolioImageIndex(nextIndex);
+    setPortfolioImageZoomed(false);
+  };
+
+  const showPreviousPortfolioImage = () => {
+    selectPortfolioImageAt((selectedPortfolioImageIndex ?? 0) - 1);
+  };
+
+  const showNextPortfolioImage = () => {
+    selectPortfolioImageAt((selectedPortfolioImageIndex ?? 0) + 1);
+  };
+
+  useEffect(() => {
+    if (!selectedPortfolioImage) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closePortfolioImage();
+      }
+
+      if (activePortfolioImages.length > 1 && event.key === "ArrowLeft") {
+        showPreviousPortfolioImage();
+      }
+
+      if (activePortfolioImages.length > 1 && event.key === "ArrowRight") {
+        showNextPortfolioImage();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedPortfolioImage, selectedPortfolioImageIndex, activePortfolioImages.length]);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -567,8 +620,7 @@ export default function FeliixWxfPhotography() {
         <div className="mx-auto max-w-7xl px-5 py-10">
           <Button
             onClick={() => {
-              setSelectedPortfolioImage(null);
-              setPortfolioImageZoomed(false);
+              closePortfolioImage();
               setActiveGallery(null);
             }}
             className={`mb-8 rounded-full ${buttonHover}`}
@@ -594,6 +646,7 @@ export default function FeliixWxfPhotography() {
                 type="button"
                 onClick={() => {
                   setSelectedPortfolioImage(image);
+                  setSelectedPortfolioImageIndex(index);
                   setPortfolioImageZoomed(false);
                 }}
                 initial={{ opacity: 0, y: 24 }}
@@ -622,8 +675,7 @@ export default function FeliixWxfPhotography() {
                 : "flex items-center justify-center overflow-hidden p-4"
             }`}
             onClick={() => {
-              setSelectedPortfolioImage(null);
-              setPortfolioImageZoomed(false);
+              closePortfolioImage();
             }}
           >
             <motion.div
@@ -639,15 +691,40 @@ export default function FeliixWxfPhotography() {
             >
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedPortfolioImage(null);
-                  setPortfolioImageZoomed(false);
-                }}
+                onClick={closePortfolioImage}
                 className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/65 text-white shadow-lg transition hover:bg-black/85"
                 aria-label="Bild schließen"
               >
                 <X className="h-5 w-5" />
               </button>
+
+              {activePortfolioImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      showPreviousPortfolioImage();
+                    }}
+                    className="fixed left-4 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/70 text-white shadow-xl transition hover:bg-black/90 md:left-8 md:h-14 md:w-14"
+                    aria-label="Vorheriges Bild"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      showNextPortfolioImage();
+                    }}
+                    className="fixed right-4 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/70 text-white shadow-xl transition hover:bg-black/90 md:right-8 md:h-14 md:w-14"
+                    aria-label="Nächstes Bild"
+                  >
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
 
               <button
                 type="button"
