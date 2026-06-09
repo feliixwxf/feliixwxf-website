@@ -1269,9 +1269,9 @@ export default function FeliixWxfPhotography() {
       </main>
 
       {showAllReviews && (
-        <div className="fixed inset-0 z-[700] overflow-y-auto bg-black/70 p-5 backdrop-blur-sm">
-          <div className="isolate mx-auto my-8 max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
-            <div className="sticky top-0 z-50 mb-8 flex items-start justify-between border-b border-white/10 bg-neutral-950 pb-5 shadow-[0_18px_24px_rgba(10,10,10,0.75)]">
+        <div className="fixed inset-0 z-[700] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
+          <div className="isolate flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-[2rem] border border-white/15 bg-neutral-950 text-white shadow-xl">
+            <div className="relative z-50 flex flex-none items-start justify-between border-b border-white/10 bg-neutral-950 px-8 py-7 shadow-[0_18px_24px_rgba(10,10,10,0.75)]">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
                   Übersicht
@@ -1291,7 +1291,8 @@ export default function FeliixWxfPhotography() {
               </button>
             </div>
 
-            <div className="relative z-0 grid gap-6 md:grid-cols-2">
+            <div className="min-h-0 flex-1 overflow-y-auto px-8 py-8">
+              <div className="grid gap-6 md:grid-cols-2">
               {reviews.map((review, i) => (
                 <button
                   key={`all-${i}`}
@@ -1320,6 +1321,7 @@ export default function FeliixWxfPhotography() {
                   </Card>
                 </button>
               ))}
+              </div>
             </div>
           </div>
         </div>
