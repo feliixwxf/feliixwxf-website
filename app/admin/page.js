@@ -2388,9 +2388,6 @@ export default function AdminPage() {
             <h1 className="mt-5 text-3xl font-black md:text-4xl">
               Admin Bereich
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-300">
-              Alles Wichtige für Website, Kunden, Galerien und Bewertungen.
-            </p>
           </div>
 
           {authenticated && (
@@ -2551,9 +2548,6 @@ export default function AdminPage() {
                                   </span>
                                 )}
                               </span>
-                              <span className="mt-0.5 block truncate text-xs opacity-60">
-                                {tab.description}
-                              </span>
                             </span>
                           </button>
                         );
@@ -2576,10 +2570,6 @@ export default function AdminPage() {
                     <h2 className="mt-3 text-3xl font-black">
                       Was ist gerade wichtig?
                     </h2>
-                    <p className="mt-3 max-w-2xl text-neutral-300">
-                      Von hier aus kommst du direkt zu den Bereichen, die du am
-                      häufigsten brauchst.
-                    </p>
                   </div>
 
                   <button
@@ -2609,9 +2599,6 @@ export default function AdminPage() {
                     <h3 className="mt-2 text-lg font-black">
                       Offene Bewertungen
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-yellow-100/75">
-                      Bewertungen prüfen, freigeben oder direkt löschen.
-                    </p>
                   </button>
 
                   <button
@@ -2626,10 +2613,6 @@ export default function AdminPage() {
                     <h3 className="mt-2 text-lg font-black">
                       Galerie-Bilder
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-neutral-300">
-                      Neue Bilder hochladen, Reihenfolge sortieren oder alte
-                      Bilder entfernen.
-                    </p>
                   </button>
 
                   <button
@@ -2645,10 +2628,6 @@ export default function AdminPage() {
                         missingCoverAssets.length}
                     </p>
                     <h3 className="mt-2 text-lg font-black">Titelbilder</h3>
-                    <p className="mt-2 text-sm leading-6 text-neutral-300">
-                      Startseitenbilder und Portfolio-Kacheln getrennt von der
-                      Galerie pflegen.
-                    </p>
                   </button>
 
                   <button
@@ -2665,9 +2644,6 @@ export default function AdminPage() {
                     <h3 className="mt-2 text-lg font-black">
                       Kundengalerien
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-neutral-300">
-                      Private Galerien mit Zugangscode und Favoriten.
-                    </p>
                   </button>
 
                   <button
@@ -2682,9 +2658,6 @@ export default function AdminPage() {
                       {siteSettings.contact_email}
                     </p>
                     <h3 className="mt-2 text-lg font-black">Kontaktinfos</h3>
-                    <p className="mt-2 text-sm leading-6 text-neutral-300">
-                      E-Mail, Telefon, Instagram und Formular-Link bearbeiten.
-                    </p>
                   </button>
                 </div>
 
@@ -2700,10 +2673,6 @@ export default function AdminPage() {
                       </span>
                       <span className="mt-4 block text-xl font-black">
                         Website-Texte bearbeiten
-                      </span>
-                      <span className="mt-2 block max-w-2xl text-sm leading-6 text-neutral-300">
-                        Startseite, Info, Portfolio und Bewertungsbereich ohne
-                        Code-Anpassung pflegen.
                       </span>
                     </span>
                     <span className="rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950">

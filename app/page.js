@@ -669,7 +669,7 @@ export default function FeliixWxfPhotography() {
 
         {selectedPortfolioImage && (
           <div
-            className={`fixed inset-0 z-[300] bg-black/85 backdrop-blur-sm ${
+            className={`fixed inset-0 z-[700] bg-black/85 backdrop-blur-sm ${
               portfolioImageZoomed
                 ? "overflow-auto p-4"
                 : "flex items-center justify-center overflow-hidden p-4"
@@ -760,9 +760,11 @@ export default function FeliixWxfPhotography() {
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${pageStyle}`}>
+    <div
+      className={`isolate min-h-screen transition-colors duration-300 ${pageStyle}`}
+    >
       <header
-        className={`fixed top-0 z-[200] w-full border-b backdrop-blur-xl ${
+        className={`fixed top-0 z-[500] w-full border-b backdrop-blur-xl ${
           dark
             ? "border-white/10 bg-neutral-950/95"
             : "border-black/10 bg-white/95"
@@ -860,7 +862,7 @@ export default function FeliixWxfPhotography() {
         )}
       </header>
 
-      <main>
+      <main className="relative z-0">
         <Section
           id="startseite"
           className="relative flex min-h-screen items-center overflow-hidden px-5 pt-24"
@@ -994,7 +996,7 @@ export default function FeliixWxfPhotography() {
           </div>
         </Section>
 
-        <Section id="bewertung" className="px-5 py-24">
+        <Section id="bewertung" className="overflow-hidden px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
               {siteSettings.reviews_eyebrow}
@@ -1021,7 +1023,7 @@ export default function FeliixWxfPhotography() {
               {reviews.slice(0, 3).map((review, i) => (
                 <Card
                   key={i}
-                  className={`rounded-[2rem] border ${hoverLift} ${glass}`}
+                  className={`relative z-0 rounded-[2rem] border transition-shadow duration-200 hover:shadow-lg ${glass}`}
                 >
                   <CardContent className="p-7">
                     <div className="mb-5 flex gap-1">
@@ -1265,7 +1267,7 @@ export default function FeliixWxfPhotography() {
       </main>
 
       {showAllReviews && (
-        <div className="fixed inset-0 z-[300] overflow-y-auto bg-black/70 p-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[700] overflow-y-auto bg-black/70 p-5 backdrop-blur-sm">
           <div className="mx-auto my-8 max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
             <div className="sticky top-0 z-10 mb-8 flex items-start justify-between border-b border-white/10 bg-neutral-950/95 pb-5">
               <div>
@@ -1296,7 +1298,7 @@ export default function FeliixWxfPhotography() {
                   className="text-left"
                 >
                   <Card
-                    className={`rounded-[2rem] border border-white/15 bg-white/10 text-white ${hoverLift}`}
+                    className="relative z-0 rounded-[2rem] border border-white/15 bg-white/10 text-white transition-shadow duration-200 hover:shadow-lg"
                   >
                     <CardContent className="p-7">
                       <div className="mb-5 flex gap-1">
@@ -1324,7 +1326,7 @@ export default function FeliixWxfPhotography() {
       )}
 
       {selectedReview && (
-        <div className="fixed inset-0 z-[320] overflow-y-auto bg-black/80 p-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[720] overflow-y-auto bg-black/80 p-5 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.94, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1376,7 +1378,7 @@ export default function FeliixWxfPhotography() {
           initial={{ opacity: 0, y: 24, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.28 }}
-          className="fixed bottom-6 right-6 z-[250] max-w-sm rounded-[1.7rem] border border-white/30 bg-neutral-950/90 p-5 text-white shadow-xl backdrop-blur-md"
+          className="fixed bottom-6 right-6 z-[650] max-w-sm rounded-[1.7rem] border border-white/30 bg-neutral-950/90 p-5 text-white shadow-xl backdrop-blur-md"
         >
           <button
             onClick={() => setPopupClosed(true)}
@@ -1398,7 +1400,7 @@ export default function FeliixWxfPhotography() {
       )}
 
       {showImpressum && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[700] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
           <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
             <div className="flex items-start justify-between">
               <h2 className="text-4xl font-black">Impressum</h2>
@@ -1452,7 +1454,7 @@ export default function FeliixWxfPhotography() {
       )}
 
       {showDatenschutz && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[700] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
           <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
             <div className="flex items-start justify-between">
               <h2 className="text-4xl font-black">Datenschutz</h2>
