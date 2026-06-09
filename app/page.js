@@ -998,32 +998,34 @@ export default function FeliixWxfPhotography() {
 
         <Section id="bewertung" className="overflow-hidden px-5 py-24">
           <div className="mx-auto max-w-7xl">
-            <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
-              {siteSettings.reviews_eyebrow}
-            </p>
+            <div className="relative z-20">
+              <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
+                {siteSettings.reviews_eyebrow}
+              </p>
 
-            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-              <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-                {siteSettings.reviews_heading}
-              </h2>
+              <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                <h2 className="mt-4 text-4xl font-bold md:text-5xl">
+                  {siteSettings.reviews_heading}
+                </h2>
 
-              <button
-                onClick={() => setShowAllReviews(true)}
-                className={`w-fit rounded-full border px-5 py-3 text-sm font-semibold ${
-                  dark
-                    ? "border-white/15 bg-white/10 hover:bg-white/15"
-                    : "border-black/10 bg-white/75 hover:bg-white"
-                } ${buttonHover}`}
-              >
-                Alle Bewertungen ansehen
-              </button>
+                <button
+                  onClick={() => setShowAllReviews(true)}
+                  className={`w-fit rounded-full border px-5 py-3 text-sm font-semibold ${
+                    dark
+                      ? "border-white/15 bg-white/10 hover:bg-white/15"
+                      : "border-black/10 bg-white/75 hover:bg-white"
+                  } ${buttonHover}`}
+                >
+                  Alle Bewertungen ansehen
+                </button>
+              </div>
             </div>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="relative z-0 mt-12 grid gap-6 md:grid-cols-3">
               {reviews.slice(0, 3).map((review, i) => (
                 <Card
                   key={i}
-                  className={`relative z-0 rounded-[2rem] border transition-shadow duration-200 hover:shadow-lg ${glass}`}
+                  className={`rounded-[2rem] border transition-shadow duration-200 hover:shadow-lg ${glass}`}
                 >
                   <CardContent className="p-7">
                     <div className="mb-5 flex gap-1">
@@ -1268,8 +1270,8 @@ export default function FeliixWxfPhotography() {
 
       {showAllReviews && (
         <div className="fixed inset-0 z-[700] overflow-y-auto bg-black/70 p-5 backdrop-blur-sm">
-          <div className="mx-auto my-8 max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
-            <div className="sticky top-0 z-10 mb-8 flex items-start justify-between border-b border-white/10 bg-neutral-950/95 pb-5">
+          <div className="isolate mx-auto my-8 max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/15 bg-neutral-950 p-8 text-white shadow-xl">
+            <div className="sticky top-0 z-50 mb-8 flex items-start justify-between border-b border-white/10 bg-neutral-950 pb-5 shadow-[0_18px_24px_rgba(10,10,10,0.75)]">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-neutral-400">
                   Übersicht
@@ -1289,7 +1291,7 @@ export default function FeliixWxfPhotography() {
               </button>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="relative z-0 grid gap-6 md:grid-cols-2">
               {reviews.map((review, i) => (
                 <button
                   key={`all-${i}`}
@@ -1297,9 +1299,7 @@ export default function FeliixWxfPhotography() {
                   onClick={() => setSelectedReview(review)}
                   className="text-left"
                 >
-                  <Card
-                    className="relative z-0 rounded-[2rem] border border-white/15 bg-white/10 text-white transition-shadow duration-200 hover:shadow-lg"
-                  >
+                  <Card className="rounded-[2rem] border border-white/15 bg-white/10 text-white transition-shadow duration-200 hover:shadow-lg">
                     <CardContent className="p-7">
                       <div className="mb-5 flex gap-1">
                         {renderStars(review.stars)}
