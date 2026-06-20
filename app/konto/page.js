@@ -1318,21 +1318,31 @@ export default function AccountPage() {
                       <div className="relative mt-2">
                         <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
                         <input
+                          key={
+                            showNewPassword
+                              ? "new-password-visible"
+                              : "new-password-hidden"
+                          }
                           type={showNewPassword ? "text" : "password"}
                           value={newPassword}
                           onChange={(event) => {
                             setNewPassword(event.target.value);
                             setMessage("");
                           }}
+                          autoComplete="new-password"
                           placeholder="Mindestens 8 Zeichen"
                           className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-14 text-neutral-950 outline-none focus:border-yellow-400"
                         />
                         <button
                           type="button"
-                          onClick={() =>
-                            setShowNewPassword((current) => !current)
-                          }
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            setShowNewPassword((current) => !current);
+                          }}
                           className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-600 transition hover:bg-neutral-100"
+                          aria-pressed={showNewPassword}
                           aria-label={
                             showNewPassword
                               ? "Passwort ausblenden"
@@ -1498,18 +1508,34 @@ export default function AccountPage() {
                       <div className="relative mt-2">
                         <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
                         <input
+                          key={
+                            showPassword
+                              ? "account-password-visible"
+                              : "account-password-hidden"
+                          }
                           type={showPassword ? "text" : "password"}
                           value={form.password}
                           onChange={(event) =>
                             updateForm("password", event.target.value)
+                          }
+                          autoComplete={
+                            mode === "register"
+                              ? "new-password"
+                              : "current-password"
                           }
                           placeholder="Mindestens 8 Zeichen"
                           className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-14 text-neutral-950 outline-none focus:border-yellow-400"
                         />
                         <button
                           type="button"
-                          onClick={() => setShowPassword((current) => !current)}
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            setShowPassword((current) => !current);
+                          }}
                           className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-600 transition hover:bg-neutral-100"
+                          aria-pressed={showPassword}
                           aria-label={
                             showPassword
                               ? "Passwort ausblenden"
