@@ -2370,54 +2370,54 @@ export default function AdminPage() {
 
   return (
     <main
-      className={`min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.11),transparent_28%),linear-gradient(135deg,#070707,#141416,#242427)] px-5 py-8 text-white ${
+      className={`min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_26%),linear-gradient(135deg,#070707,#111113,#1f2023)] px-3 py-4 text-white sm:px-5 sm:py-6 ${
         authenticated ? "xl:h-screen xl:overflow-hidden" : ""
       }`}
     >
       <div className="mx-auto flex max-w-[1600px] flex-col xl:h-full">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur-xl">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Zur Website
-            </Link>
-            <h1 className="mt-5 text-3xl font-black md:text-4xl">
-              Admin Bereich
-            </h1>
-          </div>
-
-          {authenticated && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={refreshDashboard}
-                className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Alles neu laden
-              </button>
-              <a
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-4 shadow-xl backdrop-blur-xl sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
                 href="/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-white/15"
               >
-                <ExternalLink className="h-4 w-4" />
-                Live ansehen
-              </a>
-              <button
-                onClick={handleLogout}
-                className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
-              >
-                <LogOut className="h-4 w-4" />
-                Ausloggen
-              </button>
+                <ArrowLeft className="h-4 w-4" />
+                Zur Website
+              </Link>
+              <h1 className="text-2xl font-black md:text-3xl">
+                Admin Bereich
+              </h1>
             </div>
-          )}
-        </div>
+
+            {authenticated && (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={refreshDashboard}
+                  className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Neu laden
+                </button>
+                <a
+                  href="/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Live
+                </a>
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Ausloggen
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {message && (
@@ -2462,10 +2462,10 @@ export default function AdminPage() {
             </button>
           </form>
         ) : (
-          <section className="mt-10 grid gap-5 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[240px_minmax(0,1fr)]">
+          <section className="mt-5 grid gap-4 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)]">
             <aside className="xl:min-h-0 xl:overflow-y-auto xl:pr-1">
-              <nav className="rounded-[1.25rem] border border-white/10 bg-black/20 p-2">
-                <div className="grid grid-cols-3 gap-2 p-2">
+              <nav className="rounded-[1.25rem] border border-white/10 bg-black/25 p-2">
+                <div className="grid grid-cols-3 gap-1.5 p-1.5">
                   {[
                     {
                       label: "Kunden",
@@ -2490,9 +2490,9 @@ export default function AdminPage() {
                         setActiveTab(item.tab);
                         if (item.tab === "reviews") setReviewFilter("pending");
                       }}
-                      className="rounded-2xl border border-white/10 bg-white/[0.06] px-2 py-3 text-center transition hover:bg-white/10"
+                      className="rounded-xl border border-white/10 bg-white/[0.055] px-2 py-2.5 text-center transition hover:bg-white/10"
                     >
-                      <span className="block text-xl font-black">
+                      <span className="block text-lg font-black">
                         {item.value}
                       </span>
                       <span className="mt-1 block truncate text-[11px] font-bold text-neutral-500">
@@ -2504,7 +2504,7 @@ export default function AdminPage() {
 
                 {tabGroups.map((group) => (
                   <div key={group.title} className="mt-2">
-                    <div className="px-3 py-2">
+                    <div className="px-3 py-1.5">
                       <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                         {group.title}
                       </p>
@@ -2518,14 +2518,14 @@ export default function AdminPage() {
                             key={tab.value}
                             type="button"
                             onClick={() => setActiveTab(tab.value)}
-                            className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition ${
+                            className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition ${
                               activeTab === tab.value
                                 ? "bg-white text-neutral-950"
                                 : "text-neutral-300 hover:bg-white/10 hover:text-white"
                             }`}
                           >
                             <span
-                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
                                 activeTab === tab.value
                                   ? "bg-neutral-950 text-white"
                                   : "bg-white/10"
@@ -2558,7 +2558,7 @@ export default function AdminPage() {
               </nav>
             </aside>
 
-            <div className="min-w-0 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 shadow-2xl backdrop-blur-xl md:p-6 xl:min-h-0 xl:overflow-y-auto">
+            <div className="min-w-0 rounded-[1.5rem] border border-white/10 bg-white/[0.045] p-4 shadow-xl backdrop-blur-xl md:p-5 xl:min-h-0 xl:overflow-y-auto">
 
             {activeTab === "dashboard" && (
               <div>

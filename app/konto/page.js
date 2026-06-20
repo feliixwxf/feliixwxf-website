@@ -106,16 +106,16 @@ export default function AccountPage() {
   const dark = theme === "dark";
   const pageStyle = dark
     ? "bg-[linear-gradient(135deg,#070707,#161616,#222)] text-white"
-    : "bg-[linear-gradient(135deg,#c8ced8,#dde2e8_45%,#b9c1cc)] text-slate-950";
+    : "bg-[linear-gradient(135deg,#aeb7c2,#c6ccd4_45%,#9ea8b5)] text-slate-950";
   const panelStyle = dark
     ? "border-white/10 bg-white/[0.04] shadow-2xl"
-    : "border-slate-500/40 bg-slate-200/85 shadow-[0_24px_80px_rgba(15,23,42,0.18)]";
+    : "border-slate-500/45 bg-slate-200/88 shadow-[0_24px_80px_rgba(15,23,42,0.22)]";
   const softPanelStyle = dark
     ? "border-white/10 bg-white/[0.06]"
-    : "border-slate-400/60 bg-slate-100/90 shadow-[0_14px_40px_rgba(15,23,42,0.11)]";
+    : "border-slate-500/50 bg-slate-100/88 shadow-[0_14px_40px_rgba(15,23,42,0.14)]";
   const subtlePanelStyle = dark
     ? "border-white/10 bg-black/25"
-    : "border-slate-400/60 bg-slate-300/45";
+    : "border-slate-500/45 bg-slate-300/55";
   const muted = dark ? "text-neutral-400" : "text-neutral-600";
   const softMuted = dark ? "text-neutral-300" : "text-neutral-700";
   const titleText = dark ? "text-white" : "text-neutral-950";
@@ -661,7 +661,7 @@ export default function AccountPage() {
           </button>
         </div>
 
-        <section className={`mt-3 overflow-hidden rounded-[1.15rem] border backdrop-blur-xl sm:mt-8 sm:rounded-[2rem] ${panelStyle}`}>
+        <section className={`mt-3 overflow-hidden rounded-[1.15rem] border backdrop-blur-xl sm:mt-7 sm:rounded-[2rem] ${panelStyle}`}>
           <div className="grid gap-3 p-2 sm:gap-5 sm:p-5">
             <div className={`relative overflow-hidden rounded-[1rem] border p-3 sm:rounded-[1.5rem] sm:p-5 ${user ? "hidden" : ""} ${dark ? "border-white/10 bg-black/30" : "border-black/10 bg-white/70"}`}>
               {accountHeroGallery?.cover_url && (
@@ -719,8 +719,8 @@ export default function AccountPage() {
               ) : user ? (
                 <div>
                   <div className={`mb-3 overflow-hidden rounded-2xl border p-3 sm:mb-5 sm:p-5 ${softPanelStyle}`}>
-                    <div className="flex items-start gap-3 sm:items-center sm:gap-5">
-                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border sm:h-20 sm:w-20 ${dark ? "border-white/10 bg-white/10" : "border-slate-200 bg-slate-100"}`}>
+                    <div className="flex items-center gap-3 sm:gap-5">
+                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border sm:h-20 sm:w-20 ${dark ? "border-white/10 bg-white/10" : "border-slate-300 bg-slate-200"}`}>
                         {avatarPreview ? (
                           <img
                             src={avatarPreview}
@@ -732,10 +732,10 @@ export default function AccountPage() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className={`text-xs uppercase tracking-[0.2em] ${muted}`}>
+                        <p className={`text-[11px] uppercase tracking-[0.18em] sm:text-xs sm:tracking-[0.2em] ${muted}`}>
                           Kundenkonto
                         </p>
-                        <h1 className={`mt-1 text-xl font-black leading-tight sm:text-4xl ${titleText}`}>
+                        <h1 className={`mt-1 text-lg font-black leading-tight sm:text-4xl ${titleText}`}>
                           {accountGreeting}
                         </h1>
                         <p className={`mt-1 truncate text-xs sm:text-sm ${muted}`}>
@@ -767,8 +767,8 @@ export default function AccountPage() {
                     )}
                   </div>
 
-                  <div className={`sticky top-2 z-20 rounded-2xl border p-1.5 backdrop-blur-xl sm:top-4 ${dark ? "border-white/10 bg-neutral-950/90" : "border-black/10 bg-white/90"}`}>
-                    <div className="grid grid-cols-2 gap-2">
+                  <div className={`sticky top-2 z-20 rounded-2xl border p-1 backdrop-blur-xl sm:top-4 sm:p-1.5 ${dark ? "border-white/10 bg-neutral-950/90" : "border-slate-400/60 bg-slate-100/95"}`}>
+                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                       {accountSections.map((section) => {
                         const SectionIcon = section.icon;
                         const active = accountSection === section.key;
@@ -778,7 +778,7 @@ export default function AccountPage() {
                             key={section.key}
                             type="button"
                             onClick={() => setAccountSection(section.key)}
-                            className={`flex items-center justify-center gap-2 rounded-xl px-2.5 py-3 text-center transition sm:px-4 ${
+                            className={`flex items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-center transition sm:px-4 sm:py-3 ${
                               active
                                 ? "bg-white text-neutral-950 shadow-xl"
                                 : dark
@@ -787,14 +787,14 @@ export default function AccountPage() {
                             }`}
                           >
                             <span
-                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                                  active ? "bg-neutral-950 text-white" : dark ? "bg-white/10" : "bg-white"
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${
+                                active ? "bg-neutral-950 text-white" : dark ? "bg-white/10" : "bg-white"
                               }`}
                             >
                               <SectionIcon className="h-4 w-4" />
                             </span>
                             <span className="min-w-0">
-                              <span className="block truncate text-sm font-black sm:text-base">
+                              <span className="block truncate text-xs font-black sm:text-base">
                                 {section.label}
                               </span>
                               <span
