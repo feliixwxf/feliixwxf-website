@@ -816,7 +816,9 @@ export default function FeliixWxfPhotography() {
           </nav>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-            <ThemeToggle />
+            <div className="hidden md:block">
+              <ThemeToggle />
+            </div>
             <AccountButton />
 
             <button
@@ -840,6 +842,22 @@ export default function FeliixWxfPhotography() {
             }`}
           >
             <div className="flex flex-col gap-4">
+              <div
+                className={`flex items-center justify-between rounded-2xl border px-5 py-4 ${
+                  dark
+                    ? "border-white/10 bg-white/10"
+                    : "border-black/10 bg-black/5"
+                }`}
+              >
+                <div>
+                  <p className="text-sm font-black">Ansicht</p>
+                  <p className={`mt-1 text-xs ${muted}`}>
+                    {dark ? "Dark Mode ist aktiv" : "White Mode ist aktiv"}
+                  </p>
+                </div>
+                <ThemeToggle />
+              </div>
+
               {["Startseite", "Portfolio", "Bewertung", "Kontakt"].map((item) => (
                 <button
                   key={item}
