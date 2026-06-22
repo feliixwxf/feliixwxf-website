@@ -15,9 +15,9 @@ export const metadata = {
   title: "fellixwxf",
   description: "Fotografie, Kundenbereiche und Galerien von fellixwxf.",
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: "/icon.svg?v=2",
+    shortcut: "/favicon.ico?v=2",
+    apple: "/icon.svg?v=2",
   },
 };
 
