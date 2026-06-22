@@ -612,23 +612,21 @@ export default function FeliixWxfPhotography() {
     </button>
   );
 
-  const AccountButton = ({ compact = false, className = "" }) => (
+  const AccountButton = ({ className = "" }) => (
     <a
       href="/konto"
       aria-label="Kundenkonto öffnen"
       title="Kundenkonto"
       className={`inline-flex items-center justify-center rounded-full border font-semibold transition duration-200 hover:-translate-y-0.5 hover:scale-[1.03] ${
-        compact
-          ? "h-11 w-11 px-0"
-          : "max-w-[190px] gap-2 px-4 py-2 text-sm"
+        "max-w-[118px] gap-1.5 px-3 py-2 text-xs sm:max-w-[160px] sm:gap-2 sm:px-4 sm:text-sm md:max-w-[190px]"
       } ${
         dark
           ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
           : "border-black/10 bg-white/80 text-neutral-950 shadow-sm hover:bg-white"
       } ${className}`}
     >
-      <UserRound className={compact ? "h-5 w-5" : "h-4 w-4"} />
-      {!compact && <span className="truncate">{accountLabel}</span>}
+      <UserRound className="h-4 w-4 shrink-0" />
+      <span className="truncate">{accountLabel}</span>
     </a>
   );
 
@@ -819,8 +817,7 @@ export default function FeliixWxfPhotography() {
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <AccountButton compact className="md:hidden" />
-            <AccountButton className="hidden md:inline-flex" />
+            <AccountButton />
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
