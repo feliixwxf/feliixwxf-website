@@ -15,9 +15,9 @@ export const metadata = {
   title: "fellixwxf",
   description: "Fotografie, Kundenbereiche und Galerien von fellixwxf.",
   icons: {
-    icon: "/icon.svg?v=2",
-    shortcut: "/favicon.ico?v=2",
-    apple: "/icon.svg?v=2",
+    icon: "/favicon.ico?v=3",
+    shortcut: "/favicon.ico?v=3",
+    apple: "/icon.svg?v=3",
   },
 };
 
@@ -27,6 +27,11 @@ export default function RootLayout({ children }) {
       lang="de"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="icon" href="/favicon.ico?v=3" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico?v=3" />
+        <link rel="apple-touch-icon" href="/icon.svg?v=3" />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
