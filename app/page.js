@@ -612,6 +612,26 @@ export default function FeliixWxfPhotography() {
     </button>
   );
 
+  const AccountButton = ({ compact = false, className = "" }) => (
+    <a
+      href="/konto"
+      aria-label="Kundenkonto öffnen"
+      title="Kundenkonto"
+      className={`inline-flex items-center justify-center rounded-full border font-semibold transition duration-200 hover:-translate-y-0.5 hover:scale-[1.03] ${
+        compact
+          ? "h-11 w-11 px-0"
+          : "max-w-[190px] gap-2 px-4 py-2 text-sm"
+      } ${
+        dark
+          ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
+          : "border-black/10 bg-white/80 text-neutral-950 shadow-sm hover:bg-white"
+      } ${className}`}
+    >
+      <UserRound className={compact ? "h-5 w-5" : "h-4 w-4"} />
+      {!compact && <span className="truncate">{accountLabel}</span>}
+    </a>
+  );
+
   if (activeGallery) {
     const current = portfolioItems.find((item) => item.key === activeGallery);
 
@@ -770,13 +790,15 @@ export default function FeliixWxfPhotography() {
             : "border-black/10 bg-white/95"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-5">
           <button
             onClick={() => scrollToSection("startseite")}
             className={`flex items-center gap-2 rounded-full px-3 py-2 ${buttonHover}`}
           >
             <Camera className="h-6 w-6" />
-            <span className="text-xl font-black tracking-wide">feliix.wxf</span>
+            <span className="text-xl font-black tracking-wide max-[430px]:hidden">
+              feliix.wxf
+            </span>
           </button>
 
           <nav className="hidden items-center gap-3 md:flex">
@@ -795,20 +817,10 @@ export default function FeliixWxfPhotography() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
-            <a
-              href="/konto"
-              className={`hidden max-w-[180px] items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold md:inline-flex ${
-                dark
-                  ? "border-white/20 bg-white/10 hover:bg-white/15"
-                  : "border-black/10 bg-white/75 hover:bg-white"
-              } ${buttonHover}`}
-            >
-              <UserRound className="h-4 w-4" />
-              <span className="truncate">{accountLabel}</span>
-            </a>
-
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <ThemeToggle />
+            <AccountButton compact className="md:hidden" />
+            <AccountButton className="hidden md:inline-flex" />
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -847,16 +859,6 @@ export default function FeliixWxfPhotography() {
                   {item}
                 </button>
               ))}
-              <a
-                href="/konto"
-                className={`rounded-2xl border px-5 py-4 text-left text-base font-semibold transition-colors duration-200 ${
-                  dark
-                    ? "border-white/10 bg-white/10 hover:bg-white/15"
-                    : "border-black/10 bg-black/5 hover:bg-black/10"
-                }`}
-              >
-                {accountLabel}
-              </a>
             </div>
           </motion.div>
         )}
