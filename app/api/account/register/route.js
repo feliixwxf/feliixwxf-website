@@ -13,6 +13,7 @@ export async function POST(request) {
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
   const name = String(body.name || "").trim().slice(0, 100);
+  const phone = String(body.phone || "").trim().slice(0, 40);
   const privacyAccepted = body.privacyAccepted === true;
   const origin = request.headers.get("origin") || new URL(request.url).origin;
   const redirectTo = `${origin}/konto?verified=1`;
@@ -60,6 +61,7 @@ export async function POST(request) {
         password,
         data: {
           name,
+          phone,
           privacy_accepted_at: new Date().toISOString(),
           privacy_version: "2026-05-22",
         },
@@ -85,7 +87,7 @@ export async function POST(request) {
       id: data.user?.id,
       email: data.user?.email || email,
       name,
-      phone: data.user?.user_metadata?.phone || "",
+      phone: data.user?.user_metadata?.phone || phone,
       avatar_url: data.user?.user_metadata?.avatar_url || "",
     },
     needsEmailConfirmation: !data.session,

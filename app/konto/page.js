@@ -14,6 +14,7 @@ import {
   LogOut,
   Mail,
   Moon,
+  Phone,
   RefreshCw,
   Sun,
   Trash2,
@@ -65,6 +66,7 @@ export default function AccountPage() {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     privacyAccepted: false,
   });
@@ -302,7 +304,7 @@ export default function AccountPage() {
 
     setUser(data.user);
     setProfileName(data.user?.name || form.name || "");
-    setProfilePhone(data.user?.phone || "");
+    setProfilePhone(data.user?.phone || form.phone || "");
     setAvatarPreview(data.user?.avatar_url || "");
     const linkedGallery = await linkSavedGalleryCode();
     if (!linkedGallery) {
@@ -1480,6 +1482,27 @@ export default function AccountPage() {
                           placeholder="z. B. Felix"
                           className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
                         />
+                      </label>
+                    )}
+
+                    {mode === "register" && (
+                      <label className="block">
+                        <span className="text-sm font-bold text-neutral-200">
+                          Telefonnummer optional
+                        </span>
+                        <div className="relative mt-2">
+                          <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+                          <input
+                            type="tel"
+                            value={form.phone}
+                            onChange={(event) =>
+                              updateForm("phone", event.target.value)
+                            }
+                            placeholder="+49 ..."
+                            autoComplete="tel"
+                            className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
+                          />
+                        </div>
                       </label>
                     )}
 
