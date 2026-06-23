@@ -1485,27 +1485,6 @@ export default function AccountPage() {
                       </label>
                     )}
 
-                    {mode === "register" && (
-                      <label className="block">
-                        <span className="text-sm font-bold text-neutral-200">
-                          Telefonnummer optional
-                        </span>
-                        <div className="relative mt-2">
-                          <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
-                          <input
-                            type="tel"
-                            value={form.phone}
-                            onChange={(event) =>
-                              updateForm("phone", event.target.value)
-                            }
-                            placeholder="+49 ..."
-                            autoComplete="tel"
-                            className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
-                          />
-                        </div>
-                      </label>
-                    )}
-
                     <label className="block">
                       <span className="text-sm font-bold text-neutral-200">
                         E-Mail
@@ -1573,6 +1552,27 @@ export default function AccountPage() {
                         </button>
                       </div>
                     </label>
+
+                    {mode === "register" && (
+                      <label className="block">
+                        <span className="text-sm font-bold text-neutral-200">
+                          Telefonnummer optional
+                        </span>
+                        <div className="relative mt-2">
+                          <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+                          <input
+                            type="tel"
+                            value={form.phone}
+                            onChange={(event) =>
+                              updateForm("phone", event.target.value)
+                            }
+                            placeholder="+49 ..."
+                            autoComplete="tel"
+                            className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
+                          />
+                        </div>
+                      </label>
+                    )}
 
                     {mode === "login" && (
                       <button
