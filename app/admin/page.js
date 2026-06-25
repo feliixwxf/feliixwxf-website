@@ -711,7 +711,7 @@ export default function AdminPage() {
     {
       value: "settings",
       label: "Einstellungen",
-      description: "Status & Hilfe",
+      description: "Werkzeuge",
       icon: ShieldCheck,
     },
   ];
@@ -853,35 +853,6 @@ export default function AdminPage() {
       value: clientProjectsReadyToFinish.length,
       helper: "Checkliste komplett",
       icon: CheckCircle2,
-    },
-  ];
-  const privacyFocusGalleries = clientGalleries
-    .filter((gallery) => {
-      const status = getClientGalleryStatus(gallery);
-
-      return (
-        gallery.downloads_enabled ||
-        !gallery.expires_at ||
-        (status === "completed" && gallery.is_active !== false)
-      );
-    })
-    .slice(0, 5);
-  const privacyStats = [
-    {
-      label: "Downloads aktiv",
-      value: clientGalleries.filter((gallery) => gallery.downloads_enabled)
-        .length,
-      helper: "Galerien, in denen Kunden Dateien laden können.",
-    },
-    {
-      label: "Ohne Ablaufdatum",
-      value: clientGalleries.filter((gallery) => !gallery.expires_at).length,
-      helper: "Diese Galerien bleiben dauerhaft erreichbar.",
-    },
-    {
-      label: "Öffentliche Bewertungen",
-      value: approvedReviews.length,
-      helper: "Sichtbare Kundenstimmen auf der Website.",
     },
   ];
   const clientProjectFocus = [...clientProjectQueue]
@@ -5547,179 +5518,91 @@ export default function AdminPage() {
                   Einstellungen
                 </p>
                 <h2 className="mt-3 text-3xl font-black">
-                  Status
+                  Werkzeuge
                 </h2>
 
-                <div className="mt-6 grid gap-4 lg:grid-cols-3">
-                  <div className="rounded-[1.5rem] border border-emerald-400/20 bg-emerald-400/10 p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-400/15">
-                      <ShieldCheck className="h-5 w-5 text-emerald-100" />
-                    </div>
-                    <h3 className="mt-5 text-xl font-black">Admin-Schutz</h3>
-                    <p className="mt-3 text-sm text-emerald-100/80">Aktiv</p>
-                  </div>
+                <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={refreshDashboard}
+                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                      <RefreshCw className="h-5 w-5" />
+                    </span>
+                    <span className="mt-5 block text-xl font-black">
+                      Daten neu laden
+                    </span>
+                    <span className="mt-2 block text-sm text-neutral-400">
+                      Admin-Daten frisch abrufen.
+                    </span>
+                  </button>
 
-                  <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
-                      <Upload className="h-5 w-5" />
-                    </div>
-                    <h3 className="mt-5 text-xl font-black">Uploads</h3>
-                    <p className="mt-3 text-sm text-neutral-300">JPG, PNG, WebP</p>
-                  </div>
+                  <a
+                    href="/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                      <ExternalLink className="h-5 w-5" />
+                    </span>
+                    <span className="mt-5 block text-xl font-black">
+                      Website öffnen
+                    </span>
+                    <span className="mt-2 block text-sm text-neutral-400">
+                      Live-Ansicht in neuem Tab.
+                    </span>
+                  </a>
 
-                  <div className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400/15">
-                      <MessageSquare className="h-5 w-5 text-yellow-100" />
-                    </div>
-                    <h3 className="mt-5 text-xl font-black">Bewertungen</h3>
-                    <p className="mt-3 text-sm text-yellow-100/80">
-                      {pendingReviews.length} offen
-                    </p>
-                  </div>
-                </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("clients")}
+                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                      <Users className="h-5 w-5" />
+                    </span>
+                    <span className="mt-5 block text-xl font-black">
+                      Kunden öffnen
+                    </span>
+                    <span className="mt-2 block text-sm text-neutral-400">
+                      Galerien und Kundenkonten verwalten.
+                    </span>
+                  </button>
 
-                <div className="mt-6 rounded-[1.5rem] border border-sky-300/20 bg-sky-300/10 p-6">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-[0.24em] text-sky-100/70">
-                        Datenpflege
-                      </p>
-                      <h3 className="mt-3 text-2xl font-black">
-                        Offene Punkte
-                      </h3>
-                    </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("reviews")}
+                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                      <MessageSquare className="h-5 w-5" />
+                    </span>
+                    <span className="mt-5 block text-xl font-black">
+                      Bewertungen prüfen
+                    </span>
+                    <span className="mt-2 block text-sm text-neutral-400">
+                      {pendingReviews.length} offene Bewertung
+                      {pendingReviews.length === 1 ? "" : "en"}.
+                    </span>
+                  </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("clients")}
-                      className="inline-flex w-fit items-center gap-2 rounded-full border border-sky-200/20 bg-sky-200/10 px-4 py-2 text-sm font-bold text-sky-50 transition hover:bg-sky-200/15"
-                    >
-                      <Users className="h-4 w-4" />
-                      Zu Kundengalerien
-                    </button>
-                  </div>
-
-                  <div className="mt-5 grid gap-3 md:grid-cols-3">
-                    {privacyStats.map((item) => (
-                      <div
-                        key={item.label}
-                        className="rounded-2xl border border-white/10 bg-black/20 p-4"
-                      >
-                        <p className="text-2xl font-black">{item.value}</p>
-                        <h4 className="mt-2 font-bold">{item.label}</h4>
-                        <p className="mt-2 text-xs leading-5 text-sky-100/70">
-                          {item.helper}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-5">
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <h4 className="font-black">Galerien prüfen</h4>
-                        <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-sky-100/80">
-                          {privacyFocusGalleries.length} offen
-                        </span>
-                      </div>
-
-                      <div className="mt-4 grid gap-3">
-                        {privacyFocusGalleries.length === 0 && (
-                          <p className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm text-emerald-100/80">
-                            Sieht gut aus: aktuell gibt es keinen auffälligen
-                            Datenschutz-Punkt bei Kundengalerien.
-                          </p>
-                        )}
-
-                        {privacyFocusGalleries.map((gallery) => {
-                          const status = getClientGalleryStatus(gallery);
-                          const notes = [
-                            gallery.downloads_enabled
-                              ? "Downloads aktiv"
-                              : null,
-                            !gallery.expires_at ? "kein Ablaufdatum" : null,
-                            status === "completed" && gallery.is_active !== false
-                              ? "abgeschlossen, aber erreichbar"
-                              : null,
-                          ].filter(Boolean);
-
-                          return (
-                            <div
-                              key={gallery.id}
-                              className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
-                            >
-                              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                                <div className="min-w-0">
-                                  <p className="truncate font-black">
-                                    {gallery.title}
-                                  </p>
-                                  <p className="mt-1 text-xs text-sky-100/65">
-                                    {notes.join(" · ")}
-                                  </p>
-                                </div>
-
-                                <div className="flex flex-wrap gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveClientGalleryId(gallery.id);
-                                      setActiveClientPanel("overview");
-                                      setActiveTab("clients");
-                                    }}
-                                    className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold transition hover:bg-white/15"
-                                  >
-                                    Öffnen
-                                  </button>
-
-                                  {gallery.downloads_enabled && (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        updateClientGallery(
-                                          gallery,
-                                          { downloads_enabled: false },
-                                          "Downloads wurden deaktiviert."
-                                        )
-                                      }
-                                      disabled={
-                                        busyClientGalleryId === gallery.id
-                                      }
-                                      className="rounded-full border border-yellow-400/25 bg-yellow-400/10 px-3 py-2 text-xs font-bold text-yellow-100 transition hover:bg-yellow-400/20 disabled:opacity-60"
-                                    >
-                                      Downloads aus
-                                    </button>
-                                  )}
-
-                                  {status !== "paused" && (
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        updateClientGallery(
-                                          gallery,
-                                          {
-                                            is_active: false,
-                                            status: "paused",
-                                          },
-                                          "Galerie wurde pausiert."
-                                        )
-                                      }
-                                      disabled={
-                                        busyClientGalleryId === gallery.id
-                                      }
-                                      className="rounded-full border border-red-400/25 bg-red-400/10 px-3 py-2 text-xs font-bold text-red-100 transition hover:bg-red-400/20 disabled:opacity-60"
-                                    >
-                                      Pausieren
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="group rounded-[1.5rem] border border-red-400/20 bg-red-500/10 p-6 text-left text-red-50 transition hover:-translate-y-1 hover:bg-red-500/15"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/15 transition group-hover:bg-red-500/20">
+                      <LogOut className="h-5 w-5" />
+                    </span>
+                    <span className="mt-5 block text-xl font-black">
+                      Ausloggen
+                    </span>
+                    <span className="mt-2 block text-sm text-red-100/70">
+                      Admin-Sitzung beenden.
+                    </span>
+                  </button>
                 </div>
               </div>
             )}
