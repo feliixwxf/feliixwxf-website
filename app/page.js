@@ -183,23 +183,114 @@ function getPortfolioImageUrl(image) {
   return normalizePortfolioImage(image).url;
 }
 
-function MaintenanceView() {
+function MaintenanceView({ siteSettings }) {
+  const contactEmailHref = `mailto:${siteSettings.contact_email}`;
+  const contactPhoneHref = `tel:${siteSettings.contact_phone.replace(/[^\d+]/g, "")}`;
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(135deg,#050505,#111113,#1f2023)] px-5 text-white">
-      <div className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.08] p-8 text-center shadow-2xl backdrop-blur-xl">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-yellow-300/25 bg-yellow-300/10 text-yellow-100 shadow-[0_0_50px_rgba(250,204,21,0.18)]">
-          <Settings className="h-10 w-10 animate-spin" />
+    <main className="min-h-screen bg-[linear-gradient(135deg,#050505,#111113,#1f2023)] px-5 py-10 text-white">
+      <div className="mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.08] p-8 text-center shadow-2xl backdrop-blur-xl lg:text-left">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-yellow-300/25 bg-yellow-300/10 text-yellow-100 shadow-[0_0_50px_rgba(250,204,21,0.18)] lg:mx-0">
+            <Settings className="h-10 w-10 animate-spin" />
+          </div>
+          <p className="mt-8 text-sm font-semibold uppercase tracking-[0.32em] text-yellow-100/70">
+            Wartungsarbeiten
+          </p>
+          <h1 className="mt-4 text-4xl font-black md:text-5xl">
+            Wir sind gleich zurück.
+          </h1>
+          <p className="mt-5 max-w-md leading-8 text-neutral-300">
+            Die Website wird gerade aktualisiert. Anfragen kannst du weiterhin
+            direkt senden.
+          </p>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <a
+              href={contactEmailHref}
+              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-left transition hover:bg-white/[0.1]"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white">
+                <GmailIcon className="h-6 w-6" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-xs uppercase tracking-[0.22em] text-neutral-400">
+                  E-Mail
+                </span>
+                <span className="block truncate text-sm font-semibold">
+                  {siteSettings.contact_email}
+                </span>
+              </span>
+            </a>
+
+            <a
+              href={contactPhoneHref}
+              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-left transition hover:bg-white/[0.1]"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-white">
+                <Phone className="h-5 w-5 fill-current" />
+              </span>
+              <span>
+                <span className="block text-xs uppercase tracking-[0.22em] text-neutral-400">
+                  Telefon
+                </span>
+                <span className="block text-sm font-semibold">
+                  {siteSettings.contact_phone}
+                </span>
+              </span>
+            </a>
+          </div>
         </div>
-        <p className="mt-8 text-sm font-semibold uppercase tracking-[0.32em] text-yellow-100/70">
-          Wartungsarbeiten
-        </p>
-        <h1 className="mt-4 text-4xl font-black md:text-5xl">
-          Wir sind gleich zurück.
-        </h1>
-        <p className="mx-auto mt-5 max-w-md leading-8 text-neutral-300">
-          Die Website wird gerade aktualisiert. Bitte versuche es in Kürze
-          nochmal.
-        </p>
+
+        <form
+          action={siteSettings.form_action}
+          method="POST"
+          className="rounded-[2rem] border border-white/10 bg-white/[0.08] p-6 shadow-2xl backdrop-blur-xl"
+        >
+          <h2 className="text-2xl font-black">Anfrage senden</h2>
+          <p className="mt-2 text-sm leading-6 text-neutral-300">
+            Das Kontaktformular bleibt auch während der Wartung aktiv.
+          </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <input
+              type="text"
+              name="name"
+              required
+              placeholder="Dein Name"
+              className="rounded-2xl border border-white/20 bg-white/90 px-4 py-3 text-neutral-950 outline-none"
+            />
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="Deine E-Mail"
+              className="rounded-2xl border border-white/20 bg-white/90 px-4 py-3 text-neutral-950 outline-none"
+            />
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Telefonnummer optional"
+              className="rounded-2xl border border-white/20 bg-white/90 px-4 py-3 text-neutral-950 outline-none md:col-span-2"
+            />
+            <textarea
+              name="message"
+              required
+              rows="5"
+              placeholder="Deine Nachricht"
+              className="rounded-2xl border border-white/20 bg-white/90 px-4 py-3 text-neutral-950 outline-none md:col-span-2"
+            />
+
+            <p className="text-xs leading-6 text-neutral-400 md:col-span-2">
+              Mit dem Absenden erklärst du dich einverstanden, dass deine
+              Angaben zur Bearbeitung deiner Anfrage verarbeitet werden.
+            </p>
+
+            <Button type="submit" className="rounded-2xl py-6 text-base md:col-span-2">
+              Nachricht senden
+            </Button>
+          </div>
+        </form>
       </div>
     </main>
   );
@@ -661,7 +752,7 @@ export default function FeliixWxfPhotography() {
   );
 
   if (maintenanceActive) {
-    return <MaintenanceView />;
+    return <MaintenanceView siteSettings={siteSettings} />;
   }
 
   if (activeGallery) {
