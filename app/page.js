@@ -10,6 +10,7 @@ import {
   X,
   ArrowLeft,
   ArrowRight,
+  Settings,
   Sun,
   Moon,
   UserRound,
@@ -72,6 +73,7 @@ const DEFAULT_SITE_SETTINGS = {
   instagram_url: "https://www.instagram.com/feliix.wxf",
   instagram_label: "@feliix.wxf",
   form_action: "https://formspree.io/f/xqennvyy",
+  maintenance_mode: "false",
 };
 
 function InstagramIcon({ className = "h-5 w-5" }) {
@@ -181,6 +183,28 @@ function getPortfolioImageUrl(image) {
   return normalizePortfolioImage(image).url;
 }
 
+function MaintenanceView() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(135deg,#050505,#111113,#1f2023)] px-5 text-white">
+      <div className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.08] p-8 text-center shadow-2xl backdrop-blur-xl">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-yellow-300/25 bg-yellow-300/10 text-yellow-100 shadow-[0_0_50px_rgba(250,204,21,0.18)]">
+          <Settings className="h-10 w-10 animate-spin" />
+        </div>
+        <p className="mt-8 text-sm font-semibold uppercase tracking-[0.32em] text-yellow-100/70">
+          Wartungsarbeiten
+        </p>
+        <h1 className="mt-4 text-4xl font-black md:text-5xl">
+          Wir sind gleich zurück.
+        </h1>
+        <p className="mx-auto mt-5 max-w-md leading-8 text-neutral-300">
+          Die Website wird gerade aktualisiert. Bitte versuche es in Kürze
+          nochmal.
+        </p>
+      </div>
+    </main>
+  );
+}
+
 export default function FeliixWxfPhotography() {
   const sliderRef = useRef(null);
   const beforeRef = useRef(null);
@@ -204,6 +228,7 @@ export default function FeliixWxfPhotography() {
   const [uploadedImages, setUploadedImages] = useState([]);
   const [siteAssets, setSiteAssets] = useState(DEFAULT_SITE_ASSETS);
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
+  const [siteSettingsLoaded, setSiteSettingsLoaded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [selectedPortfolioImage, setSelectedPortfolioImage] = useState(null);
@@ -271,8 +296,11 @@ export default function FeliixWxfPhotography() {
         if (data?.settings) {
           setSiteSettings((current) => ({ ...current, ...data.settings }));
         }
+        setSiteSettingsLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        setSiteSettingsLoaded(true);
+      });
 
     const timer = setTimeout(() => setShowPopup(true), 8000);
     return () => clearTimeout(timer);
@@ -327,6 +355,8 @@ export default function FeliixWxfPhotography() {
   const navItems = ["Startseite", "Info", "Portfolio", "Bewertung", "Kontakt"];
   const contactEmailHref = `mailto:${siteSettings.contact_email}`;
   const contactPhoneHref = `tel:${siteSettings.contact_phone.replace(/[^\d+]/g, "")}`;
+  const maintenanceActive =
+    siteSettingsLoaded && String(siteSettings.maintenance_mode) === "true";
 
   const pageStyle = dark
     ? "bg-[linear-gradient(135deg,#080808,#151515,#242427)] text-white"
@@ -629,6 +659,10 @@ export default function FeliixWxfPhotography() {
       <span className="truncate">{accountLabel}</span>
     </a>
   );
+
+  if (maintenanceActive) {
+    return <MaintenanceView />;
+  }
 
   if (activeGallery) {
     const current = portfolioItems.find((item) => item.key === activeGallery);

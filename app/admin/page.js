@@ -30,6 +30,7 @@ import {
   Search,
   ShieldCheck,
   Star,
+  Settings,
   Trash2,
   Type,
   Upload,
@@ -213,6 +214,7 @@ const DEFAULT_SITE_SETTINGS = {
   instagram_url: "https://www.instagram.com/feliix.wxf",
   instagram_label: "@feliix.wxf",
   form_action: "https://formspree.io/f/xqennvyy",
+  maintenance_mode: "false",
 };
 
 function parseArchivedPortfolioKeys(value) {
@@ -546,6 +548,7 @@ export default function AdminPage() {
   const [siteAssets, setSiteAssets] = useState({});
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
   const [settingsDraft, setSettingsDraft] = useState(DEFAULT_SITE_SETTINGS);
+  const [maintenanceSaving, setMaintenanceSaving] = useState(false);
   const [clientGalleryForm, setClientGalleryForm] = useState(
     DEFAULT_CLIENT_GALLERY_FORM
   );
@@ -2102,6 +2105,53 @@ export default function AdminPage() {
     setSettingsDraft(nextSettings);
     showMessage("Kontaktinfos wurden gespeichert.", "success");
     setSettingsSaving(false);
+  };
+
+  const toggleMaintenanceMode = async () => {
+    const nextValue =
+      String(siteSettings.maintenance_mode) === "true" ? "false" : "true";
+
+    setMaintenanceSaving(true);
+    setMessage("");
+
+    const response = await fetch("/api/admin/site-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        settings: {
+          maintenance_mode: nextValue,
+        },
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Wartungsmodus konnte nicht gespeichert werden.",
+        "error"
+      );
+      setMaintenanceSaving(false);
+      return;
+    }
+
+    const nextSettings = {
+      ...siteSettings,
+      ...(data.settings || {}),
+      maintenance_mode: nextValue,
+    };
+
+    setSiteSettings(nextSettings);
+    setSettingsDraft((current) => ({
+      ...current,
+      maintenance_mode: nextValue,
+    }));
+    showMessage(
+      nextValue === "true"
+        ? "Wartungsmodus ist aktiv."
+        : "Wartungsmodus ist aus.",
+      "success"
+    );
+    setMaintenanceSaving(false);
   };
 
   const deleteReview = (review) => {
@@ -5522,6 +5572,43 @@ export default function AdminPage() {
                 </h2>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <button
+                    type="button"
+                    onClick={toggleMaintenanceMode}
+                    disabled={maintenanceSaving}
+                    className={`group rounded-[1.5rem] border p-6 text-left transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 ${
+                      String(siteSettings.maintenance_mode) === "true"
+                        ? "border-yellow-400/25 bg-yellow-400/10 text-yellow-50 hover:bg-yellow-400/15"
+                        : "border-emerald-400/20 bg-emerald-400/10 text-emerald-50 hover:bg-emerald-400/15"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-12 w-12 items-center justify-center rounded-full transition ${
+                        String(siteSettings.maintenance_mode) === "true"
+                          ? "bg-yellow-400/15"
+                          : "bg-emerald-400/15"
+                      }`}
+                    >
+                      <Settings
+                        className={`h-5 w-5 ${
+                          String(siteSettings.maintenance_mode) === "true"
+                            ? "animate-spin"
+                            : ""
+                        }`}
+                      />
+                    </span>
+                    <span className="mt-5 block text-xl font-black">
+                      Wartungsmodus
+                    </span>
+                    <span className="mt-2 block text-sm opacity-75">
+                      {maintenanceSaving
+                        ? "Speichert..."
+                        : String(siteSettings.maintenance_mode) === "true"
+                          ? "Aktiv: Besucher sehen Wartungsarbeiten."
+                          : "Aus: Website ist normal sichtbar."}
+                    </span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={refreshDashboard}

@@ -29,6 +29,7 @@ const SETTING_KEYS = new Set([
   "instagram_url",
   "instagram_label",
   "form_action",
+  "maintenance_mode",
 ]);
 
 function unauthorized() {
