@@ -746,6 +746,8 @@ export default function AdminPage() {
       .map((value) => tabs.find((tab) => tab.value === value))
       .filter(Boolean),
   }));
+  const activeTabDetails =
+    tabs.find((tab) => tab.value === activeTab) || tabs[0];
   const latestImage = [...images].sort(
     (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
   )[0];
@@ -2522,9 +2524,75 @@ export default function AdminPage() {
             </button>
           </form>
         ) : (
-          <section className="mt-5 grid gap-4 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)]">
+          <section className="mt-4 grid gap-3 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)]">
             <aside className="xl:min-h-0 xl:overflow-y-auto xl:pr-1">
               <nav className="rounded-[1.25rem] border border-white/10 bg-black/25 p-2">
+                <div className="grid gap-2 xl:hidden">
+                  <label className="block">
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
+                      Bereich
+                    </span>
+                    <select
+                      value={activeTab}
+                      onChange={(event) => setActiveTab(event.target.value)}
+                      className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm font-black text-neutral-950 outline-none focus:border-yellow-400"
+                    >
+                      {tabGroups.map((group) => (
+                        <optgroup key={group.title} label={group.title}>
+                          {group.tabs.map((tab) => (
+                            <option key={tab.value} value={tab.value}>
+                              {tab.label}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </label>
+
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      {
+                        label: "Kunden",
+                        icon: Users,
+                        tab: "clients",
+                      },
+                      {
+                        label: "Bewertungen",
+                        icon: MessageSquare,
+                        tab: "reviews",
+                      },
+                      {
+                        label: "Portfolio",
+                        icon: Images,
+                        tab: "portfolio",
+                      },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const active = activeTab === item.tab;
+
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() => {
+                            setActiveTab(item.tab);
+                            if (item.tab === "reviews") setReviewFilter("pending");
+                          }}
+                          className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-xs font-black transition ${
+                            active
+                              ? "border-white bg-white text-neutral-950"
+                              : "border-white/10 bg-white/[0.055] text-neutral-300 hover:bg-white/10"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="hidden xl:block">
                 <div className="grid grid-cols-3 gap-1.5 p-1.5">
                   {[
                     {
@@ -2615,10 +2683,26 @@ export default function AdminPage() {
                     </div>
                   </div>
                 ))}
+                </div>
               </nav>
             </aside>
 
-            <div className="min-w-0 rounded-[1.5rem] border border-white/10 bg-white/[0.045] p-4 shadow-xl backdrop-blur-xl md:p-5 xl:min-h-0 xl:overflow-y-auto">
+            <div className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.045] p-3 shadow-xl backdrop-blur-xl sm:rounded-[1.5rem] sm:p-4 md:p-5 xl:min-h-0 xl:overflow-y-auto">
+              <div className="mb-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 xl:hidden">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                  {React.createElement(activeTabDetails.icon, {
+                    className: "h-5 w-5",
+                  })}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-base font-black">
+                    {activeTabDetails.label}
+                  </span>
+                  <span className="block truncate text-xs text-neutral-500">
+                    {activeTabDetails.description}
+                  </span>
+                </span>
+              </div>
 
             {activeTab === "dashboard" && (
               <div>
