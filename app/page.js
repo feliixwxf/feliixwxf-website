@@ -1024,6 +1024,13 @@ export default function FeliixWxfPhotography() {
               <p className={`mt-6 max-w-xl text-lg leading-8 ${muted}`}>
                 {siteSettings.hero_intro}
               </p>
+
+              <p
+                className={`mt-4 max-w-xl text-sm font-semibold uppercase tracking-[0.18em] ${muted}`}
+              >
+                Fotograf in Hildburghausen, Eisfeld und Thüringen für Portrait,
+                Car Photography und Events.
+              </p>
             </div>
 
             <div className={`rounded-[2rem] border p-4 shadow-lg ${glass}`}>
