@@ -18,7 +18,7 @@ export const metadata = {
     template: "%s | feliix.wxf",
   },
   description:
-    "feliix.wxf ist dein Fotograf für Hildburghausen, Eisfeld und Thüringen. Portraitfotografie, Car Photography, Eventfotos und moderne Bildbearbeitung.",
+    "feliix.wxf ist dein Fotograf für Hildburghausen, Eisfeld und Thüringen. Portraitfotografie, Hochzeiten, Car Photography, Eventfotos und moderne Bildbearbeitung.",
   keywords: [
     "Fotograf Hildburghausen",
     "Fotograf in Hildburghausen",
@@ -26,6 +26,9 @@ export const metadata = {
     "Fotograf Thüringen",
     "Portraitfotograf Thüringen",
     "Portrait Shooting Thüringen",
+    "Hochzeitsfotograf Thüringen",
+    "Hochzeitsfotograf Hildburghausen",
+    "Hochzeitsfotografie Thüringen",
     "Car Photography Thüringen",
     "Autofotografie Thüringen",
     "Eventfotograf Thüringen",
@@ -38,7 +41,7 @@ export const metadata = {
   openGraph: {
     title: "feliix.wxf | Fotograf in Hildburghausen & Thüringen",
     description:
-      "Portraits, Car Photography, Events und kreative Bildbearbeitung in Hildburghausen, Eisfeld und Thüringen.",
+      "Portraits, Hochzeiten, Car Photography, Events und kreative Bildbearbeitung in Hildburghausen, Eisfeld und Thüringen.",
     url: "https://www.feliixwxf.de",
     siteName: "feliix.wxf",
     locale: "de_DE",
@@ -56,7 +59,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "feliix.wxf | Fotograf in Hildburghausen & Thüringen",
     description:
-      "Portraitfotografie, Car Photography und Events in Thüringen.",
+      "Portraitfotografie, Hochzeiten, Car Photography und Events in Thüringen.",
     images: ["/images/nacher.jpg"],
   },
   robots: {
@@ -108,6 +111,13 @@ const localBusinessJsonLd = {
       itemOffered: {
         "@type": "Service",
         name: "Car Photography in Thüringen",
+      },
+    },
+    {
+      "@type": "Offer",
+      itemOffered: {
+        "@type": "Service",
+        name: "Hochzeitsfotografie in Thüringen",
       },
     },
     {

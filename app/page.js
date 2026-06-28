@@ -1026,10 +1026,10 @@ export default function FeliixWxfPhotography() {
               </p>
 
               <p
-                className={`mt-4 max-w-xl text-sm font-semibold uppercase tracking-[0.18em] ${muted}`}
+                className={`mt-3 max-w-xl text-[0.68rem] font-semibold uppercase leading-5 tracking-[0.14em] sm:text-xs ${muted}`}
               >
-                Fotograf in Hildburghausen, Eisfeld und Thüringen für Portrait,
-                Car Photography und Events.
+                Fotograf in Hildburghausen, Eisfeld und Thüringen für Portraits,
+                Hochzeiten, Car Photography und Events.
               </p>
             </div>
 
