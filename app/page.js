@@ -316,6 +316,9 @@ export default function FeliixWxfPhotography() {
   const [currentCustomer, setCurrentCustomer] = useState(null);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewMessage, setReviewMessage] = useState("");
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactSent, setContactSent] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [siteAssets, setSiteAssets] = useState(DEFAULT_SITE_ASSETS);
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
@@ -695,10 +698,51 @@ export default function FeliixWxfPhotography() {
     }
   };
 
-  const renderStars = (value, size = "h-5 w-5") => {
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
+
+    setContactSubmitting(true);
+    setContactMessage("");
+    setContactSent(false);
+
+    try {
+      const response = await fetch(siteSettings.form_action, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Contact form could not be sent");
+
+      formElement.reset();
+      setContactSent(true);
+      setContactMessage(
+        "Danke! Deine Anfrage wurde gesendet. Ich melde mich in der Regel innerhalb von 24 Stunden."
+      );
+    } catch {
+      setContactMessage(
+        "Die Anfrage konnte gerade nicht gesendet werden. Bitte versuche es später nochmal oder schreibe mir direkt per E-Mail."
+      );
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
+
+  const renderStars = (value, size = "h-5 w-5", rounding = "exact") => {
+    const numericValue = Number(value || 0);
+    const displayValue =
+      rounding === "floor-half"
+        ? Math.floor(numericValue * 2) / 2
+        : numericValue;
+
     return [1, 2, 3, 4, 5].map((star) => {
-      const filled = value >= star;
-      const half = value === star - 0.5;
+      const filled = displayValue >= star;
+      const half = displayValue === star - 0.5;
 
       return (
         <span key={star} className="relative inline-flex">
@@ -1184,7 +1228,7 @@ export default function FeliixWxfPhotography() {
                     }`}
                   >
                     <span className="flex gap-1">
-                      {renderStars(reviewAverage || 5, "h-4 w-4")}
+                      {renderStars(reviewAverage || 5, "h-4 w-4", "floor-half")}
                     </span>
                     <span>
                       {reviewCount} Bewertung{reviewCount === 1 ? "" : "en"},
@@ -1402,8 +1446,7 @@ export default function FeliixWxfPhotography() {
             </div>
 
             <form
-              action={siteSettings.form_action}
-              method="POST"
+              onSubmit={handleContactSubmit}
               className="rounded-[2rem] border border-white/15 bg-white/[0.08] p-6 shadow-lg"
             >
               <div className="grid gap-5 md:grid-cols-2">
@@ -1443,10 +1486,54 @@ export default function FeliixWxfPhotography() {
 
                 <Button
                   type="submit"
+                  disabled={contactSubmitting}
                   className={`rounded-2xl py-6 text-base md:col-span-2 ${buttonHover}`}
                 >
-                  Unverbindlich anfragen
+                  {contactSubmitting
+                    ? "Anfrage wird gesendet..."
+                    : "Unverbindlich anfragen"}
                 </Button>
+
+                {contactMessage && (
+                  <div
+                    className={`md:col-span-2 overflow-hidden rounded-2xl border p-4 ${
+                      contactSent
+                        ? "border-yellow-300/25 bg-yellow-300/10"
+                        : "border-red-300/25 bg-red-400/10"
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                          contactSent
+                            ? "bg-yellow-300 text-black"
+                            : "bg-red-400 text-white"
+                        }`}
+                      >
+                        {contactSent && (
+                          <motion.span
+                            initial={{ scale: 0, opacity: 0.9 }}
+                            animate={{ scale: 2.2, opacity: 0 }}
+                            transition={{ duration: 0.7, ease: "easeOut" }}
+                            className="absolute inset-0 rounded-full bg-white"
+                          />
+                        )}
+                        <Camera className="relative z-10 h-6 w-6" />
+                      </div>
+
+                      <div>
+                        <p className="font-bold">
+                          {contactSent
+                            ? "Anfrage erfolgreich gesendet"
+                            : "Senden fehlgeschlagen"}
+                        </p>
+                        <p className={`mt-1 text-sm leading-6 ${muted}`}>
+                          {contactMessage}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </form>
           </div>
