@@ -446,6 +446,24 @@ export default function FeliixWxfPhotography() {
   const navItems = ["Startseite", "Info", "Portfolio", "Bewertung", "Kontakt"];
   const contactEmailHref = `mailto:${siteSettings.contact_email}`;
   const contactPhoneHref = `tel:${siteSettings.contact_phone.replace(/[^\d+]/g, "")}`;
+  const reviewCount = reviews.length;
+  const reviewAverage =
+    reviewCount > 0
+      ? reviews.reduce((sum, review) => sum + Number(review.stars || 0), 0) /
+        reviewCount
+      : 0;
+  const formattedReviewAverage = reviewAverage.toLocaleString("de-DE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  const contactHeading =
+    siteSettings.contact_heading === DEFAULT_SITE_SETTINGS.contact_heading
+      ? "Jetzt Termin unverbindlich anfragen."
+      : siteSettings.contact_heading;
+  const contactIntro =
+    siteSettings.contact_intro === DEFAULT_SITE_SETTINGS.contact_intro
+      ? "Schreib mir direkt über das Formular. In der Regel bekommst du innerhalb von 24 Stunden eine Antwort."
+      : siteSettings.contact_intro;
   const maintenanceActive =
     siteSettingsLoaded && String(siteSettings.maintenance_mode) === "true";
 
@@ -1153,9 +1171,27 @@ export default function FeliixWxfPhotography() {
               </p>
 
               <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-                <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-                  {siteSettings.reviews_heading}
-                </h2>
+                <div>
+                  <h2 className="mt-4 text-4xl font-bold md:text-5xl">
+                    {siteSettings.reviews_heading}
+                  </h2>
+
+                  <div
+                    className={`mt-5 inline-flex flex-wrap items-center gap-3 rounded-full border px-4 py-2 text-sm font-semibold ${
+                      dark
+                        ? "border-yellow-300/20 bg-yellow-300/10 text-yellow-100"
+                        : "border-yellow-500/25 bg-yellow-100 text-neutral-900"
+                    }`}
+                  >
+                    <span className="flex gap-1">
+                      {renderStars(reviewAverage || 5, "h-4 w-4")}
+                    </span>
+                    <span>
+                      {reviewCount} Bewertung{reviewCount === 1 ? "" : "en"},
+                      Ø {formattedReviewAverage}
+                    </span>
+                  </div>
+                </div>
 
                 <button
                   onClick={() => setShowAllReviews(true)}
@@ -1297,10 +1333,10 @@ export default function FeliixWxfPhotography() {
                 Kontakt
               </p>
               <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-                {siteSettings.contact_heading}
+                {contactHeading}
               </h2>
               <p className={`mt-6 max-w-xl text-lg leading-8 ${muted}`}>
-                {siteSettings.contact_intro}
+                {contactIntro}
               </p>
 
               <div className={`mt-8 space-y-5 ${muted}`}>
@@ -1409,7 +1445,7 @@ export default function FeliixWxfPhotography() {
                   type="submit"
                   className={`rounded-2xl py-6 text-base md:col-span-2 ${buttonHover}`}
                 >
-                  Nachricht senden
+                  Unverbindlich anfragen
                 </Button>
               </div>
             </form>
