@@ -1,6 +1,6 @@
 # feliix.wxf Website - KI-Übergabe
 
-Stand: 05.06.2026
+Stand: 28.06.2026
 
 Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt ohne langes Einlesen weitergeführt werden kann.
 
@@ -17,6 +17,7 @@ Tech Stack:
 - Supabase für Bewertungen, Kundenkonten, Portfolio-Bilder, Titelbilder, Website-Texte und Kundengalerien
 - Formspree für Kontaktformular und E-Mail-Benachrichtigung bei neuen Bewertungen
 - Vercel Deployment über GitHub
+- lokale SEO-Grundlagen für Hildburghausen, Eisfeld, Thüringen, Portraits, Hochzeiten, Events und Car Photography
 
 Live-Domain:
 - `https://www.feliixwxf.de`
@@ -98,6 +99,7 @@ Hinweise:
 - Für neue Bewertungs-E-Mails nutzt `app/api/reviews/route.js` diese Reihenfolge:
   `REVIEW_NOTIFICATION_ENDPOINT`, dann `FORMSPREE_ENDPOINT`, dann Fallback `https://formspree.io/f/xqennvyy`.
 - Wenn Felix den Formspree-Link nicht ändert, muss in Vercel für die Bewertungs-E-Mail nichts Neues gesetzt werden.
+- Das Kontaktformular sendet per Ajax an `siteSettings.form_action` und zeigt danach eine Erfolgsmeldung mit Kamera-Blitz.
 
 ## Supabase Setup
 
@@ -151,6 +153,7 @@ Wichtig:
 - Wenn ein Kunde sein Konto löscht, bleiben Bewertungen bestehen, aber die Konto-Verknüpfung wird entfernt und `account_deleted_at` gesetzt.
 - Profilbild und Benutzername können bei Bewertungen angezeigt werden.
 - Der Bewertungsname ist im Formular vorbefüllt, kann aber geändert werden.
+- Die öffentliche Durchschnittsanzeige zeigt Anzahl und Durchschnitt. Die Sterneanzeige rundet visuell auf halbe Sterne ab.
 
 Wichtige Dateien:
 - `app/api/reviews/route.js`
@@ -176,6 +179,7 @@ Funktionen:
 - Downloadstatus sehen
 - Konto löschen
 - Light/Dark Mode im Konto
+- Kundenkonto ist mobil stärker in Abschnitte gegliedert, damit Profil, Sicherheit und Galerien nicht gequetscht wirken.
 
 Konto löschen:
 - löscht Kundenkonto, Session, Profilbild, Favoriten und Galerie-Verknüpfungen
@@ -218,6 +222,7 @@ Funktionen:
 - abgeschlossene Galerien können ein privates ZIP-Archiv haben
 - ZIP-Archive liegen ebenfalls im privaten Bucket und werden nur über kurz gültige signierte Links heruntergeladen
 - ZIP-Download erscheint im Kundenkonto bei abgeschlossenen Galerien und zusätzlich auf `/kunden`, wenn ein Archiv vorhanden ist
+- Kundenbereich und Kundenkonto zeigen Bilder aus privaten Galerien über serverseitig signierte Links.
 
 Wichtig zu alten Kundengalerie-Bildern:
 - Bilder, die vor der privaten Bucket-Umstellung hochgeladen wurden, können noch im öffentlichen `portfolio`-Bucket liegen.
@@ -247,6 +252,7 @@ Hauptbereiche:
 - Titelbilder
 - Website-Texte
 - Kontakt/Datenschutz
+- Einstellungen/Schnellzugriff
 
 Admin kann:
 - Portfolio-Bilder hochladen, sortieren, löschen und beschriften
@@ -263,6 +269,7 @@ Admin kann:
 - Website-Texte und Kontaktinfos ändern
 - Kundenkonten per E-Mail suchen und Profile kompakt öffnen
 - Kundendaten wie E-Mail, Benutzername, Telefonnummer, Profilbild, Erstelldatum und letzte Aktivität einsehen
+- Wartungsmodus aktivieren/deaktivieren. Kontaktformular bleibt im Wartungsmodus erreichbar.
 
 Sicherheitsdetails:
 - Admin-Login nutzt HTTP-only Session-Cookie
@@ -274,6 +281,7 @@ Sicherheitsdetails:
   - interne Notiz eingeklappt
   - Galerie-Löschung in eigenem Sicherheitsbereich
 - Adminbereiche wurden vereinfacht und unnötige Erklärungstexte entfernt.
+- Einstellungen sind bewusst knapp gehalten: Wartung, neu laden, Website öffnen, Kunden, Bewertungen, Logout.
 
 ## Portfolio
 
@@ -313,6 +321,7 @@ Kontakt:
 - Telefonnummer ist klickbar (`tel:`), damit Mobilgeräte direkt anrufen können.
 - E-Mail ist klickbar (`mailto:`), damit die Mail-App mit Felix als Empfänger öffnet.
 - Telefon- und Mail-Icons sind farbig hervorgehoben.
+- Kontaktformular zeigt nach erfolgreichem Versand eine sichtbare Erfolgsmeldung.
 
 Wichtige Dateien:
 - `app/api/site-assets/route.js`
@@ -326,6 +335,7 @@ Wichtige Dateien:
 
 Aktueller Stand:
 - Datenschutz-Hinweise sind auf der Website vorhanden.
+- Impressum enthält Name, Anschrift, E-Mail und Telefonnummer.
 - Kontoerstellung verlangt einen Datenschutz-Haken.
 - Konto kann gelöscht werden.
 - Beim Löschen bleiben Bewertungen bestehen, aber ohne Konto-Verknüpfung.
@@ -336,6 +346,7 @@ Aktueller Stand:
 - Es gibt bewusst noch keine automatische Galerie-Löschung. Löschungen sollen manuell im Admin geprüft werden.
 - Kundenkonto-Löschung ist im Konto klarer getrennt vom restlichen Profilbereich.
 - Sicherheitsbereich im Kundenkonto enthält Passwort- und Löschfunktionen ohne große Zusatzfenster.
+- Für Supabase, Vercel und Formspree sollten AVV/Auftragsverarbeitungsverträge im jeweiligen Anbieter-Konto geprüft und abgeschlossen werden.
 
 Noch sinnvoll zu prüfen:
 - Impressum und Datenschutzerklärung rechtlich final prüfen lassen.
@@ -346,6 +357,11 @@ Noch sinnvoll zu prüfen:
 ## Letzter technischer Stand
 
 Letzte größere Änderungen:
+- Hochzeiten wurden in lokale SEO-Metadaten, Keywords, OpenGraph/Twitter und sichtbaren SEO-Satz ergänzt.
+- Kontakt-CTA wurde stärker formuliert und zeigt nach Versand eine Kamera-Erfolgsmeldung.
+- Bewertungsdurchschnitt zeigt Anzahl, Durchschnitt und halbe Sterne sinnvoll an.
+- Admin-Schnellzugriff wurde gekürzt.
+- Favicon/Seitentitel wurden auf feliix.wxf/Kamera umgestellt.
 - Kundenkonto wurde optisch reduziert und übersichtlicher gemacht.
 - Kundenkonto passt sich dem Light/Dark Mode an; Light Mode ist bewusst etwas grauer und abgegrenzter.
 - Konto-Header zeigt bei eingeloggten Nutzern den Benutzernamen in der Website-Navigation.
@@ -384,19 +400,19 @@ git push
 ```
 
 Letzter bekannter Build:
-- `npm run build` erfolgreich am 05.06.2026.
+- `npm run build` erfolgreich am 28.06.2026.
 
 Letzte bekannte Commits:
-- `aa638cf Clarify account security controls`
-- `7a7e187 Darken customer account light mode`
-- `5649943 Tune customer account light mode`
-- `934499b Simplify customer account admin`
-- `f5c1861 Simplify customer account profile`
-- `ee37f90 Style contact icons`
-- `388e877 Improve gallery copy and contact links`
-- `1635a6d Improve portfolio image uploads`
-- `817f354 Preserve portfolio image categories`
-- `f44ac85 Remove placeholder images and improve upload preview`
+- `4fa1286 Add contact form success feedback`
+- `22ee0a9 Strengthen homepage review and contact CTA`
+- `d1ed42b Add wedding SEO terms`
+- `0c7674b Add local SEO metadata`
+- `ad9ac85 Improve mobile admin navigation`
+- `335aa81 Simplify mobile account dashboard`
+- `b1f8560 Refresh customer account dashboard`
+- `aefaa12 Add review avatar selection`
+- `f1e340a Keep contact form in maintenance mode`
+- `b70b146 Add admin maintenance mode`
 
 ## Wichtige Hinweise für eine nächste KI
 

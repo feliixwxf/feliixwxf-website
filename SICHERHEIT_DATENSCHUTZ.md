@@ -10,6 +10,7 @@ Kurzcheck fuer die aktuelle Website mit Kundenkonten, Kundengalerien und Bewertu
 - `ADMIN_SESSION_SECRET` muss mindestens 32 Zeichen haben.
 - Supabase SQL-Datei `supabase-security-hardening.sql` nach den Setup-Dateien ausfuehren.
 - Bewertungen werden serverseitig gespeichert. Dafuer muss `SUPABASE_SERVICE_ROLE_KEY` in Vercel gesetzt sein.
+- Supabase, Vercel und Formspree sollten jeweils mit AVV/Auftragsverarbeitungsvertrag und Zwei-Faktor-Login genutzt werden.
 
 ## Kundendaten
 
@@ -21,6 +22,7 @@ Gespeichert werden koennen:
 - Favoriten
 - Download-Freigaben
 - Bewertungen
+- Kontaktformular-Anfragen ueber Formspree
 
 Wenn ein Kunde Loeschung verlangt, muessen Konto, Profilbild, Bewertungen und Galerie-Verknuepfung geprueft und geloescht oder anonymisiert werden. Die praktische Arbeitsregel steht in `AUFBEWAHRUNG_LOESCHKONZEPT.md`.
 
@@ -52,6 +54,10 @@ Wichtig:
 ## Datenschutztext
 
 Die Datenschutz-Hinweise auf der Website wurden um Kundenkonten, Kundengalerien, Bewertungen, Supabase, Vercel, Formspree, Session-Cookies, lokale Speicherung, Rechtsgrundlagen, Speicherdauer, Betroffenenrechte und Auftragsverarbeitung erweitert.
+
+Die Kontoerstellung verlangt einen Datenschutz-Haken. Das Kundenkonto kann geloescht werden; dabei werden Konto, Session, Profilbild, Favoriten und Galerie-Verknuepfungen entfernt. Bewertungen bleiben zur Nachvollziehbarkeit bestehen, werden aber vom Konto getrennt.
+
+Das Kontaktformular zeigt nach erfolgreichem Versand eine Erfolgsmeldung und nutzt weiterhin Formspree fuer die E-Mail-Zustellung.
 
 Noch manuell/offiziell pruefen:
 

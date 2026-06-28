@@ -5733,9 +5733,7 @@ export default function AdminPage() {
                 <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                   Einstellungen
                 </p>
-                <h2 className="mt-3 text-3xl font-black">
-                  Werkzeuge
-                </h2>
+                <h2 className="mt-3 text-3xl font-black">Schnellzugriff</h2>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <button
@@ -5770,8 +5768,8 @@ export default function AdminPage() {
                       {maintenanceSaving
                         ? "Speichert..."
                         : String(siteSettings.maintenance_mode) === "true"
-                          ? "Aktiv: Besucher sehen Wartungsarbeiten."
-                          : "Aus: Website ist normal sichtbar."}
+                          ? "Aktiv"
+                          : "Aus"}
                     </span>
                   </button>
 
@@ -5787,7 +5785,7 @@ export default function AdminPage() {
                       Daten neu laden
                     </span>
                     <span className="mt-2 block text-sm text-neutral-400">
-                      Admin-Daten frisch abrufen.
+                      Inhalte aktualisieren
                     </span>
                   </button>
 
@@ -5804,7 +5802,7 @@ export default function AdminPage() {
                       Website öffnen
                     </span>
                     <span className="mt-2 block text-sm text-neutral-400">
-                      Live-Ansicht in neuem Tab.
+                      Live-Ansicht
                     </span>
                   </a>
 
@@ -5820,7 +5818,7 @@ export default function AdminPage() {
                       Kunden öffnen
                     </span>
                     <span className="mt-2 block text-sm text-neutral-400">
-                      Galerien und Kundenkonten verwalten.
+                      Galerien verwalten
                     </span>
                   </button>
 
