@@ -74,6 +74,15 @@ const CLIENT_GALLERY_CHECKLIST = [
   { key: "client_informed", label: "Kunde informiert" },
 ];
 
+const REVIEW_AVATARS = [
+  { label: "Avatar 1", url: "/images/review-avatars/avatar-1.svg" },
+  { label: "Avatar 2", url: "/images/review-avatars/avatar-2.svg" },
+  { label: "Avatar 3", url: "/images/review-avatars/avatar-3.svg" },
+  { label: "Avatar 4", url: "/images/review-avatars/avatar-4.svg" },
+  { label: "Avatar 5", url: "/images/review-avatars/avatar-5.svg" },
+  { label: "Avatar 6", url: "/images/review-avatars/avatar-6.svg" },
+];
+
 const SITE_ASSET_GROUPS = [
   {
     title: "Startseite",
@@ -2220,6 +2229,36 @@ export default function AdminPage() {
         : "Bewertung wurde ausgeblendet.",
       "success"
     );
+    setBusyId(null);
+  };
+
+  const setReviewAvatar = async (review, avatarUrl) => {
+    setBusyId(review.id);
+    setMessage("");
+
+    const response = await fetch("/api/admin/reviews", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: review.id,
+        avatar_url: avatarUrl || null,
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Avatar konnte nicht gespeichert werden.",
+        "error"
+      );
+      setBusyId(null);
+      return;
+    }
+
+    setReviews((current) =>
+      current.map((item) => (item.id === review.id ? data.review : item))
+    );
+    showMessage("Bewertungs-Avatar wurde gespeichert.", "success");
     setBusyId(null);
   };
 
@@ -5509,6 +5548,49 @@ export default function AdminPage() {
                           <p className="mt-3 leading-7 text-neutral-300">
                             "{review.text}"
                           </p>
+                          <div className="mt-5 rounded-2xl border border-white/10 bg-black/15 p-3">
+                            <p className="text-xs font-bold uppercase tracking-[0.22em] text-neutral-500">
+                              Avatar
+                            </p>
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setReviewAvatar(review, "")}
+                                disabled={busyId === review.id}
+                                className={`flex h-11 w-11 items-center justify-center rounded-full border transition hover:scale-105 disabled:opacity-60 ${
+                                  !review.avatar_url
+                                    ? "border-white bg-white text-neutral-950"
+                                    : "border-white/10 bg-white/10 text-neutral-400"
+                                }`}
+                                title="Kein Avatar"
+                              >
+                                <Users className="h-5 w-5" />
+                              </button>
+
+                              {REVIEW_AVATARS.map((avatar) => (
+                                <button
+                                  key={avatar.url}
+                                  type="button"
+                                  onClick={() =>
+                                    setReviewAvatar(review, avatar.url)
+                                  }
+                                  disabled={busyId === review.id}
+                                  className={`h-11 w-11 overflow-hidden rounded-full border transition hover:scale-105 disabled:opacity-60 ${
+                                    review.avatar_url === avatar.url
+                                      ? "border-white ring-2 ring-yellow-300"
+                                      : "border-white/10"
+                                  }`}
+                                  title={avatar.label}
+                                >
+                                  <img
+                                    src={avatar.url}
+                                    alt={avatar.label}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
                           <p className="mt-4 text-xs uppercase tracking-[0.22em] text-neutral-500">
                             {formatDate(review.created_at)}
                           </p>

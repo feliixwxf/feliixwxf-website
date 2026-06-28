@@ -72,13 +72,32 @@ export async function PATCH(request) {
     );
   }
 
-  const { id, is_approved } = await request.json();
+  const payload = await request.json();
+  const { id, is_approved } = payload;
+  const hasApprovalChange = typeof is_approved === "boolean";
+  const hasAvatarChange = Object.prototype.hasOwnProperty.call(
+    payload,
+    "avatar_url"
+  );
 
-  if (!id || typeof is_approved !== "boolean") {
+  if (!id || (!hasApprovalChange && !hasAvatarChange)) {
     return NextResponse.json(
-      { error: "Bewertungs-ID oder Status fehlt." },
+      { error: "Bewertungs-ID oder Änderung fehlt." },
       { status: 400 }
     );
+  }
+
+  const updatePayload = {};
+
+  if (hasApprovalChange) {
+    updatePayload.is_approved = is_approved;
+  }
+
+  if (hasAvatarChange) {
+    updatePayload.avatar_url =
+      typeof payload.avatar_url === "string" && payload.avatar_url.trim()
+        ? payload.avatar_url.trim()
+        : null;
   }
 
   const response = await fetch(
@@ -89,7 +108,7 @@ export async function PATCH(request) {
         ...supabaseServiceHeaders,
         Prefer: "return=representation",
       },
-      body: JSON.stringify({ is_approved }),
+      body: JSON.stringify(updatePayload),
     }
   );
 
