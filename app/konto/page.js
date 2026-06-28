@@ -596,45 +596,11 @@ export default function AccountPage() {
   });
   const visibleGalleryCount =
     visibleActiveGalleries.length + visibleCompletedGalleries.length;
-  const totalImageCount = galleries.reduce(
-    (sum, gallery) => sum + Number(gallery.image_count || 0),
-    0
-  );
-  const totalFavoriteCount = galleries.reduce(
-    (sum, gallery) => sum + Number(gallery.favorite_count || 0),
-    0
-  );
   const profileComplete = Boolean(
     String(profileName || user?.name || "").trim() &&
       String(user?.email || "").trim() &&
       avatarPreview
   );
-  const accountStats = [
-    {
-      label: "Galerien",
-      value: galleries.length,
-      icon: ImageIcon,
-      tone: "from-sky-300/25 to-sky-500/10",
-    },
-    {
-      label: "Bilder",
-      value: totalImageCount,
-      icon: ImageIcon,
-      tone: "from-violet-300/25 to-violet-500/10",
-    },
-    {
-      label: "Favoriten",
-      value: totalFavoriteCount,
-      icon: Heart,
-      tone: "from-yellow-300/25 to-yellow-500/10",
-    },
-    {
-      label: "Downloads",
-      value: downloadableGalleries.length,
-      icon: Download,
-      tone: "from-emerald-300/25 to-emerald-500/10",
-    },
-  ];
   const galleryFilters = [
     { key: "all", label: "Alle", count: galleries.length },
     { key: "active", label: "Aktiv", count: activeGalleries.length },
@@ -760,7 +726,7 @@ export default function AccountPage() {
               ) : user ? (
                 <div>
                   <div className={`mb-3 overflow-hidden rounded-2xl border sm:mb-5 ${softPanelStyle}`}>
-                    <div className={`relative p-4 sm:p-6 ${dark ? "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.16),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))]" : "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.28),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.88),rgba(226,232,240,0.7))]"}`}>
+                    <div className={`relative p-3 sm:p-5 ${dark ? "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.13),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))]" : "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.22),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.86),rgba(226,232,240,0.72))]"}`}>
                       {accountHeroGallery?.cover_url && (
                         <img
                           src={accountHeroGallery.cover_url}
@@ -768,9 +734,9 @@ export default function AccountPage() {
                           className="absolute inset-0 h-full w-full object-cover opacity-10"
                         />
                       )}
-                      <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="flex min-w-0 items-center gap-4 sm:gap-5">
-                          <div className={`flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border sm:h-24 sm:w-24 ${dark ? "border-white/10 bg-white/10" : "border-slate-300 bg-slate-200"}`}>
+                      <div className="relative flex flex-col gap-4">
+                        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                          <div className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border sm:h-20 sm:w-20 ${dark ? "border-white/10 bg-white/10" : "border-slate-300 bg-slate-200"}`}>
                             {avatarPreview ? (
                               <img
                                 src={avatarPreview}
@@ -778,74 +744,71 @@ export default function AccountPage() {
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              <UserRound className="h-7 w-7 text-neutral-400 sm:h-10 sm:w-10" />
+                              <UserRound className="h-6 w-6 text-neutral-400 sm:h-9 sm:w-9" />
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className={`rounded-full px-3 py-1 text-xs font-black ${profileComplete ? "bg-emerald-300 text-neutral-950" : "bg-yellow-300 text-neutral-950"}`}>
-                                {profileComplete ? "Profil vollständig" : "Profil offen"}
+                              <span className={`rounded-full px-2.5 py-1 text-[0.68rem] font-black sm:text-xs ${profileComplete ? "bg-emerald-300 text-neutral-950" : "bg-yellow-300 text-neutral-950"}`}>
+                                {profileComplete ? "Profil bereit" : "Profil ergänzen"}
                               </span>
-                              <span className={`rounded-full px-3 py-1 text-xs font-black ${dark ? "bg-white/10 text-neutral-300" : "bg-white text-slate-700"}`}>
+                              <span className={`rounded-full px-2.5 py-1 text-[0.68rem] font-black sm:text-xs ${dark ? "bg-white/10 text-neutral-300" : "bg-white text-slate-700"}`}>
                                 Kundenkonto
                               </span>
                             </div>
-                            <h1 className={`mt-3 text-2xl font-black leading-tight sm:text-4xl ${titleText}`}>
+                            <h1 className={`mt-2 text-xl font-black leading-tight sm:text-3xl ${titleText}`}>
                               {accountGreeting}
                             </h1>
                             <p className={`mt-1 truncate text-sm ${muted}`}>
                               {user.email}
                             </p>
-                            <p className={`mt-3 max-w-2xl text-sm leading-6 ${muted}`}>
-                              {accountIntro}
-                            </p>
                           </div>
                         </div>
 
-                        <div className="grid gap-2 sm:grid-cols-2 lg:w-64 lg:grid-cols-1">
-                          {nextGallery && (
-                            <button
-                              type="button"
-                              onClick={() => openGallery(nextGallery)}
-                              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
-                            >
-                              <ImageIcon className="h-4 w-4" />
-                              Weiter zur Galerie
-                            </button>
-                          )}
+                        <p className={`text-sm leading-6 ${muted}`}>
+                          {accountIntro}
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              nextGallery ? openGallery(nextGallery) : setAccountSection("galleries")
+                            }
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                            Galerie
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAccountSection("galleries");
+                              setGalleryFilter("downloads");
+                            }}
+                            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-black transition ${backButtonStyle}`}
+                          >
+                            <Download className="h-4 w-4" />
+                            Downloads
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAccountSection("profile")}
+                            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-black transition ${backButtonStyle}`}
+                          >
+                            <UserRound className="h-4 w-4" />
+                            Profil
+                          </button>
                           <button
                             type="button"
                             onClick={logout}
-                            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-black transition ${backButtonStyle}`}
+                            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-black transition ${backButtonStyle}`}
                           >
                             <LogOut className="h-4 w-4" />
                             Ausloggen
                           </button>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="grid gap-2 p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-4">
-                      {accountStats.map((stat) => {
-                        const StatIcon = stat.icon;
-
-                        return (
-                          <div
-                            key={stat.label}
-                            className={`rounded-2xl border p-4 ${dark ? "border-white/10 bg-white/[0.05]" : "border-slate-300/70 bg-white/70"}`}
-                          >
-                            <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${stat.tone}`}>
-                              <StatIcon className="h-5 w-5" />
-                            </div>
-                            <p className={`mt-4 text-2xl font-black ${titleText}`}>
-                              {stat.value}
-                            </p>
-                            <p className={`mt-1 text-xs font-bold uppercase tracking-[0.18em] ${muted}`}>
-                              {stat.label}
-                            </p>
-                          </div>
-                        );
-                      })}
                     </div>
                   </div>
 
