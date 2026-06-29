@@ -7,6 +7,41 @@
 -- The public browser key should never receive direct write access to private
 -- customer gallery or admin data.
 
+create extension if not exists pgcrypto;
+
+-- User-facing error reports. Written through a rate-limited server route and
+-- only readable in the protected admin area. This block is intentionally early:
+-- even if a later optional bucket/table statement fails, error reporting still
+-- gets created.
+create table if not exists public.user_error_logs (
+  id uuid primary key default gen_random_uuid(),
+  type text not null default 'client',
+  page text,
+  message text not null,
+  source text,
+  stack text,
+  user_agent text,
+  is_resolved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.user_error_logs
+  add column if not exists type text not null default 'client',
+  add column if not exists page text,
+  add column if not exists message text not null default 'Unbekannter Fehler',
+  add column if not exists source text,
+  add column if not exists stack text,
+  add column if not exists user_agent text,
+  add column if not exists is_resolved boolean not null default false,
+  add column if not exists created_at timestamptz not null default now();
+
+alter table public.user_error_logs enable row level security;
+revoke all on table public.user_error_logs from anon, authenticated;
+grant all on table public.user_error_logs to service_role;
+
+-- Keep PostgREST schema cache fresh directly after creating the log table.
+select pg_notify('pgrst', 'reload schema');
+
 alter table public.client_galleries enable row level security;
 alter table public.client_gallery_images enable row level security;
 alter table public.client_favorites enable row level security;
@@ -89,23 +124,6 @@ create table if not exists public.admin_activity_logs (
 alter table public.admin_activity_logs enable row level security;
 revoke all on table public.admin_activity_logs from anon, authenticated;
 
--- User-facing error reports. Written through a rate-limited server route and
--- only readable in the protected admin area.
-create table if not exists public.user_error_logs (
-  id uuid primary key default gen_random_uuid(),
-  type text not null default 'client',
-  page text,
-  message text not null,
-  source text,
-  stack text,
-  user_agent text,
-  is_resolved boolean not null default false,
-  created_at timestamptz not null default now()
-);
-
-alter table public.user_error_logs enable row level security;
-revoke all on table public.user_error_logs from anon, authenticated;
-
 -- Storage overview:
 -- - portfolio stays public because those images are meant for the public site.
 -- - client-galleries stays private. Images and ZIP files should be served only
@@ -119,4 +137,4 @@ set public = false
 where id = 'client-galleries';
 
 -- Keep PostgREST schema cache fresh after policy/schema changes.
-notify pgrst, 'reload schema';
+select pg_notify('pgrst', 'reload schema');

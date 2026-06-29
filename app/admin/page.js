@@ -1142,9 +1142,9 @@ export default function AdminPage() {
 
     if (!response?.ok) {
       setUserErrors([]);
+      const details = data?.details ? ` Details: ${data.details}` : "";
       setUserErrorsLoadError(
-        data?.error ||
-          "Nutzerfehler konnten nicht geladen werden. Bitte Verbindung und Supabase-Tabelle prüfen."
+        `${data?.error || "Nutzerfehler konnten nicht geladen werden. Bitte Verbindung und Supabase-Tabelle prüfen."}${details}`
       );
       return;
     }
