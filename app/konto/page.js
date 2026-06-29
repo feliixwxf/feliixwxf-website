@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -57,6 +57,7 @@ function normalizeCode(value) {
 }
 
 export default function AccountPage() {
+  const accountFormStartedAtRef = useRef(Date.now());
   const [mode, setMode] = useState("login");
   const [user, setUser] = useState(null);
   const [galleries, setGalleries] = useState([]);
@@ -262,6 +263,8 @@ export default function AccountPage() {
 
   const submitAccount = async (event) => {
     event.preventDefault();
+    const formElement = event.currentTarget;
+    const formData = new FormData(formElement);
 
     if (mode === "register" && !form.name.trim()) {
       showMessage("Bitte gib einen Benutzernamen ein.", "error");
@@ -284,7 +287,11 @@ export default function AccountPage() {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          website: formData.get("website") || "",
+          startedAt: accountFormStartedAtRef.current,
+        }),
       }
     );
     const data = await response.json().catch(() => ({}));
@@ -298,6 +305,7 @@ export default function AccountPage() {
     if (data.needsEmailConfirmation) {
       showMessage(data.message, "success");
       setMode("login");
+      accountFormStartedAtRef.current = Date.now();
       setSubmitting(false);
       return;
     }
@@ -314,6 +322,7 @@ export default function AccountPage() {
       );
     }
     await loadGalleries();
+    accountFormStartedAtRef.current = Date.now();
     setSubmitting(false);
   };
 
@@ -1488,7 +1497,10 @@ export default function AccountPage() {
                   <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/10 p-1">
                     <button
                       type="button"
-                      onClick={() => setMode("login")}
+                      onClick={() => {
+                        setMode("login");
+                        accountFormStartedAtRef.current = Date.now();
+                      }}
                       className={`rounded-full px-4 py-2 text-sm font-black transition ${
                         mode === "login"
                           ? "bg-white text-neutral-950"
@@ -1499,7 +1511,10 @@ export default function AccountPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setMode("register")}
+                      onClick={() => {
+                        setMode("register");
+                        accountFormStartedAtRef.current = Date.now();
+                      }}
                       className={`rounded-full px-4 py-2 text-sm font-black transition ${
                         mode === "register"
                           ? "bg-white text-neutral-950"
@@ -1511,6 +1526,16 @@ export default function AccountPage() {
                   </div>
 
                   <div className="mt-6 grid gap-4">
+                    <label className="sr-only" aria-hidden="true">
+                      Website
+                      <input
+                        type="text"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                      />
+                    </label>
+
                     {mode === "register" && (
                       <label className="block">
                         <span className="text-sm font-bold text-neutral-200">

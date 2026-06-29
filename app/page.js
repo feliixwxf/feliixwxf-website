@@ -301,6 +301,8 @@ export default function FeliixWxfPhotography() {
   const beforeRef = useRef(null);
   const lineRef = useRef(null);
   const handleRef = useRef(null);
+  const reviewFormStartedAtRef = useRef(Date.now());
+  const contactFormStartedAtRef = useRef(Date.now());
   const sliderFrameRef = useRef(null);
   const sliderPercentRef = useRef(50);
 
@@ -660,6 +662,7 @@ export default function FeliixWxfPhotography() {
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
 
     setReviewSubmitting(true);
     setReviewMessage("");
@@ -668,6 +671,8 @@ export default function FeliixWxfPhotography() {
       name: reviewName.trim(),
       text: reviewText.trim(),
       stars: rating || 5,
+      website: formData.get("website") || "",
+      startedAt: reviewFormStartedAtRef.current,
     };
 
     try {
@@ -679,19 +684,27 @@ export default function FeliixWxfPhotography() {
         body: JSON.stringify(newReview),
       });
 
-      if (!response.ok) throw new Error("Review could not be saved");
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(
+          data.error ||
+            "Bewertung konnte nicht veröffentlicht werden. Bitte später nochmal versuchen."
+        );
+      }
 
       const nextName = currentCustomer?.name || "";
       setRating(0);
       setReviewName(nextName);
       setReviewText("");
       formElement.reset();
+      reviewFormStartedAtRef.current = Date.now();
       setReviewMessage(
         "Danke! Deine Bewertung wurde gesendet und wird nach Freigabe veröffentlicht."
       );
-    } catch {
+    } catch (error) {
       setReviewMessage(
-        "Bewertung konnte nicht veröffentlicht werden. Bitte später nochmal versuchen."
+        error?.message ||
+          "Bewertung konnte nicht veröffentlicht werden. Bitte später nochmal versuchen."
       );
     } finally {
       setReviewSubmitting(false);
@@ -703,12 +716,22 @@ export default function FeliixWxfPhotography() {
 
     const formElement = e.currentTarget;
     const formData = new FormData(formElement);
+    const honeypotValue = String(formData.get("_gotcha") || "").trim();
+    const sentTooFast = Date.now() - contactFormStartedAtRef.current < 3000;
 
     setContactSubmitting(true);
     setContactMessage("");
     setContactSent(false);
 
     try {
+      if (honeypotValue || sentTooFast) {
+        throw new Error(
+          honeypotValue
+            ? "Die Anfrage wurde als Spam erkannt. Bitte überprüfe das Formular und versuche es nochmal."
+            : "Das Formular wurde zu schnell gesendet. Bitte versuche es in ein paar Sekunden nochmal."
+        );
+      }
+
       const response = await fetch(siteSettings.form_action, {
         method: "POST",
         body: formData,
@@ -720,13 +743,15 @@ export default function FeliixWxfPhotography() {
       if (!response.ok) throw new Error("Contact form could not be sent");
 
       formElement.reset();
+      contactFormStartedAtRef.current = Date.now();
       setContactSent(true);
       setContactMessage(
         "Danke! Deine Anfrage wurde gesendet. Ich melde mich in der Regel innerhalb von 24 Stunden."
       );
-    } catch {
+    } catch (error) {
       setContactMessage(
-        "Die Anfrage konnte gerade nicht gesendet werden. Bitte versuche es später nochmal oder schreibe mir direkt per E-Mail."
+        error?.message ||
+          "Die Anfrage konnte gerade nicht gesendet werden. Bitte versuche es später nochmal oder schreibe mir direkt per E-Mail."
       );
     } finally {
       setContactSubmitting(false);
@@ -1303,6 +1328,16 @@ export default function FeliixWxfPhotography() {
 
                 <div className="p-8">
                   <div className="grid gap-5 md:grid-cols-2">
+                    <label className="sr-only" aria-hidden="true">
+                      Website
+                      <input
+                        type="text"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                      />
+                    </label>
+
                     <input
                       name="name"
                       required
@@ -1450,6 +1485,16 @@ export default function FeliixWxfPhotography() {
               className="rounded-[2rem] border border-white/15 bg-white/[0.08] p-6 shadow-lg"
             >
               <div className="grid gap-5 md:grid-cols-2">
+                <label className="sr-only" aria-hidden="true">
+                  Website
+                  <input
+                    type="text"
+                    name="_gotcha"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </label>
+
                 <input
                   type="text"
                   name="name"

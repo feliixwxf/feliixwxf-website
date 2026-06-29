@@ -5,11 +5,13 @@ import {
   requireAccountConfig,
   setCustomerCookies,
 } from "../_lib/auth";
+import { checkBotSubmission } from "../../_lib/spam-protection";
 
 export async function POST(request) {
   if (!requireAccountConfig()) return accountConfigMissing();
 
   const body = await request.json().catch(() => ({}));
+  const botCheck = checkBotSubmission(body, { minimumSeconds: 4 });
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
   const name = String(body.name || "").trim().slice(0, 100);
@@ -17,6 +19,10 @@ export async function POST(request) {
   const privacyAccepted = body.privacyAccepted === true;
   const origin = request.headers.get("origin") || new URL(request.url).origin;
   const redirectTo = `${origin}/konto?verified=1`;
+
+  if (!botCheck.ok) {
+    return NextResponse.json({ error: botCheck.message }, { status: 400 });
+  }
 
   if (!name) {
     return NextResponse.json(

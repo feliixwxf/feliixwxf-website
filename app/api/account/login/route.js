@@ -5,13 +5,19 @@ import {
   requireAccountConfig,
   setCustomerCookies,
 } from "../_lib/auth";
+import { checkBotSubmission } from "../../_lib/spam-protection";
 
 export async function POST(request) {
   if (!requireAccountConfig()) return accountConfigMissing();
 
   const body = await request.json().catch(() => ({}));
+  const botCheck = checkBotSubmission(body, { minimumSeconds: 2 });
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
+
+  if (!botCheck.ok) {
+    return NextResponse.json({ error: botCheck.message }, { status: 400 });
+  }
 
   if (!email || !password) {
     return NextResponse.json(

@@ -3,6 +3,7 @@ import {
   applyCustomerSessionCookies,
   getCustomerSession,
 } from "../account/_lib/auth";
+import { checkBotSubmission } from "../_lib/spam-protection";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -148,7 +149,18 @@ export async function POST(request) {
   try {
     const customerSession = await getCustomerSession(request);
     const user = customerSession.user;
-    const review = cleanReview(await request.json());
+    const body = await request.json().catch(() => ({}));
+    const botCheck = checkBotSubmission(body, { minimumSeconds: 4 });
+
+    if (!botCheck.ok) {
+      const response = NextResponse.json(
+        { error: botCheck.message },
+        { status: 400 }
+      );
+      return applyCustomerSessionCookies(response, customerSession);
+    }
+
+    const review = cleanReview(body);
     const reviewPayload = {
       ...review,
       name: user?.name || review.name,
