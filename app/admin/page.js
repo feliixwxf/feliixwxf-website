@@ -571,6 +571,7 @@ export default function AdminPage() {
   const [activityLogs, setActivityLogs] = useState([]);
   const [securityChecks, setSecurityChecks] = useState([]);
   const [userErrors, setUserErrors] = useState([]);
+  const [userErrorsLoadError, setUserErrorsLoadError] = useState("");
   const [customerAccountLoading, setCustomerAccountLoading] = useState(false);
   const [customerAccountSearched, setCustomerAccountSearched] = useState(false);
   const [selectedCustomerAccount, setSelectedCustomerAccount] = useState(null);
@@ -1132,13 +1133,19 @@ export default function AdminPage() {
   };
 
   const loadUserErrors = async () => {
+    setUserErrorsLoadError("");
+
     const response = await fetch("/api/admin/user-errors", {
       cache: "no-store",
-    });
-    const data = await response.json();
+    }).catch(() => null);
+    const data = await response?.json().catch(() => ({}));
 
-    if (!response.ok) {
+    if (!response?.ok) {
       setUserErrors([]);
+      setUserErrorsLoadError(
+        data?.error ||
+          "Nutzerfehler konnten nicht geladen werden. Bitte Verbindung und Supabase-Tabelle prüfen."
+      );
       return;
     }
 
@@ -1268,6 +1275,12 @@ export default function AdminPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!authenticated || activeTab !== "user-errors") return;
+
+    loadUserErrors();
+  }, [authenticated, activeTab]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -6141,7 +6154,18 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mt-6 grid gap-4">
-                  {userErrors.length === 0 && (
+                  {userErrorsLoadError && (
+                    <div className="rounded-[1.5rem] border border-red-400/25 bg-red-500/10 p-6 text-red-100">
+                      <p className="text-sm font-black uppercase tracking-[0.22em]">
+                        Nutzerfehler konnten nicht geladen werden
+                      </p>
+                      <p className="mt-3 break-words text-sm leading-6 text-red-100/80">
+                        {userErrorsLoadError}
+                      </p>
+                    </div>
+                  )}
+
+                  {!userErrorsLoadError && userErrors.length === 0 && (
                     <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-6 text-neutral-300">
                       Noch keine Nutzerfehler vorhanden.
                     </div>
