@@ -95,6 +95,37 @@ function WatermarkOverlay({ gallery }) {
   );
 }
 
+function GalleryNotice({ message, type = "info" }) {
+  if (!message) return null;
+
+  const tone =
+    type === "success"
+      ? {
+          className: "border-emerald-400/25 bg-emerald-400/10 text-emerald-50",
+          icon: <CheckCircle2 className="h-5 w-5" />,
+        }
+      : type === "error"
+        ? {
+            className: "border-red-400/25 bg-red-500/10 text-red-50",
+            icon: <X className="h-5 w-5" />,
+          }
+        : {
+            className: "border-yellow-400/25 bg-yellow-400/10 text-yellow-50",
+            icon: <ShieldCheck className="h-5 w-5" />,
+          };
+
+  return (
+    <div
+      className={`rounded-2xl border px-4 py-3 text-sm shadow-lg shadow-black/10 ${tone.className}`}
+    >
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 shrink-0">{tone.icon}</span>
+        <p className="leading-6">{message}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function CustomerGalleryPage() {
   const [accessCode, setAccessCode] = useState("");
   const [gallery, setGallery] = useState(null);
@@ -138,13 +169,6 @@ export default function CustomerGalleryPage() {
     setMessage(text);
     setMessageType(type);
   };
-
-  const messageStyle =
-    messageType === "success"
-      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
-      : messageType === "error"
-        ? "border-red-400/30 bg-red-500/10 text-red-100"
-        : "border-yellow-400/30 bg-yellow-400/10 text-yellow-100";
 
   const loadGalleryByCode = async (rawCode) => {
     const code = normalizeCode(rawCode);
@@ -384,11 +408,9 @@ export default function CustomerGalleryPage() {
                   {loading ? "Lädt..." : "Galerie öffnen"}
                 </button>
 
-                {message && (
-                  <div className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}>
-                    {message}
-                  </div>
-                )}
+                <div className="mt-5">
+                  <GalleryNotice message={message} type={messageType} />
+                </div>
               </form>
             </div>
           ) : (
@@ -547,11 +569,9 @@ export default function CustomerGalleryPage() {
                   </div>
                 </div>
 
-                {message && (
-                  <div className={`mt-6 rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}>
-                    {message}
-                  </div>
-                )}
+                <div className="mt-6">
+                  <GalleryNotice message={message} type={messageType} />
+                </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {visibleImages.length === 0 && (

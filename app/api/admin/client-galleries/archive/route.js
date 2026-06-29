@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logAdminActivity } from "../../_lib/activity";
 import { isAdminAuthenticated } from "../../_lib/auth";
 import {
   clientGalleryStorageBucket,
@@ -506,6 +507,12 @@ export async function POST(request) {
   }
 
   const savedPayload = updateResult.payload;
+  await logAdminActivity({
+    action: "Galerie abgeschlossen und ZIP erstellt",
+    targetType: "client_gallery",
+    targetId: id,
+    label: gallery.title,
+  });
 
   return NextResponse.json({
     gallery: {

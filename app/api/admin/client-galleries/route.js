@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logAdminActivity } from "../_lib/activity";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
@@ -331,6 +332,12 @@ export async function POST(request) {
   }
 
   const [gallery] = await response.json();
+  await logAdminActivity({
+    action: "Galerie erstellt",
+    targetType: "client_gallery",
+    targetId: gallery.id,
+    label: title,
+  });
   return NextResponse.json({ gallery: { ...gallery, images: [], favorites: [] } });
 }
 
@@ -450,6 +457,13 @@ export async function PATCH(request) {
     );
   }
 
+  await logAdminActivity({
+    action: "Galerie gespeichert",
+    targetType: "client_gallery",
+    targetId: id,
+    label: update.title || update.client_email || update.status || "",
+  });
+
   return NextResponse.json({ gallery: { id, ...update } });
 }
 
@@ -527,6 +541,12 @@ export async function DELETE(request) {
       { status: 500 }
     );
   }
+
+  await logAdminActivity({
+    action: "Galerie gelöscht",
+    targetType: "client_gallery",
+    targetId: id,
+  });
 
   return NextResponse.json({ ok: true });
 }

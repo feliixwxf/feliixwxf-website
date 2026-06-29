@@ -75,6 +75,20 @@ using (is_approved = true);
 revoke insert, update, delete on table public.reviews from anon, authenticated;
 grant select on table public.reviews to anon, authenticated;
 
+-- Admin activity log. This is only written/read through protected server-side
+-- admin API routes with the service role key.
+create table if not exists public.admin_activity_logs (
+  id uuid primary key default gen_random_uuid(),
+  action text not null,
+  target_type text not null,
+  target_id text,
+  label text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.admin_activity_logs enable row level security;
+revoke all on table public.admin_activity_logs from anon, authenticated;
+
 -- Storage overview:
 -- - portfolio stays public because those images are meant for the public site.
 -- - client-galleries stays private. Images and ZIP files should be served only

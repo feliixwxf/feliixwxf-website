@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
+import { logAdminActivity } from "../_lib/activity";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
@@ -339,6 +340,12 @@ export async function POST(request) {
   }
 
   const [image] = await insertResponse.json();
+  await logAdminActivity({
+    action: "Portfolio-Bild hochgeladen",
+    targetType: "portfolio_image",
+    targetId: image.id,
+    label: category,
+  });
   return NextResponse.json({ image });
 }
 
@@ -386,6 +393,12 @@ export async function PATCH(request) {
     }
 
     const [image] = await response.json();
+    await logAdminActivity({
+      action: "Portfolio-Bilddetails gespeichert",
+      targetType: "portfolio_image",
+      targetId: image.id,
+      label: title || note || image.category || "",
+    });
     return NextResponse.json({ image });
   }
 
@@ -423,6 +436,12 @@ export async function PATCH(request) {
       { status: 500 }
     );
   }
+
+  await logAdminActivity({
+    action: "Portfolio-Sortierung gespeichert",
+    targetType: "portfolio_image",
+    label: `${orderedIds.length} Bilder`,
+  });
 
   return NextResponse.json({ ok: true });
 }
@@ -521,6 +540,13 @@ export async function DELETE(request) {
       { status: 500 }
     );
   }
+
+  await logAdminActivity({
+    action: "Portfolio-Bild gelöscht",
+    targetType: "portfolio_image",
+    targetId: id,
+    label: image.path || "",
+  });
 
   return NextResponse.json({
     ok: true,

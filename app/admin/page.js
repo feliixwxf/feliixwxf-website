@@ -567,6 +567,8 @@ export default function AdminPage() {
   const [clientGallerySearch, setClientGallerySearch] = useState("");
   const [customerAccountSearch, setCustomerAccountSearch] = useState("");
   const [customerAccounts, setCustomerAccounts] = useState([]);
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [securityChecks, setSecurityChecks] = useState([]);
   const [customerAccountLoading, setCustomerAccountLoading] = useState(false);
   const [customerAccountSearched, setCustomerAccountSearched] = useState(false);
   const [selectedCustomerAccount, setSelectedCustomerAccount] = useState(null);
@@ -727,6 +729,12 @@ export default function AdminPage() {
       description: "Werkzeuge",
       icon: ShieldCheck,
     },
+    {
+      value: "system",
+      label: "Protokoll",
+      description: "Sicherheit & Verlauf",
+      icon: Clock,
+    },
   ];
   const tabGroups = [
     {
@@ -739,7 +747,7 @@ export default function AdminPage() {
     },
     {
       title: "System",
-      values: ["settings"],
+      values: ["settings", "system"],
     },
   ].map((group) => ({
     ...group,
@@ -1080,6 +1088,41 @@ export default function AdminPage() {
     setSettingsDraft(nextSettings);
   };
 
+  const loadActivityLogs = async () => {
+    const response = await fetch("/api/admin/activity", {
+      cache: "no-store",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setActivityLogs([]);
+      return;
+    }
+
+    setActivityLogs(data.logs || []);
+  };
+
+  const loadSecurityChecks = async () => {
+    const response = await fetch("/api/admin/security-check", {
+      cache: "no-store",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setSecurityChecks([
+        {
+          key: "security-check",
+          label: "Sicherheitscheck",
+          ok: false,
+          detail: data.error || "Konnte nicht geladen werden.",
+        },
+      ]);
+      return;
+    }
+
+    setSecurityChecks(data.checks || []);
+  };
+
   const refreshDashboard = async () => {
     setMessage("");
     await Promise.all([
@@ -1088,6 +1131,8 @@ export default function AdminPage() {
       loadClientGalleries(),
       loadSiteAssets(),
       loadSiteSettings(),
+      loadActivityLogs(),
+      loadSecurityChecks(),
     ]);
     showMessage("Admin-Daten wurden neu geladen.", "success");
   };
@@ -1163,6 +1208,8 @@ export default function AdminPage() {
             loadClientGalleries(),
             loadSiteAssets(),
             loadSiteSettings(),
+            loadActivityLogs(),
+            loadSecurityChecks(),
           ]);
         }
       })
@@ -1199,6 +1246,8 @@ export default function AdminPage() {
       loadClientGalleries(),
       loadSiteAssets(),
       loadSiteSettings(),
+      loadActivityLogs(),
+      loadSecurityChecks(),
     ]);
     setLoading(false);
   };
@@ -1215,6 +1264,8 @@ export default function AdminPage() {
     setSiteAssets({});
     setSiteSettings(DEFAULT_SITE_SETTINGS);
     setSettingsDraft(DEFAULT_SITE_SETTINGS);
+    setActivityLogs([]);
+    setSecurityChecks([]);
     showMessage("Du wurdest ausgeloggt.", "success");
   };
 
@@ -5868,6 +5919,145 @@ export default function AdminPage() {
                       Admin-Sitzung beenden.
                     </span>
                   </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "system" && (
+              <div className="mt-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Protokoll
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black">
+                      Sicherheit & Verlauf
+                    </h2>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await Promise.all([
+                        loadActivityLogs(),
+                        loadSecurityChecks(),
+                      ]);
+                      showMessage("Systemstatus wurde aktualisiert.", "success");
+                    }}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Aktualisieren
+                  </button>
+                </div>
+
+                <div className="mt-6 grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-100">
+                        <ShieldCheck className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <h3 className="text-xl font-black">
+                          Sicherheitscheck
+                        </h3>
+                        <p className="mt-1 text-sm text-neutral-400">
+                          Supabase, Buckets und Tabellen.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-3">
+                      {securityChecks.length === 0 && (
+                        <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-neutral-400">
+                          Noch keine Prüfung geladen.
+                        </div>
+                      )}
+
+                      {securityChecks.map((check) => (
+                        <div
+                          key={check.key}
+                          className={`rounded-2xl border p-4 ${
+                            check.ok
+                              ? "border-emerald-400/20 bg-emerald-400/10"
+                              : "border-yellow-400/25 bg-yellow-400/10"
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span
+                              className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                                check.ok
+                                  ? "bg-emerald-400 text-neutral-950"
+                                  : "bg-yellow-400 text-neutral-950"
+                              }`}
+                            >
+                              {check.ok ? (
+                                <CheckCircle2 className="h-4 w-4" />
+                              ) : (
+                                <X className="h-4 w-4" />
+                              )}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="font-black">{check.label}</p>
+                              <p className="mt-1 text-sm leading-6 text-neutral-300">
+                                {check.detail}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white">
+                        <Clock className="h-5 w-5" />
+                      </span>
+                      <div>
+                        <h3 className="text-xl font-black">
+                          Aktivitätsverlauf
+                        </h3>
+                        <p className="mt-1 text-sm text-neutral-400">
+                          Die letzten Admin-Aktionen.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 max-h-[560px] space-y-3 overflow-y-auto pr-1">
+                      {activityLogs.length === 0 && (
+                        <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-neutral-400">
+                          Noch keine Einträge. Falls die Tabelle fehlt, die
+                          aktuelle SQL-Datei in Supabase ausführen.
+                        </div>
+                      )}
+
+                      {activityLogs.map((log) => (
+                        <article
+                          key={log.id}
+                          className="rounded-2xl border border-white/10 bg-black/20 p-4"
+                        >
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0">
+                              <p className="font-black">{log.action}</p>
+                              {log.label && (
+                                <p className="mt-1 truncate text-sm text-neutral-300">
+                                  {log.label}
+                                </p>
+                              )}
+                              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-500">
+                                {log.target_type}
+                                {log.target_id ? ` · ${log.target_id}` : ""}
+                              </p>
+                            </div>
+                            <span className="shrink-0 text-sm text-neutral-500">
+                              {formatDate(log.created_at)}
+                            </span>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
                 </div>
               </div>
             )}

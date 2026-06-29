@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logAdminActivity } from "../_lib/activity";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
@@ -121,6 +122,16 @@ export async function PATCH(request) {
   }
 
   const [review] = await response.json();
+  await logAdminActivity({
+    action: hasApprovalChange
+      ? is_approved
+        ? "Bewertung freigegeben"
+        : "Bewertung ausgeblendet"
+      : "Bewertungs-Avatar gespeichert",
+    targetType: "review",
+    targetId: review.id,
+    label: review.name || "",
+  });
   return NextResponse.json({ review });
 }
 
@@ -161,6 +172,12 @@ export async function DELETE(request) {
       { status: 500 }
     );
   }
+
+  await logAdminActivity({
+    action: "Bewertung gelöscht",
+    targetType: "review",
+    targetId: id,
+  });
 
   return NextResponse.json({ ok: true });
 }

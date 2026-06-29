@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logAdminActivity } from "../_lib/activity";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
@@ -135,6 +136,12 @@ export async function PUT(request) {
   const savedSettings = Object.fromEntries(
     savedRows.map((setting) => [setting.key, setting.value])
   );
+
+  await logAdminActivity({
+    action: "Einstellungen gespeichert",
+    targetType: "site_settings",
+    label: rows.map((row) => row.key).join(", "),
+  });
 
   return NextResponse.json({ settings: savedSettings });
 }
