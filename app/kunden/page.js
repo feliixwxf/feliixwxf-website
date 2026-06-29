@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import ReportUserErrorButton from "@/components/report-user-error-button";
 
 function formatDate(value) {
   if (!value) return "";
@@ -120,7 +121,16 @@ function GalleryNotice({ message, type = "info" }) {
     >
       <div className="flex items-start gap-3">
         <span className="mt-0.5 shrink-0">{tone.icon}</span>
-        <p className="leading-6">{message}</p>
+        <div>
+          <p className="leading-6">{message}</p>
+          {type === "error" && (
+            <ReportUserErrorButton
+              page="/kunden"
+              source="Kundengalerie"
+              message={message}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -168,18 +178,6 @@ export default function CustomerGalleryPage() {
   const showMessage = (text, type = "info") => {
     setMessage(text);
     setMessageType(type);
-
-    if (type === "error") {
-      window.dispatchEvent(
-        new CustomEvent("feliix:user-error", {
-          detail: {
-            page: "/kunden",
-            source: "Kundengalerie",
-            message: text,
-          },
-        })
-      );
-    }
   };
 
   const loadGalleryByCode = async (rawCode) => {

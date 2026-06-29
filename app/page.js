@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import ReportUserErrorButton from "@/components/report-user-error-button";
 
 const DEFAULT_REVIEWS = [
   {
@@ -318,6 +319,7 @@ export default function FeliixWxfPhotography() {
   const [currentCustomer, setCurrentCustomer] = useState(null);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewMessage, setReviewMessage] = useState("");
+  const [reviewMessageType, setReviewMessageType] = useState("info");
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
   const [contactSent, setContactSent] = useState(false);
@@ -353,6 +355,7 @@ export default function FeliixWxfPhotography() {
         }
       })
       .catch(() => {
+        setReviewMessageType("error");
         setReviewMessage(
           "Online-Bewertungen konnten gerade nicht geladen werden."
         );
@@ -666,6 +669,7 @@ export default function FeliixWxfPhotography() {
 
     setReviewSubmitting(true);
     setReviewMessage("");
+    setReviewMessageType("info");
 
     const newReview = {
       name: reviewName.trim(),
@@ -698,21 +702,12 @@ export default function FeliixWxfPhotography() {
       setReviewText("");
       formElement.reset();
       reviewFormStartedAtRef.current = Date.now();
+      setReviewMessageType("success");
       setReviewMessage(
         "Danke! Deine Bewertung wurde gesendet und wird nach Freigabe veröffentlicht."
       );
     } catch (error) {
-      window.dispatchEvent(
-        new CustomEvent("feliix:user-error", {
-          detail: {
-            page: "/",
-            source: "Bewertungsformular",
-            message:
-              error?.message ||
-              "Bewertung konnte nicht veröffentlicht werden.",
-          },
-        })
-      );
+      setReviewMessageType("error");
       setReviewMessage(
         error?.message ||
           "Bewertung konnte nicht veröffentlicht werden. Bitte später nochmal versuchen."
@@ -760,17 +755,6 @@ export default function FeliixWxfPhotography() {
         "Danke! Deine Anfrage wurde gesendet. Ich melde mich in der Regel innerhalb von 24 Stunden."
       );
     } catch (error) {
-      window.dispatchEvent(
-        new CustomEvent("feliix:user-error", {
-          detail: {
-            page: "/",
-            source: "Kontaktformular",
-            message:
-              error?.message ||
-              "Die Anfrage konnte gerade nicht gesendet werden.",
-          },
-        })
-      );
       setContactMessage(
         error?.message ||
           "Die Anfrage konnte gerade nicht gesendet werden. Bitte versuche es später nochmal oder schreibe mir direkt per E-Mail."
@@ -1416,6 +1400,15 @@ export default function FeliixWxfPhotography() {
                     {reviewMessage && (
                       <p className={`text-sm leading-6 ${muted} md:col-span-2`}>
                         {reviewMessage}
+                        {reviewMessageType === "error" && (
+                          <span className="block">
+                            <ReportUserErrorButton
+                              page="/"
+                              source="Bewertungsformular"
+                              message={reviewMessage}
+                            />
+                          </span>
+                        )}
                       </p>
                     )}
                   </div>
@@ -1597,6 +1590,13 @@ export default function FeliixWxfPhotography() {
                         <p className={`mt-1 text-sm leading-6 ${muted}`}>
                           {contactMessage}
                         </p>
+                        {!contactSent && (
+                          <ReportUserErrorButton
+                            page="/"
+                            source="Kontaktformular"
+                            message={contactMessage}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>

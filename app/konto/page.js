@@ -23,6 +23,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
+import ReportUserErrorButton from "@/components/report-user-error-button";
 
 function formatDate(value) {
   if (!value) return "";
@@ -97,18 +98,6 @@ export default function AccountPage() {
   const showMessage = (text, type = "info") => {
     setMessage(text);
     setMessageType(type);
-
-    if (type === "error") {
-      window.dispatchEvent(
-        new CustomEvent("feliix:user-error", {
-          detail: {
-            page: "/konto",
-            source: "Kundenkonto",
-            message: text,
-          },
-        })
-      );
-    }
   };
 
   const messageStyle =
@@ -1714,7 +1703,14 @@ export default function AccountPage() {
                 <div
                   className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}
                 >
-                  {message}
+                  <p className="leading-6">{message}</p>
+                  {messageType === "error" && (
+                    <ReportUserErrorButton
+                      page="/konto"
+                      source="Kundenkonto"
+                      message={message}
+                    />
+                  )}
                 </div>
               )}
             </div>

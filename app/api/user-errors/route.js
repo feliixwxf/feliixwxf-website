@@ -38,18 +38,18 @@ function cleanText(value, maxLength) {
 
 export async function POST(request) {
   if (!hasSupabaseServiceConfig) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ error: "Fehlerprotokoll ist nicht konfiguriert." }, { status: 503 });
   }
 
   if (isRateLimited(request)) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ error: "Bitte später erneut versuchen." }, { status: 429 });
   }
 
   const data = await request.json().catch(() => ({}));
   const message = cleanText(data.message, 500);
 
   if (!message) {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ error: "Fehlermeldung fehlt." }, { status: 400 });
   }
 
   const payload = {
@@ -61,14 +61,21 @@ export async function POST(request) {
     user_agent: cleanText(request.headers.get("user-agent"), 500),
   };
 
-  await fetch(`${supabaseBaseUrl}/rest/v1/user_error_logs`, {
+  const response = await fetch(`${supabaseBaseUrl}/rest/v1/user_error_logs`, {
     method: "POST",
     headers: {
       ...supabaseServiceHeaders,
       Prefer: "return=minimal",
     },
     body: JSON.stringify(payload),
-  }).catch(() => {});
+  }).catch(() => null);
+
+  if (!response?.ok) {
+    return NextResponse.json(
+      { error: "Fehler konnte nicht gespeichert werden." },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }
