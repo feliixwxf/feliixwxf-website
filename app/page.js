@@ -702,6 +702,17 @@ export default function FeliixWxfPhotography() {
         "Danke! Deine Bewertung wurde gesendet und wird nach Freigabe veröffentlicht."
       );
     } catch (error) {
+      window.dispatchEvent(
+        new CustomEvent("feliix:user-error", {
+          detail: {
+            page: "/",
+            source: "Bewertungsformular",
+            message:
+              error?.message ||
+              "Bewertung konnte nicht veröffentlicht werden.",
+          },
+        })
+      );
       setReviewMessage(
         error?.message ||
           "Bewertung konnte nicht veröffentlicht werden. Bitte später nochmal versuchen."
@@ -749,6 +760,17 @@ export default function FeliixWxfPhotography() {
         "Danke! Deine Anfrage wurde gesendet. Ich melde mich in der Regel innerhalb von 24 Stunden."
       );
     } catch (error) {
+      window.dispatchEvent(
+        new CustomEvent("feliix:user-error", {
+          detail: {
+            page: "/",
+            source: "Kontaktformular",
+            message:
+              error?.message ||
+              "Die Anfrage konnte gerade nicht gesendet werden.",
+          },
+        })
+      );
       setContactMessage(
         error?.message ||
           "Die Anfrage konnte gerade nicht gesendet werden. Bitte versuche es später nochmal oder schreibe mir direkt per E-Mail."

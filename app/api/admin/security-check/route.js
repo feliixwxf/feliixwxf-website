@@ -18,6 +18,7 @@ const REQUIRED_TABLES = [
   "client_gallery_images",
   "client_favorites",
   "admin_activity_logs",
+  "user_error_logs",
 ];
 
 function unauthorized() {

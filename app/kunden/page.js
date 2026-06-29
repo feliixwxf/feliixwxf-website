@@ -168,6 +168,18 @@ export default function CustomerGalleryPage() {
   const showMessage = (text, type = "info") => {
     setMessage(text);
     setMessageType(type);
+
+    if (type === "error") {
+      window.dispatchEvent(
+        new CustomEvent("feliix:user-error", {
+          detail: {
+            page: "/kunden",
+            source: "Kundengalerie",
+            message: text,
+          },
+        })
+      );
+    }
   };
 
   const loadGalleryByCode = async (rawCode) => {

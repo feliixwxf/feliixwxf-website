@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowDown,
   ArrowUp,
+  Bug,
   CheckCircle2,
   CircleHelp,
   Clock,
@@ -569,6 +570,7 @@ export default function AdminPage() {
   const [customerAccounts, setCustomerAccounts] = useState([]);
   const [activityLogs, setActivityLogs] = useState([]);
   const [securityChecks, setSecurityChecks] = useState([]);
+  const [userErrors, setUserErrors] = useState([]);
   const [customerAccountLoading, setCustomerAccountLoading] = useState(false);
   const [customerAccountSearched, setCustomerAccountSearched] = useState(false);
   const [selectedCustomerAccount, setSelectedCustomerAccount] = useState(null);
@@ -735,6 +737,12 @@ export default function AdminPage() {
       description: "Sicherheit & Verlauf",
       icon: Clock,
     },
+    {
+      value: "user-errors",
+      label: "Nutzerfehler",
+      description: "Fehler von Besuchern",
+      icon: Bug,
+    },
   ];
   const tabGroups = [
     {
@@ -747,7 +755,7 @@ export default function AdminPage() {
     },
     {
       title: "System",
-      values: ["settings", "system"],
+      values: ["settings", "system", "user-errors"],
     },
   ].map((group) => ({
     ...group,
@@ -1123,6 +1131,46 @@ export default function AdminPage() {
     setSecurityChecks(data.checks || []);
   };
 
+  const loadUserErrors = async () => {
+    const response = await fetch("/api/admin/user-errors", {
+      cache: "no-store",
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setUserErrors([]);
+      return;
+    }
+
+    setUserErrors(data.errors || []);
+  };
+
+  const setUserErrorResolved = async (errorLog, isResolved) => {
+    const response = await fetch("/api/admin/user-errors", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: errorLog.id, isResolved }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(data.error || "Fehlerstatus konnte nicht gespeichert werden.", "error");
+      return;
+    }
+
+    setUserErrors((current) =>
+      current.map((item) =>
+        item.id === errorLog.id
+          ? { ...item, is_resolved: Boolean(isResolved) }
+          : item
+      )
+    );
+    showMessage(
+      isResolved ? "Nutzerfehler wurde erledigt." : "Nutzerfehler wurde geöffnet.",
+      "success"
+    );
+  };
+
   const refreshDashboard = async () => {
     setMessage("");
     await Promise.all([
@@ -1133,6 +1181,7 @@ export default function AdminPage() {
       loadSiteSettings(),
       loadActivityLogs(),
       loadSecurityChecks(),
+      loadUserErrors(),
     ]);
     showMessage("Admin-Daten wurden neu geladen.", "success");
   };
@@ -1210,6 +1259,7 @@ export default function AdminPage() {
             loadSiteSettings(),
             loadActivityLogs(),
             loadSecurityChecks(),
+            loadUserErrors(),
           ]);
         }
       })
@@ -1248,6 +1298,7 @@ export default function AdminPage() {
       loadSiteSettings(),
       loadActivityLogs(),
       loadSecurityChecks(),
+      loadUserErrors(),
     ]);
     setLoading(false);
   };
@@ -1266,6 +1317,7 @@ export default function AdminPage() {
     setSettingsDraft(DEFAULT_SITE_SETTINGS);
     setActivityLogs([]);
     setSecurityChecks([]);
+    setUserErrors([]);
     showMessage("Du wurdest ausgeloggt.", "success");
   };
 
@@ -6058,6 +6110,123 @@ export default function AdminPage() {
                       ))}
                     </div>
                   </section>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "user-errors" && (
+              <div className="mt-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Nutzerfehler
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black">
+                      Meldungen von Besuchern
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-400">
+                      Technische Fehler und sichtbare Fehlermeldungen aus der
+                      Website. Inhalte aus Formularen werden nicht gespeichert.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={loadUserErrors}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Neu laden
+                  </button>
+                </div>
+
+                <div className="mt-6 grid gap-4">
+                  {userErrors.length === 0 && (
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-6 text-neutral-300">
+                      Noch keine Nutzerfehler vorhanden.
+                    </div>
+                  )}
+
+                  {userErrors.map((errorLog) => (
+                    <article
+                      key={errorLog.id}
+                      className={`rounded-[1.5rem] border p-5 ${
+                        errorLog.is_resolved
+                          ? "border-white/10 bg-white/[0.05] opacity-70"
+                          : "border-red-400/20 bg-red-500/10"
+                      }`}
+                    >
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-black ${
+                                errorLog.is_resolved
+                                  ? "bg-neutral-700 text-neutral-200"
+                                  : "bg-red-400 text-neutral-950"
+                              }`}
+                            >
+                              {errorLog.is_resolved ? "Erledigt" : "Offen"}
+                            </span>
+                            <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-bold text-neutral-300">
+                              {errorLog.type || "client"}
+                            </span>
+                            <span className="text-sm text-neutral-500">
+                              {formatDate(errorLog.created_at)}
+                            </span>
+                          </div>
+
+                          <h3 className="mt-4 text-xl font-black">
+                            {errorLog.source || errorLog.page || "Website"}
+                          </h3>
+                          <p className="mt-2 break-words leading-7 text-neutral-200">
+                            {errorLog.message}
+                          </p>
+                          {errorLog.page && (
+                            <p className="mt-3 text-sm text-neutral-400">
+                              Seite: {errorLog.page}
+                            </p>
+                          )}
+
+                          {(errorLog.stack || errorLog.user_agent) && (
+                            <details className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                              <summary className="cursor-pointer text-sm font-bold text-neutral-300">
+                                Details anzeigen
+                              </summary>
+                              {errorLog.stack && (
+                                <pre className="mt-3 max-h-52 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-black/30 p-3 text-xs leading-5 text-neutral-400">
+                                  {errorLog.stack}
+                                </pre>
+                              )}
+                              {errorLog.user_agent && (
+                                <p className="mt-3 break-words text-xs leading-5 text-neutral-500">
+                                  {errorLog.user_agent}
+                                </p>
+                              )}
+                            </details>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setUserErrorResolved(
+                              errorLog,
+                              !errorLog.is_resolved
+                            )
+                          }
+                          className={`inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${
+                            errorLog.is_resolved
+                              ? "border border-white/10 bg-white/10 text-white hover:bg-white/15"
+                              : "bg-white text-neutral-950 hover:-translate-y-0.5 hover:shadow-xl"
+                          }`}
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          {errorLog.is_resolved ? "Wieder öffnen" : "Erledigt"}
+                        </button>
+                      </div>
+                    </article>
+                  ))}
                 </div>
               </div>
             )}

@@ -89,6 +89,23 @@ create table if not exists public.admin_activity_logs (
 alter table public.admin_activity_logs enable row level security;
 revoke all on table public.admin_activity_logs from anon, authenticated;
 
+-- User-facing error reports. Written through a rate-limited server route and
+-- only readable in the protected admin area.
+create table if not exists public.user_error_logs (
+  id uuid primary key default gen_random_uuid(),
+  type text not null default 'client',
+  page text,
+  message text not null,
+  source text,
+  stack text,
+  user_agent text,
+  is_resolved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.user_error_logs enable row level security;
+revoke all on table public.user_error_logs from anon, authenticated;
+
 -- Storage overview:
 -- - portfolio stays public because those images are meant for the public site.
 -- - client-galleries stays private. Images and ZIP files should be served only

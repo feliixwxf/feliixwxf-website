@@ -97,6 +97,18 @@ export default function AccountPage() {
   const showMessage = (text, type = "info") => {
     setMessage(text);
     setMessageType(type);
+
+    if (type === "error") {
+      window.dispatchEvent(
+        new CustomEvent("feliix:user-error", {
+          detail: {
+            page: "/konto",
+            source: "Kundenkonto",
+            message: text,
+          },
+        })
+      );
+    }
   };
 
   const messageStyle =
