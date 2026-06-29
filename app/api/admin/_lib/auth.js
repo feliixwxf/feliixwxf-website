@@ -10,6 +10,10 @@ function getAdminPassword() {
   return process.env.ADMIN_PASSWORD || "";
 }
 
+function getAdminAccessCode() {
+  return process.env.ADMIN_ACCESS_CODE || "";
+}
+
 function getSessionSecret() {
   return process.env.ADMIN_SESSION_SECRET || "";
 }
@@ -44,9 +48,19 @@ export function isAdminPassword(password) {
   return secureStringMatch(password, configuredPassword);
 }
 
+export function isAdminAccessCode(code) {
+  const configuredCode = getAdminAccessCode();
+
+  if (!configuredCode) return false;
+
+  return secureStringMatch(code, configuredCode);
+}
+
 export function hasAdminConfig() {
   return Boolean(
-    getAdminPassword() && getSessionSecret().length >= MIN_SECRET_LENGTH
+    getAdminPassword() &&
+      getAdminAccessCode() &&
+      getSessionSecret().length >= MIN_SECRET_LENGTH
   );
 }
 

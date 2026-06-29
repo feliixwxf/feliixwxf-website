@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   applyNoStore,
   hasAdminConfig,
+  isAdminAccessCode,
   isAdminPassword,
   setAdminCookie,
 } from "../_lib/auth";
@@ -61,13 +62,16 @@ export async function POST(request) {
       );
     }
 
-    const { password } = await request.json();
+    const { password, accessCode } = await request.json();
 
-    if (!isAdminPassword(String(password || ""))) {
+    if (
+      !isAdminPassword(String(password || "")) ||
+      !isAdminAccessCode(String(accessCode || ""))
+    ) {
       rememberFailedAttempt(clientKey);
       return applyNoStore(
         NextResponse.json(
-          { error: "Passwort ist falsch." },
+          { error: "Admin-Daten sind falsch." },
           { status: 401 }
         )
       );

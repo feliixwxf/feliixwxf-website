@@ -549,6 +549,7 @@ function getClientAccountState(gallery) {
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
+  const [accessCode, setAccessCode] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [configured, setConfigured] = useState(true);
   const [reviews, setReviews] = useState([]);
@@ -1179,7 +1180,7 @@ export default function AdminPage() {
     const response = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password, accessCode }),
     });
     const data = await response.json();
 
@@ -1190,6 +1191,7 @@ export default function AdminPage() {
     }
 
     setPassword("");
+    setAccessCode("");
     setAuthenticated(true);
     await Promise.all([
       loadReviews(),
@@ -2490,7 +2492,7 @@ export default function AdminPage() {
 
         {!configured && (
           <div className="mt-6 rounded-2xl border border-red-400/30 bg-red-500/10 px-5 py-4 text-sm text-red-100">
-            ADMIN_PASSWORD fehlt oder ADMIN_SESSION_SECRET ist kürzer als 32 Zeichen.
+            ADMIN_PASSWORD oder ADMIN_ACCESS_CODE fehlt, oder ADMIN_SESSION_SECRET ist kürzer als 32 Zeichen.
           </div>
         )}
 
@@ -2512,6 +2514,18 @@ export default function AdminPage() {
               onChange={(event) => setPassword(event.target.value)}
               className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
               placeholder="Passwort eingeben"
+              required
+            />
+
+            <label className="mt-5 block text-sm font-semibold text-neutral-300">
+              Admin Code
+            </label>
+            <input
+              type="password"
+              value={accessCode}
+              onChange={(event) => setAccessCode(event.target.value)}
+              className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
+              placeholder="Code eingeben"
               required
             />
 
