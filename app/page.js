@@ -1811,11 +1811,12 @@ export default function FeliixWxfPhotography() {
                 <p className="mt-3">
                   Wenn Sie ein Kundenkonto erstellen oder eine Kundengalerie
                   nutzen, werden die dafür erforderlichen Daten verarbeitet. Dazu
-                  gehören insbesondere E-Mail-Adresse, Nutzername, Profilbild,
-                  Galerie-Zuordnung, Favoriten, Download-Freigaben und
-                  technische Zugriffsinformationen. Kundengalerien können
-                  persönliche Fotos enthalten und werden nur für den jeweiligen
-                  Zweck des Shootings bereitgestellt.
+                  gehören insbesondere E-Mail-Adresse, Nutzername, optional
+                  Telefonnummer, optional Profilbild, Galerie-Zuordnung,
+                  Favoriten, Download-Freigaben und technische
+                  Zugriffsinformationen. Kundengalerien können persönliche Fotos
+                  enthalten und werden nur für den jeweiligen Zweck des
+                  Shootings bereitgestellt.
                 </p>
                 <p className="mt-3">
                   Bei der Kontoerstellung muss bestätigt werden, dass diese
@@ -1827,7 +1828,16 @@ export default function FeliixWxfPhotography() {
                 <p className="mt-3">
                   Galerien können über einen Zugangscode, QR-Code oder ein
                   verknüpftes Kundenkonto erreichbar sein. Downloads können je
-                  nach Projekt freigeschaltet oder deaktiviert werden.
+                  nach Projekt freigeschaltet oder deaktiviert werden. Wenn
+                  Downloads deaktiviert sind, können Bilder in der Ansicht mit
+                  einem Wasserzeichen versehen werden.
+                </p>
+                <p className="mt-3">
+                  Abgeschlossene Galerien können als ZIP-Archiv bereitgestellt
+                  werden, damit Kunden ihre freigegebenen Bilder gesammelt
+                  herunterladen können. Solche Archivdateien bleiben nur so
+                  lange gespeichert, wie dies für die Bereitstellung oder
+                  Nachlieferung erforderlich ist.
                 </p>
                 <p className="mt-3">
                   Ein Kundenkonto kann im Konto-Bereich gelöscht werden. Dabei
@@ -1871,6 +1881,12 @@ export default function FeliixWxfPhotography() {
                   den Betreiber ausgelöst werden, damit die Bewertung geprüft
                   und freigegeben werden kann.
                 </p>
+                <p className="mt-3">
+                  Falls ein Profilbild aus dem Kundenkonto für eine Bewertung
+                  verwendet wird, kann dieses zusammen mit der Bewertung
+                  öffentlich sichtbar sein. Der angezeigte Name kann bei der
+                  Bewertung angepasst werden.
+                </p>
               </div>
 
               <div>
@@ -1913,6 +1929,12 @@ export default function FeliixWxfPhotography() {
                   Kontaktformularen eingesetzt werden. Externe Bildquellen
                   können nur dort verwendet werden, wo keine eigenen Bilder
                   hinterlegt sind.
+                </p>
+                <p className="mt-3">
+                  Im Adminbereich können Kundenkonten anhand von E-Mail-Adresse
+                  oder anderen hinterlegten Angaben gesucht und verwaltet werden,
+                  soweit dies für Kundenservice, Galerie-Zuordnung,
+                  Download-Freigaben oder Löschanfragen erforderlich ist.
                 </p>
                 <p className="mt-3">
                   Bei diesen Diensten können technische Daten wie IP-Adresse,
