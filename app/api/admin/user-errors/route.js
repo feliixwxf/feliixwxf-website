@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "../_lib/auth";
+import { logAdminActivity } from "../_lib/activity";
 import {
   hasSupabaseServiceConfig,
   supabaseRestUrl,
@@ -81,4 +82,50 @@ export async function PATCH(request) {
   }
 
   return NextResponse.json({ errorLog: data[0] || null });
+}
+
+export async function DELETE(request) {
+  if (!(await isAdminAuthenticated())) return unauthorized();
+
+  if (!hasSupabaseServiceConfig) {
+    return NextResponse.json(
+      { error: "Supabase Service Role Key fehlt." },
+      { status: 503 }
+    );
+  }
+
+  const { id } = await request.json().catch(() => ({}));
+
+  if (!id) {
+    return NextResponse.json({ error: "Fehler-ID fehlt." }, { status: 400 });
+  }
+
+  const response = await fetch(
+    `${supabaseRestUrl}/rest/v1/user_error_logs?id=eq.${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      headers: {
+        ...supabaseServiceHeaders,
+        Prefer: "return=representation",
+      },
+    }
+  );
+
+  const data = await response.json().catch(() => []);
+
+  if (!response.ok) {
+    return NextResponse.json(
+      { error: "Nutzerfehler konnte nicht gelöscht werden." },
+      { status: 500 }
+    );
+  }
+
+  await logAdminActivity({
+    action: "delete",
+    targetType: "user_error",
+    targetId: id,
+    label: data[0]?.source || data[0]?.page || "Nutzerfehler gelöscht",
+  });
+
+  return NextResponse.json({ ok: true });
 }

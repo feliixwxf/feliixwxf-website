@@ -1178,6 +1178,37 @@ export default function AdminPage() {
     );
   };
 
+  const deleteUserError = (errorLog) => {
+    requestConfirmation({
+      title: "Nutzerfehler löschen?",
+      description:
+        "Diese Meldung wird dauerhaft aus dem Adminbereich entfernt. Das ist sinnvoll, wenn der Fehler erledigt oder nur ein Test war.",
+      confirmText: "LÖSCHEN",
+      confirmLabel: "Meldung löschen",
+      onConfirm: async () => {
+        const response = await fetch("/api/admin/user-errors", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: errorLog.id }),
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          showMessage(
+            data.error || "Nutzerfehler konnte nicht gelöscht werden.",
+            "error"
+          );
+          return;
+        }
+
+        setUserErrors((current) =>
+          current.filter((item) => item.id !== errorLog.id)
+        );
+        showMessage("Nutzerfehler wurde gelöscht.", "success");
+      },
+    });
+  };
+
   const refreshDashboard = async () => {
     setMessage("");
     await Promise.all([
@@ -6231,23 +6262,34 @@ export default function AdminPage() {
                           )}
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setUserErrorResolved(
-                              errorLog,
-                              !errorLog.is_resolved
-                            )
-                          }
-                          className={`inline-flex w-fit shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${
-                            errorLog.is_resolved
-                              ? "border border-white/10 bg-white/10 text-white hover:bg-white/15"
-                              : "bg-white text-neutral-950 hover:-translate-y-0.5 hover:shadow-xl"
-                          }`}
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
-                          {errorLog.is_resolved ? "Wieder öffnen" : "Erledigt"}
-                        </button>
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setUserErrorResolved(
+                                errorLog,
+                                !errorLog.is_resolved
+                              )
+                            }
+                            className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${
+                              errorLog.is_resolved
+                                ? "border border-white/10 bg-white/10 text-white hover:bg-white/15"
+                                : "bg-white text-neutral-950 hover:-translate-y-0.5 hover:shadow-xl"
+                            }`}
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                            {errorLog.is_resolved ? "Wieder öffnen" : "Erledigt"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => deleteUserError(errorLog)}
+                            className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/20 bg-red-500/10 px-4 py-2 text-sm font-black text-red-100 transition hover:bg-red-500/20"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Löschen
+                          </button>
+                        </div>
                       </div>
                     </article>
                   ))}
