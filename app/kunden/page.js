@@ -405,6 +405,10 @@ export default function CustomerGalleryPage() {
                   />
                 </label>
 
+                <div className="mt-5">
+                  <GalleryNotice message={message} type={messageType} />
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -417,10 +421,6 @@ export default function CustomerGalleryPage() {
                   )}
                   {loading ? "Lädt..." : "Galerie öffnen"}
                 </button>
-
-                <div className="mt-5">
-                  <GalleryNotice message={message} type={messageType} />
-                </div>
               </form>
             </div>
           ) : (
@@ -525,6 +525,10 @@ export default function CustomerGalleryPage() {
                   </div>
                 </div>
 
+                <div className="mt-6">
+                  <GalleryNotice message={message} type={messageType} />
+                </div>
+
                 <div className="flex flex-col gap-3 rounded-[1.3rem] border border-white/10 bg-black/25 p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                     <button
@@ -577,10 +581,6 @@ export default function CustomerGalleryPage() {
                       </a>
                     )}
                   </div>
-                </div>
-
-                <div className="mt-6">
-                  <GalleryNotice message={message} type={messageType} />
                 </div>
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

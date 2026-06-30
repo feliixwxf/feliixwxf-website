@@ -1387,16 +1387,6 @@ export default function FeliixWxfPhotography() {
                       className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400 md:col-span-2"
                     />
 
-                    <Button
-                      type="submit"
-                      disabled={reviewSubmitting}
-                      className={`rounded-2xl py-6 text-base md:col-span-2 ${buttonHover}`}
-                    >
-                      {reviewSubmitting
-                        ? "Bewertung wird veröffentlicht..."
-                        : "Bewertung veröffentlichen"}
-                    </Button>
-
                     {reviewMessage && (
                       <p className={`text-sm leading-6 ${muted} md:col-span-2`}>
                         {reviewMessage}
@@ -1411,6 +1401,16 @@ export default function FeliixWxfPhotography() {
                         )}
                       </p>
                     )}
+
+                    <Button
+                      type="submit"
+                      disabled={reviewSubmitting}
+                      className={`rounded-2xl py-6 text-base md:col-span-2 ${buttonHover}`}
+                    >
+                      {reviewSubmitting
+                        ? "Bewertung wird veröffentlicht..."
+                        : "Bewertung veröffentlichen"}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -1544,16 +1544,6 @@ export default function FeliixWxfPhotography() {
                   Weitere Informationen findest du im Datenschutz.
                 </p>
 
-                <Button
-                  type="submit"
-                  disabled={contactSubmitting}
-                  className={`rounded-2xl py-6 text-base md:col-span-2 ${buttonHover}`}
-                >
-                  {contactSubmitting
-                    ? "Anfrage wird gesendet..."
-                    : "Unverbindlich anfragen"}
-                </Button>
-
                 {contactMessage && (
                   <div
                     className={`md:col-span-2 overflow-hidden rounded-2xl border p-4 ${
@@ -1601,6 +1591,16 @@ export default function FeliixWxfPhotography() {
                     </div>
                   </div>
                 )}
+
+                <Button
+                  type="submit"
+                  disabled={contactSubmitting}
+                  className={`rounded-2xl py-6 text-base md:col-span-2 ${buttonHover}`}
+                >
+                  {contactSubmitting
+                    ? "Anfrage wird gesendet..."
+                    : "Unverbindlich anfragen"}
+                </Button>
               </div>
             </form>
           </div>

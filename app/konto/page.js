@@ -728,6 +728,21 @@ export default function AccountPage() {
               </div>
             </div>
 
+            {message && (
+              <div
+                className={`rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}
+              >
+                <p className="leading-6">{message}</p>
+                {messageType === "error" && (
+                  <ReportUserErrorButton
+                    page="/konto"
+                    source="Kundenkonto"
+                    message={message}
+                  />
+                )}
+              </div>
+            )}
+
             <div className="rounded-[1rem] border-0 border-white/10 bg-transparent p-0">
               {loading ? (
                 <div className="flex min-h-64 items-center justify-center">
@@ -1697,21 +1712,6 @@ export default function AccountPage() {
                     </button>
                   </div>
                 </form>
-              )}
-
-              {message && (
-                <div
-                  className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}
-                >
-                  <p className="leading-6">{message}</p>
-                  {messageType === "error" && (
-                    <ReportUserErrorButton
-                      page="/konto"
-                      source="Kundenkonto"
-                      message={message}
-                    />
-                  )}
-                </div>
               )}
             </div>
           </div>
