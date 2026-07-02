@@ -103,6 +103,11 @@ const SITE_ASSET_GROUPS = [
       { key: "cover_event", label: "Event" },
     ],
   },
+  {
+    title: "Info-Bereich",
+    description: "Bild rechts neben deinem kurzen Über-mich-Text.",
+    assets: [{ key: "info_image", label: "Info-Bild" }],
+  },
 ];
 
 function loadImageFromFile(file) {
@@ -1197,6 +1202,32 @@ export default function AdminPage() {
     setActivityLogs(data.logs || []);
   };
 
+  const clearActivityLogs = () => {
+    requestConfirmation({
+      title: "Aktivitätsverlauf leeren?",
+      description:
+        "Alle gespeicherten Admin-Aktionen werden aus dem Protokoll entfernt. Das spart Speicher und betrifft keine Bilder, Kunden, Bewertungen oder Einstellungen.",
+      confirmLabel: "Verlauf leeren",
+      onConfirm: async () => {
+        const response = await fetch("/api/admin/activity", {
+          method: "DELETE",
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          showMessage(
+            data.error || "Aktivitätsverlauf konnte nicht geleert werden.",
+            "error"
+          );
+          return;
+        }
+
+        setActivityLogs([]);
+        showMessage("Aktivitätsverlauf wurde geleert.", "success");
+      },
+    });
+  };
+
   const loadSecurityChecks = async () => {
     const response = await fetch("/api/admin/security-check", {
       cache: "no-store",
@@ -1644,11 +1675,14 @@ export default function AdminPage() {
 
   const getSiteAssetCropPreset = (assetKey) => {
     const isHeroAsset = assetKey === "hero_before" || assetKey === "hero_after";
+    const isInfoAsset = assetKey === "info_image";
 
-    return isHeroAsset
+    return isHeroAsset || isInfoAsset
       ? {
-          title: `${SITE_ASSET_LABELS[assetKey] || "Startseitenbild"} zuschneiden`,
-          description: "Passt zum Vorher/Nachher-Fenster auf der Startseite.",
+          title: `${SITE_ASSET_LABELS[assetKey] || "Bild"} zuschneiden`,
+          description: isInfoAsset
+            ? "Passt zum rechten Bildfeld im Info-Bereich."
+            : "Passt zum Vorher/Nachher-Fenster auf der Startseite.",
           aspectWidth: 4,
           aspectHeight: 5,
           outputWidth: 1800,
@@ -6450,18 +6484,29 @@ export default function AdminPage() {
                   </section>
 
                   <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white">
-                        <Clock className="h-5 w-5" />
-                      </span>
-                      <div>
-                        <h3 className="text-xl font-black">
-                          Aktivitätsverlauf
-                        </h3>
-                        <p className="mt-1 text-sm text-neutral-400">
-                          Die letzten Admin-Aktionen.
-                        </p>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white">
+                          <Clock className="h-5 w-5" />
+                        </span>
+                        <div>
+                          <h3 className="text-xl font-black">
+                            Aktivitätsverlauf
+                          </h3>
+                          <p className="mt-1 text-sm text-neutral-400">
+                            Die letzten Admin-Aktionen.
+                          </p>
+                        </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={clearActivityLogs}
+                        disabled={activityLogs.length === 0}
+                        className="inline-flex w-fit items-center justify-center gap-2 rounded-full border border-red-400/25 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Verlauf leeren
+                      </button>
                     </div>
 
                     <div className="mt-5 max-h-[560px] space-y-3 overflow-y-auto pr-1">

@@ -42,3 +42,39 @@ export async function GET() {
 
   return NextResponse.json({ logs: await response.json() });
 }
+
+export async function DELETE() {
+  if (!(await isAdminAuthenticated())) return unauthorized();
+
+  if (!hasSupabaseConfig) {
+    return NextResponse.json(
+      { error: "Supabase ist noch nicht konfiguriert." },
+      { status: 503 }
+    );
+  }
+
+  const response = await fetch(
+    `${supabaseRestUrl}/rest/v1/admin_activity_logs?id=not.is.null`,
+    {
+      method: "DELETE",
+      headers: {
+        ...supabaseServiceHeaders,
+        Prefer: "return=minimal",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const details = await response.text();
+    return NextResponse.json(
+      {
+        error:
+          "Aktivitätsverlauf konnte nicht geleert werden. Bitte supabase-security-hardening.sql prüfen.",
+        details,
+      },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ ok: true });
+}

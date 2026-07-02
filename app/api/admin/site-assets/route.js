@@ -14,6 +14,7 @@ const ASSET_KEYS = new Set([
   "cover_portrait",
   "cover_nature",
   "cover_event",
+  "info_image",
 ]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
