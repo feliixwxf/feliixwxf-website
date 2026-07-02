@@ -189,6 +189,73 @@ async function compressPortfolioFile(file) {
   });
 }
 
+async function cropImageFile(file, options) {
+  if (!file.type?.startsWith("image/")) return file;
+
+  const image = await loadImageFromFile(file);
+  const originalWidth = image.naturalWidth || image.width;
+  const originalHeight = image.naturalHeight || image.height;
+  const aspect = options.aspect || 1;
+  const zoom = Math.max(1, Number(options.zoom) || 1);
+  const xPercent = Math.min(100, Math.max(0, Number(options.xPercent) || 50));
+  const yPercent = Math.min(100, Math.max(0, Number(options.yPercent) || 50));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error(`${file.name} konnte nicht zugeschnitten werden.`);
+  }
+
+  let cropWidth = originalWidth;
+  let cropHeight = originalWidth / aspect;
+
+  if (cropHeight > originalHeight) {
+    cropHeight = originalHeight;
+    cropWidth = originalHeight * aspect;
+  }
+
+  cropWidth = Math.max(1, cropWidth / zoom);
+  cropHeight = Math.max(1, cropHeight / zoom);
+
+  const maxX = Math.max(0, originalWidth - cropWidth);
+  const maxY = Math.max(0, originalHeight - cropHeight);
+  const sourceX = maxX * (xPercent / 100);
+  const sourceY = maxY * (yPercent / 100);
+  const outputWidth = options.outputWidth || Math.round(cropWidth);
+  const outputHeight = options.outputHeight || Math.round(outputWidth / aspect);
+
+  canvas.width = outputWidth;
+  canvas.height = outputHeight;
+  context.clearRect(0, 0, outputWidth, outputHeight);
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    cropWidth,
+    cropHeight,
+    0,
+    0,
+    outputWidth,
+    outputHeight
+  );
+
+  const keepPng = file.type === "image/png";
+  const outputType = keepPng ? "image/png" : "image/jpeg";
+  const extension = keepPng ? "png" : "jpg";
+  const blob = await canvasToBlob(canvas, outputType, keepPng ? undefined : 0.96);
+
+  if (!blob) {
+    throw new Error(`${file.name} konnte nicht zugeschnitten werden.`);
+  }
+
+  const baseName = file.name.replace(/\.[^.]+$/, "") || "bild";
+
+  return new File([blob], `${baseName}-zuschnitt.${extension}`, {
+    type: outputType,
+    lastModified: Date.now(),
+  });
+}
+
 const SITE_ASSET_LABELS = Object.fromEntries(
   SITE_ASSET_GROUPS.flatMap((group) =>
     group.assets.map((asset) => [asset.key, asset.label])
@@ -616,8 +683,15 @@ export default function AdminPage() {
   const [clientGalleryPreview, setClientGalleryPreview] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
-  const [confirmInput, setConfirmInput] = useState("");
+  const [confirmChecked, setConfirmChecked] = useState(false);
   const [confirmBusy, setConfirmBusy] = useState(false);
+  const [cropSession, setCropSession] = useState(null);
+  const [cropPreview, setCropPreview] = useState("");
+  const [cropImageSize, setCropImageSize] = useState(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropX, setCropX] = useState(50);
+  const [cropY, setCropY] = useState(50);
+  const [cropBusy, setCropBusy] = useState(false);
 
   const approvedReviews = reviews.filter((review) => review.is_approved);
   const pendingReviews = reviews.filter((review) => !review.is_approved);
@@ -945,6 +1019,15 @@ export default function AdminPage() {
         : dateB - dateA;
     });
   const latestClientGallery = clientGalleries[0];
+  const activeCropFile = cropSession?.files?.[cropSession.index] || null;
+  const cropAspectWidth = cropSession?.aspectWidth || 3;
+  const cropAspectHeight = cropSession?.aspectHeight || 4;
+  const cropConfirmationText = cropSession
+    ? `${cropSession.index + 1}/${cropSession.files.length}`
+    : "";
+  const confirmationRequired = Boolean(
+    confirmAction && confirmAction.requiresConfirmation !== false
+  );
 
   const showMessage = (text, type = "info") => {
     setMessage(text);
@@ -952,26 +1035,21 @@ export default function AdminPage() {
   };
 
   const requestConfirmation = (action) => {
-    setConfirmInput("");
+    setConfirmChecked(false);
     setConfirmAction({
       title: "Aktion bestätigen",
       description: "Diese Aktion kann nicht automatisch rückgängig gemacht werden.",
       confirmLabel: "Bestätigen",
       cancelLabel: "Abbrechen",
+      requiresConfirmation: true,
       ...action,
     });
   };
 
   const runConfirmedAction = async () => {
     if (!confirmAction?.onConfirm) return;
-    if (
-      confirmAction.confirmText &&
-      confirmInput.trim() !== confirmAction.confirmText
-    ) {
-      showMessage(
-        `Bitte ${confirmAction.confirmText} eingeben, um die Aktion zu bestätigen.`,
-        "error"
-      );
+    if (confirmationRequired && !confirmChecked) {
+      showMessage("Bitte bestätige die Aktion mit dem Haken.", "error");
       return;
     }
 
@@ -1183,7 +1261,6 @@ export default function AdminPage() {
       title: "Nutzerfehler löschen?",
       description:
         "Diese Meldung wird dauerhaft aus dem Adminbereich entfernt. Das ist sinnvoll, wenn der Fehler erledigt oder nur ein Test war.",
-      confirmText: "LÖSCHEN",
       confirmLabel: "Meldung löschen",
       onConfirm: async () => {
         const response = await fetch("/api/admin/user-errors", {
@@ -1433,6 +1510,145 @@ export default function AdminPage() {
       previewEntries.forEach(([, previewUrl]) => URL.revokeObjectURL(previewUrl));
     };
   }, [siteAssetFiles]);
+
+  useEffect(() => {
+    if (!activeCropFile) {
+      setCropPreview("");
+      setCropImageSize(null);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(activeCropFile);
+    setCropPreview(previewUrl);
+    setCropImageSize(null);
+
+    const previewImage = new Image();
+    previewImage.onload = () => {
+      setCropImageSize({
+        width: previewImage.naturalWidth,
+        height: previewImage.naturalHeight,
+      });
+    };
+    previewImage.src = previewUrl;
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [activeCropFile]);
+
+  const getSiteAssetCropPreset = (assetKey) => {
+    const isHeroAsset = assetKey === "hero_before" || assetKey === "hero_after";
+
+    return isHeroAsset
+      ? {
+          title: `${SITE_ASSET_LABELS[assetKey] || "Startseitenbild"} zuschneiden`,
+          description: "Passt zum Vorher/Nachher-Fenster auf der Startseite.",
+          aspectWidth: 4,
+          aspectHeight: 5,
+          outputWidth: 1800,
+          outputHeight: 2250,
+        }
+      : {
+          title: `${SITE_ASSET_LABELS[assetKey] || "Portfolio-Titelbild"} zuschneiden`,
+          description: "Passt zur Portfolio-Kachel auf der Website.",
+          aspectWidth: 3,
+          aspectHeight: 4,
+          outputWidth: 1800,
+          outputHeight: 2400,
+        };
+  };
+
+  const openCropSession = (files, options) => {
+    const validFiles = files.filter((file) => file?.type?.startsWith("image/"));
+
+    if (!validFiles.length) {
+      showMessage("Bitte mindestens eine Bilddatei auswählen.", "error");
+      return;
+    }
+
+    setCropSession({
+      files: validFiles,
+      index: 0,
+      preparedFiles: [],
+      ...options,
+    });
+    setCropZoom(1);
+    setCropX(50);
+    setCropY(50);
+    setCropBusy(false);
+    setMessage("");
+  };
+
+  const applyPreparedCropFiles = (session, files) => {
+    if (session.target === "portfolio") {
+      setImageFiles(files);
+      setImageFile(files[0] || null);
+    }
+
+    if (session.target === "client-gallery") {
+      setClientGalleryFiles(files);
+      setClientGalleryFile(files[0] || null);
+    }
+
+    if (session.target === "site-asset" && session.assetKey) {
+      setSiteAssetFiles((current) => ({
+        ...current,
+        [session.assetKey]: files[0] || null,
+      }));
+    }
+
+    showMessage(
+      files.length === 1
+        ? "Bild wurde für den Upload vorbereitet."
+        : `${files.length} Bilder wurden für den Upload vorbereitet.`,
+      "success"
+    );
+  };
+
+  const closeCropSession = () => {
+    setCropSession(null);
+    setCropZoom(1);
+    setCropX(50);
+    setCropY(50);
+    setCropBusy(false);
+  };
+
+  const finishCropStep = async ({ useOriginal = false } = {}) => {
+    if (!cropSession || !activeCropFile) return;
+
+    setCropBusy(true);
+    try {
+      const preparedFile = useOriginal
+        ? activeCropFile
+        : await cropImageFile(activeCropFile, {
+            aspect: cropSession.aspectWidth / cropSession.aspectHeight,
+            outputWidth: cropSession.outputWidth,
+            outputHeight: cropSession.outputHeight,
+            zoom: cropZoom,
+            xPercent: cropX,
+            yPercent: cropY,
+          });
+      const preparedFiles = [...cropSession.preparedFiles, preparedFile];
+      const isLastFile = cropSession.index >= cropSession.files.length - 1;
+
+      if (isLastFile) {
+        applyPreparedCropFiles(cropSession, preparedFiles);
+        closeCropSession();
+        return;
+      }
+
+      setCropSession((current) => ({
+        ...current,
+        index: current.index + 1,
+        preparedFiles,
+      }));
+      setCropZoom(1);
+      setCropX(50);
+      setCropY(50);
+    } catch (error) {
+      showMessage(error.message || "Bild konnte nicht vorbereitet werden.", "error");
+    } finally {
+      setCropBusy(false);
+    }
+  };
 
   const uploadImage = async (event) => {
     event.preventDefault();
@@ -1824,7 +2040,6 @@ export default function AdminPage() {
       title: `Kundengalerie "${gallery.title}" löschen?`,
       description:
         "Die Galerie wird aus dem Admin entfernt. Kundenbilder, Favoriten, QR-Zugriff und die Galerie-Verknüpfung werden gelöscht. Das Kundenkonto selbst bleibt bestehen. Nutze das nur, wenn das Projekt wirklich weg kann.",
-      confirmText: "LÖSCHEN",
       confirmLabel: "Galerie löschen",
       onConfirm: async () => {
         setBusyClientGalleryId(gallery.id);
@@ -1862,7 +2077,6 @@ export default function AdminPage() {
       title: "Kundenbild löschen?",
       description:
         "Das Bild wird aus dieser Kundengalerie entfernt. Falls es als Cover oder Favorit genutzt wurde, werden diese Zuordnungen ebenfalls bereinigt. Andere Galerien bleiben unberührt.",
-      confirmText: "LÖSCHEN",
       confirmLabel: "Bild löschen",
       onConfirm: async () => {
         setBusyClientImageId(image.id);
@@ -2319,7 +2533,6 @@ export default function AdminPage() {
       title: `Bewertung von ${review.name} löschen?`,
       description:
         "Die Bewertung wird dauerhaft aus der Moderation und von der öffentlichen Website entfernt. Das Kundenkonto bleibt bestehen.",
-      confirmText: "LÖSCHEN",
       confirmLabel: "Bewertung löschen",
       onConfirm: async () => {
         setBusyId(review.id);
@@ -2418,7 +2631,6 @@ export default function AdminPage() {
       title: "Portfolio-Bild löschen?",
       description:
         "Das Bild wird aus der öffentlichen Portfolio-Galerie entfernt. Titelbilder und Kundengalerien bleiben davon getrennt.",
-      confirmText: "LÖSCHEN",
       confirmLabel: "Bild löschen",
       onConfirm: async () => {
         setBusyImageId(image.id);
@@ -2477,7 +2689,6 @@ export default function AdminPage() {
       title: `${selectedImages.length} Portfolio-Bilder löschen?`,
       description:
         "Alle aktuell ausgewählten Bilder werden aus der öffentlichen Portfolio-Galerie entfernt.",
-      confirmText: "LÖSCHEN",
       confirmLabel: "Auswahl löschen",
       onConfirm: async () => {
         setBusyImageId("bulk-delete");
@@ -3280,8 +3491,17 @@ export default function AdminPage() {
                         const selectedFiles = Array.from(
                           event.target.files || []
                         );
-                        setImageFiles(selectedFiles);
-                        setImageFile(selectedFiles[0] || null);
+                        openCropSession(selectedFiles, {
+                          target: "portfolio",
+                          title: "Portfolio-Bilder zuschneiden",
+                          description:
+                            "Passe das Bild an die Portfolio-Kachel an. Danach bleibt die bestehende Upload-Komprimierung aktiv.",
+                          aspectWidth: 3,
+                          aspectHeight: 4,
+                          outputWidth: 1800,
+                          outputHeight: 2400,
+                        });
+                        event.target.value = "";
                         setMessage("");
                       }}
                       className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 file:mr-4 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
@@ -4898,7 +5118,7 @@ export default function AdminPage() {
                                 Sicherheitsbereich
                               </span>
                               <span className="mt-1 block text-sm leading-6 text-red-100/65">
-                                Löschen ist bewusst eingeklappt und fragt danach noch einmal nach dem Wort LÖSCHEN.
+                                Löschen ist bewusst eingeklappt und fragt danach noch einmal per Haken nach.
                               </span>
                             </summary>
 
@@ -4947,8 +5167,17 @@ export default function AdminPage() {
                                 const selectedFiles = Array.from(
                                   event.target.files || []
                                 );
-                                setClientGalleryFiles(selectedFiles);
-                                setClientGalleryFile(selectedFiles[0] || null);
+                                openCropSession(selectedFiles, {
+                                  target: "client-gallery",
+                                  title: "Kundenbilder vorbereiten",
+                                  description:
+                                    "Passe das Vorschauraster an oder übernimm das Original unverändert.",
+                                  aspectWidth: 4,
+                                  aspectHeight: 3,
+                                  outputWidth: 2400,
+                                  outputHeight: 1800,
+                                });
+                                event.target.value = "";
                                 setMessage("");
                               }}
                               className="mt-3 w-full min-w-0 rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-neutral-950 file:mr-3 file:max-w-full file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
@@ -5383,11 +5612,18 @@ export default function AdminPage() {
                                     type="file"
                                     accept="image/*"
                                     onChange={(event) => {
-                                      setSiteAssetFiles((current) => ({
-                                        ...current,
-                                        [asset.key]:
-                                          event.target.files?.[0] || null,
-                                      }));
+                                      const selectedFile =
+                                        event.target.files?.[0] || null;
+
+                                      if (selectedFile) {
+                                        openCropSession([selectedFile], {
+                                          target: "site-asset",
+                                          assetKey: asset.key,
+                                          ...getSiteAssetCropPreset(asset.key),
+                                        });
+                                      }
+
+                                      event.target.value = "";
                                       setMessage("");
                                     }}
                                     className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 file:mr-4 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
@@ -6301,6 +6537,151 @@ export default function AdminPage() {
         )}
       </div>
 
+      {cropSession && activeCropFile && (
+        <div className="fixed inset-0 z-[90] overflow-y-auto bg-black/80 p-4 backdrop-blur-xl">
+          <div className="mx-auto my-6 w-full max-w-5xl rounded-[2rem] border border-white/15 bg-neutral-950 p-5 text-white shadow-2xl sm:p-7">
+            <div className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-start md:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-yellow-200/70">
+                  Bild vorbereiten {cropConfirmationText}
+                </p>
+                <h2 className="mt-3 text-2xl font-black sm:text-3xl">
+                  {cropSession.title}
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
+                  {cropSession.description}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeCropSession}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/15"
+                aria-label="Zuschnitt schließen"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_310px]">
+              <div className="rounded-[1.5rem] border border-white/10 bg-black/35 p-4">
+                <div
+                  className="mx-auto max-h-[68vh] max-w-full overflow-hidden rounded-2xl border border-yellow-300/30 bg-neutral-900"
+                  style={{
+                    aspectRatio: `${cropAspectWidth} / ${cropAspectHeight}`,
+                  }}
+                >
+                  {cropPreview && (
+                    <img
+                      src={cropPreview}
+                      alt="Zuschnitt-Vorschau"
+                      className="h-full w-full object-cover"
+                      style={{
+                        objectPosition: `${cropX}% ${cropY}%`,
+                        transform: `scale(${cropZoom})`,
+                        transformOrigin: `${cropX}% ${cropY}%`,
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5">
+                <p className="break-all text-sm font-black text-white">
+                  {activeCropFile.name}
+                </p>
+                <div className="mt-3 space-y-2 text-xs leading-5 text-neutral-400">
+                  <p>
+                    Raster: {cropAspectWidth}:{cropAspectHeight}
+                  </p>
+                  <p>
+                    Ausgabe: {cropSession.outputWidth} x {cropSession.outputHeight}px
+                  </p>
+                  <p>
+                    Original:{" "}
+                    {cropImageSize
+                      ? `${cropImageSize.width} x ${cropImageSize.height}px`
+                      : "wird gelesen..."}
+                  </p>
+                </div>
+
+                <label className="mt-6 block">
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
+                    Zoom
+                  </span>
+                  <input
+                    type="range"
+                    min="1"
+                    max="2.8"
+                    step="0.01"
+                    value={cropZoom}
+                    onChange={(event) => setCropZoom(Number(event.target.value))}
+                    className="mt-3 w-full accent-yellow-300"
+                  />
+                </label>
+
+                <label className="mt-5 block">
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
+                    Links / Rechts
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={cropX}
+                    onChange={(event) => setCropX(Number(event.target.value))}
+                    className="mt-3 w-full accent-yellow-300"
+                  />
+                </label>
+
+                <label className="mt-5 block">
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
+                    Oben / Unten
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={cropY}
+                    onChange={(event) => setCropY(Number(event.target.value))}
+                    className="mt-3 w-full accent-yellow-300"
+                  />
+                </label>
+
+                <div className="mt-6 grid gap-3">
+                  <button
+                    type="button"
+                    onClick={() => finishCropStep()}
+                    disabled={cropBusy}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-yellow-300 px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                    {cropBusy ? "Wird vorbereitet..." : "Zuschnitt übernehmen"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => finishCropStep({ useOriginal: true })}
+                    disabled={cropBusy}
+                    className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/10 px-5 py-3 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60"
+                  >
+                    Original übernehmen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeCropSession}
+                    disabled={cropBusy}
+                    className="inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold text-neutral-400 transition hover:bg-white/10 disabled:opacity-60"
+                  >
+                    Abbrechen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmAction && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-5 backdrop-blur-lg">
           <div className="w-full max-w-lg rounded-[2rem] border border-red-400/20 bg-neutral-950 p-6 text-white shadow-2xl">
@@ -6321,17 +6702,18 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {confirmAction.confirmText && (
-              <label className="mt-5 block rounded-2xl border border-red-400/15 bg-red-500/10 p-4">
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-red-100/70">
-                  Zur Bestätigung {confirmAction.confirmText} eingeben
-                </span>
+            {confirmationRequired && (
+              <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-red-400/15 bg-red-500/10 p-4">
                 <input
-                  value={confirmInput}
-                  onChange={(event) => setConfirmInput(event.target.value)}
-                  placeholder={confirmAction.confirmText}
-                  className="mt-3 w-full rounded-xl border border-red-300/20 bg-white px-3 py-2 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
+                  type="checkbox"
+                  checked={confirmChecked}
+                  onChange={(event) => setConfirmChecked(event.target.checked)}
+                  className="mt-1 h-5 w-5 rounded border-red-300/40 accent-red-400"
                 />
+                <span className="text-sm leading-6 text-red-50/85">
+                  Ich bestätige, dass diese Aktion dauerhaft ausgeführt werden
+                  soll.
+                </span>
               </label>
             )}
 
@@ -6340,7 +6722,7 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => {
                   setConfirmAction(null);
-                  setConfirmInput("");
+                  setConfirmChecked(false);
                 }}
                 disabled={confirmBusy}
                 className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/10 px-5 py-3 text-sm font-bold transition hover:bg-white/15 disabled:opacity-60"
@@ -6350,13 +6732,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={runConfirmedAction}
-                disabled={
-                  confirmBusy ||
-                  Boolean(
-                    confirmAction.confirmText &&
-                      confirmInput.trim() !== confirmAction.confirmText
-                  )
-                }
+                disabled={confirmBusy || (confirmationRequired && !confirmChecked)}
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-red-400/30 bg-red-500/20 px-5 py-3 text-sm font-black text-red-50 transition hover:bg-red-500/30 disabled:opacity-60"
               >
                 <Trash2 className="h-4 w-4" />
