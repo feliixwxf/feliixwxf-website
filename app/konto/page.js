@@ -606,11 +606,6 @@ export default function AccountPage() {
   });
   const visibleGalleryCount =
     visibleActiveGalleries.length + visibleCompletedGalleries.length;
-  const profileComplete = Boolean(
-    String(profileName || user?.name || "").trim() &&
-      String(user?.email || "").trim() &&
-      avatarPreview
-  );
   const galleryFilters = [
     { key: "all", label: "Alle", count: galleries.length },
     { key: "active", label: "Aktiv", count: activeGalleries.length },
@@ -621,24 +616,9 @@ export default function AccountPage() {
     },
     { key: "downloads", label: "Downloads", count: downloadableGalleries.length },
   ];
-  const accountSections = [
-    {
-      key: "galleries",
-      label: "Galerien",
-      helper: "Bilder, Favoriten und Downloads",
-      icon: ImageIcon,
-    },
-    {
-      key: "profile",
-      label: "Profil",
-      helper: "Daten, Passwort und Sicherheit",
-      icon: UserRound,
-    },
-  ];
   const accountHeroGallery =
     activeGalleries.find((gallery) => gallery.cover_url) ||
     completedGalleries.find((gallery) => gallery.cover_url);
-  const nextGallery = activeGalleries[0] || completedGalleries[0];
   const accountDisplayName =
     String(user?.name || "").trim() ||
     String(galleries.find((gallery) => gallery.client_name)?.client_name || "").trim() ||
@@ -749,621 +729,509 @@ export default function AccountPage() {
                   <RefreshCw className="h-7 w-7 animate-spin text-neutral-300" />
                 </div>
               ) : user ? (
-                <div>
-                  <div className={`mb-3 overflow-hidden rounded-2xl border sm:mb-5 ${softPanelStyle}`}>
-                    <div className={`relative p-3 sm:p-5 ${dark ? "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.13),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))]" : "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.22),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.86),rgba(226,232,240,0.72))]"}`}>
-                      {accountHeroGallery?.cover_url && (
-                        <img
-                          src={accountHeroGallery.cover_url}
-                          alt=""
-                          className="absolute inset-0 h-full w-full object-cover opacity-10"
-                        />
-                      )}
-                      <div className="relative flex flex-col gap-4">
-                        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                          <div className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border sm:h-20 sm:w-20 ${dark ? "border-white/10 bg-white/10" : "border-slate-300 bg-slate-200"}`}>
-                            {avatarPreview ? (
-                              <img
-                                src={avatarPreview}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <UserRound className="h-6 w-6 text-neutral-400 sm:h-9 sm:w-9" />
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className={`rounded-full px-2.5 py-1 text-[0.68rem] font-black sm:text-xs ${profileComplete ? "bg-emerald-300 text-neutral-950" : "bg-yellow-300 text-neutral-950"}`}>
-                                {profileComplete ? "Profil bereit" : "Profil ergänzen"}
-                              </span>
-                              <span className={`rounded-full px-2.5 py-1 text-[0.68rem] font-black sm:text-xs ${dark ? "bg-white/10 text-neutral-300" : "bg-white text-slate-700"}`}>
-                                Kundenkonto
-                              </span>
-                            </div>
-                            <h1 className={`mt-2 text-xl font-black leading-tight sm:text-3xl ${titleText}`}>
-                              {accountGreeting}
-                            </h1>
-                            <p className={`mt-1 truncate text-sm ${muted}`}>
-                              {user.email}
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className={`text-sm leading-6 ${muted}`}>
-                          {accountIntro}
+                <div className="grid gap-4 lg:grid-cols-[310px_1fr] xl:grid-cols-[340px_1fr]">
+                  <aside className={`rounded-[1.35rem] border p-4 sm:p-5 lg:sticky lg:top-5 lg:self-start ${softPanelStyle}`}>
+                    <div className="flex items-center gap-4 lg:block">
+                      <div className={`flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[1.25rem] border sm:h-24 sm:w-24 lg:h-28 lg:w-28 ${dark ? "border-white/10 bg-white/10" : "border-slate-300 bg-slate-200"}`}>
+                        {avatarPreview ? (
+                          <img
+                            src={avatarPreview}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <UserRound className="h-9 w-9 text-neutral-400" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1 lg:mt-5">
+                        <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
+                          Kundenkonto
                         </p>
-
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              nextGallery ? openGallery(nextGallery) : setAccountSection("galleries")
-                            }
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-3 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
-                          >
-                            <ImageIcon className="h-4 w-4" />
-                            Galerie
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setAccountSection("galleries");
-                              setGalleryFilter("downloads");
-                            }}
-                            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-black transition ${backButtonStyle}`}
-                          >
-                            <Download className="h-4 w-4" />
-                            Downloads
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setAccountSection("profile")}
-                            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-black transition ${backButtonStyle}`}
-                          >
-                            <UserRound className="h-4 w-4" />
-                            Profil
-                          </button>
-                          <button
-                            type="button"
-                            onClick={logout}
-                            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-black transition ${backButtonStyle}`}
-                          >
-                            <LogOut className="h-4 w-4" />
-                            Ausloggen
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={`sticky top-2 z-20 rounded-2xl border p-1 backdrop-blur-xl sm:top-4 sm:p-1.5 ${dark ? "border-white/10 bg-neutral-950/90" : "border-slate-400/60 bg-slate-100/95"}`}>
-                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                      {accountSections.map((section) => {
-                        const SectionIcon = section.icon;
-                        const active = accountSection === section.key;
-
-                        return (
-                          <button
-                            key={section.key}
-                            type="button"
-                            onClick={() => setAccountSection(section.key)}
-                            className={`flex items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-center transition sm:px-4 sm:py-3 ${
-                              active
-                                ? "bg-white text-neutral-950 shadow-xl"
-                                : dark
-                                  ? "bg-white/[0.06] text-neutral-300"
-                                  : "bg-neutral-100 text-neutral-700"
-                            }`}
-                          >
-                            <span
-                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${
-                                active ? "bg-neutral-950 text-white" : dark ? "bg-white/10" : "bg-white"
-                              }`}
-                            >
-                              <SectionIcon className="h-4 w-4" />
-                            </span>
-                            <span className="min-w-0">
-                              <span className="block truncate text-xs font-black sm:text-base">
-                                {section.label}
-                              </span>
-                              <span
-                                className={`mt-0.5 block truncate text-xs ${
-                                  active ? "text-neutral-600" : "text-neutral-500"
-                                } hidden md:block`}
-                              >
-                                {section.helper}
-                              </span>
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {accountSection === "profile" && (
-                    <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_0.9fr]">
-                      <div className={`rounded-2xl border p-4 sm:p-5 ${softPanelStyle}`}>
-                        <div className="mb-5">
-                          <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
-                            Profil
-                          </p>
-                          <h3 className={`mt-2 text-xl font-black ${titleText}`}>
-                            Deine Daten
-                          </h3>
-                        </div>
-
-                        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
-                          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
-                            {avatarPreview ? (
-                              <img
-                                src={avatarPreview}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <UserRound className="h-8 w-8 text-neutral-400" />
-                            )}
-                          </div>
-                          <label className={`inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-black transition sm:w-fit ${backButtonStyle}`}>
-                            {avatarUploading ? (
-                              <RefreshCw className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Upload className="h-4 w-4" />
-                            )}
-                            Profilbild ändern
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={uploadAvatar}
-                              disabled={avatarUploading}
-                              className="hidden"
-                            />
-                          </label>
-                        </div>
-
-                        <label className="block">
-                          <span className="text-xs font-bold uppercase tracking-[0.2em] text-neutral-500">
-                            Benutzername
-                          </span>
-                          <input
-                            value={profileName}
-                            onChange={(event) => {
-                              setProfileName(event.target.value);
-                              setMessage("");
-                            }}
-                            placeholder="z. B. Felix"
-                            className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
-                          />
-                        </label>
-                        <label className="mt-4 block">
-                          <span className={`text-xs font-bold uppercase tracking-[0.2em] ${muted}`}>
-                            Telefonnummer optional
-                          </span>
-                          <input
-                            type="tel"
-                            value={profilePhone}
-                            onChange={(event) => {
-                              setProfilePhone(event.target.value);
-                              setMessage("");
-                            }}
-                            placeholder="+49 ..."
-                            className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-yellow-400"
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          onClick={saveProfile}
-                          disabled={profileSaving}
-                          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60"
-                        >
-                          {profileSaving && (
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                          )}
-                          Profil speichern
-                        </button>
-                      </div>
-
-                      <div className={`rounded-2xl border p-4 sm:p-5 ${softPanelStyle}`}>
-                        <div className="mb-5">
-                          <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
-                            Sicherheit
-                          </p>
-                          <h3 className={`mt-2 text-xl font-black ${titleText}`}>
-                            Passwort & Konto
-                          </h3>
-                        </div>
-
-                        <div className={`rounded-2xl border p-4 ${subtlePanelStyle}`}>
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                              <h4 className={`font-black ${titleText}`}>
-                                Passwort zurücksetzen
-                              </h4>
-                              <p className={`mt-1 text-sm leading-6 ${muted}`}>
-                                Du bekommst eine Reset-Mail an deine E-Mail.
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={requestCurrentAccountPasswordReset}
-                              disabled={submitting}
-                              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 sm:w-fit"
-                            >
-                              {submitting ? (
-                                <RefreshCw className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Mail className="h-4 w-4" />
-                              )}
-                              Reset-Mail senden
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
-                          <div>
-                            <h4 className="font-black text-red-50">
-                              Konto löschen
-                            </h4>
-                            <p className="mt-1 text-sm leading-6 text-red-100/75">
-                              Löscht Konto, Profilbild und Favoriten. Bewertungen bleiben ohne Konto-Verknüpfung bestehen.
-                            </p>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDeletePanelOpen((current) => !current)
-                            }
-                            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-300/30 bg-red-300/10 px-4 py-2 text-sm font-black text-red-50 transition hover:bg-red-300/20"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            {deletePanelOpen ? "Schließen" : "Konto löschen"}
-                          </button>
-
-                          {deletePanelOpen && (
-                            <div className="mt-4 rounded-xl border border-red-300/20 bg-black/25 p-4">
-                              <label className="block">
-                                <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-100/70">
-                                  Zur Bestätigung LÖSCHEN eingeben
-                                </span>
-                                <input
-                                  value={deleteConfirmText}
-                                  onChange={(event) => {
-                                    setDeleteConfirmText(event.target.value);
-                                    setMessage("");
-                                  }}
-                                  placeholder="LÖSCHEN"
-                                  className="mt-2 w-full rounded-xl border border-red-300/20 bg-white px-3 py-2 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
-                                />
-                              </label>
-
-                              <button
-                                type="button"
-                                onClick={deleteAccount}
-                                disabled={
-                                  deletingAccount || deleteConfirmText !== "LÖSCHEN"
-                                }
-                                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-black text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                {deletingAccount ? (
-                                  <RefreshCw className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                                Endgültig löschen
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {accountSection === "galleries" && (
-                    <div className="mt-4 sm:mt-5">
-                  <div className={`rounded-2xl border p-3 sm:p-5 ${softPanelStyle}`}>
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <h3 className={`text-lg font-black sm:text-2xl ${titleText}`}>Meine Galerien</h3>
-                        <p className={`mt-1 text-sm ${muted}`}>
-                          {galleries.length} Galerie
-                          {galleries.length === 1 ? "" : "n"} gefunden
+                        <h1 className={`mt-2 text-2xl font-black leading-tight sm:text-3xl ${titleText}`}>
+                          {accountDisplayName || "Willkommen"}
+                        </h1>
+                        <p className={`mt-1 truncate text-sm ${muted}`}>
+                          {user.email}
                         </p>
                       </div>
+                    </div>
+
+                    <div className="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-1">
                       <button
                         type="button"
-                        onClick={loadGalleries}
-                        className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${backButtonStyle}`}
-                        aria-label="Galerien neu laden"
+                        onClick={() => setAccountSection("galleries")}
+                        className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition ${
+                          accountSection === "galleries"
+                            ? "bg-white text-neutral-950 shadow-xl"
+                            : dark
+                              ? "bg-white/[0.07] text-neutral-200 hover:bg-white/[0.11]"
+                              : "bg-slate-100 text-slate-800 hover:bg-white"
+                        }`}
                       >
-                        <RefreshCw className="h-4 w-4" />
+                        <ImageIcon className="h-4 w-4" />
+                        Galerien
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAccountSection("profile")}
+                        className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition ${
+                          accountSection === "profile"
+                            ? "bg-white text-neutral-950 shadow-xl"
+                            : dark
+                              ? "bg-white/[0.07] text-neutral-200 hover:bg-white/[0.11]"
+                              : "bg-slate-100 text-slate-800 hover:bg-white"
+                        }`}
+                      >
+                        <UserRound className="h-4 w-4" />
+                        Profil
                       </button>
                     </div>
-                  </div>
 
-                  <form
-                    onSubmit={linkGalleryByCode}
-                    className="mt-3 rounded-2xl border border-yellow-400/20 bg-yellow-400/[0.08] p-3 sm:mt-5 sm:p-5"
-                  >
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-                      <label className="min-w-0 flex-1">
-                        <span className={`text-xs font-bold uppercase tracking-[0.2em] ${dark ? "text-yellow-100/75" : "text-yellow-800"}`}>
-                          Galerie-Code hinzufügen
-                        </span>
-                        <input
-                          value={galleryCode}
-                          onChange={(event) => {
-                            setGalleryCode(normalizeCode(event.target.value));
-                            setMessage("");
-                          }}
-                          placeholder="z. B. GAL-ABC123"
-                          className="mt-2 w-full rounded-xl border border-white/10 bg-white px-3 py-3 text-sm font-black tracking-[0.12em] text-neutral-950 outline-none focus:border-yellow-400"
-                        />
-                      </label>
+                    <div className={`mt-5 rounded-2xl border p-4 ${subtlePanelStyle}`}>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <p className={`text-xl font-black ${titleText}`}>{galleries.length}</p>
+                          <p className={`mt-1 text-[0.68rem] font-bold uppercase tracking-[0.12em] ${muted}`}>Galerien</p>
+                        </div>
+                        <div>
+                          <p className={`text-xl font-black ${titleText}`}>{completedGalleries.length}</p>
+                          <p className={`mt-1 text-[0.68rem] font-bold uppercase tracking-[0.12em] ${muted}`}>Fertig</p>
+                        </div>
+                        <div>
+                          <p className={`text-xl font-black ${titleText}`}>{downloadableGalleries.length}</p>
+                          <p className={`mt-1 text-[0.68rem] font-bold uppercase tracking-[0.12em] ${muted}`}>ZIP</p>
+                        </div>
+                      </div>
+                    </div>
 
+                    <div className="mt-5 grid gap-2">
                       <button
-                        type="submit"
-                        disabled={linkingGallery}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 lg:w-fit"
+                        type="button"
+                        onClick={requestCurrentAccountPasswordReset}
+                        disabled={submitting}
+                        className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${backButtonStyle}`}
                       >
-                        {linkingGallery ? (
+                        {submitting ? (
                           <RefreshCw className="h-4 w-4 animate-spin" />
                         ) : (
                           <KeyRound className="h-4 w-4" />
                         )}
-                        Verknüpfen
+                        Passwort-Mail
+                      </button>
+                      <button
+                        type="button"
+                        onClick={logout}
+                        className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${backButtonStyle}`}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Ausloggen
                       </button>
                     </div>
-                    <p className="mt-3 hidden text-xs leading-5 text-yellow-50/70 sm:block">
-                      Wenn du einen QR-Code oder Galerie-Code bekommen hast,
-                      kannst du ihn hier direkt deinem Konto hinzufügen.
-                    </p>
-                  </form>
+                  </aside>
 
-                  <div className="mt-4 grid gap-4 sm:mt-5">
-	                    {galleries.length === 0 && (
-	                      <div className={`rounded-2xl border p-4 sm:p-5 ${softPanelStyle}`}>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
-                              Noch keine Galerie
-                            </p>
-                            <h4 className="mt-2 text-xl font-black">
-                              Verbinde dein erstes Shooting
-                            </h4>
-	                            <p className={`mt-2 max-w-xl text-sm leading-6 ${softMuted}`}>
-                              Sobald eine Galerie mit deiner E-Mail verbunden
-                              ist oder du einen Code eingibst, erscheint sie
-                              hier automatisch.
-                            </p>
-                          </div>
-                          <Link
-                            href="/kunden"
-                            className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 sm:w-fit"
-                          >
-                            <KeyRound className="h-4 w-4" />
-                            Code-Seite öffnen
-                          </Link>
-                        </div>
-
-                        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                          {[
-                            {
-                              title: "Code bekommen",
-                              text: "QR-Code scannen oder Galerie-Code kopieren.",
-                            },
-                            {
-                              title: "Hier eintragen",
-                              text: "Code oben einfügen und mit deinem Konto verknüpfen.",
-                            },
-                            {
-                              title: "Galerie öffnen",
-                              text: "Danach findest du Bilder, Favoriten und Downloads hier.",
-                            },
-                          ].map((item, index) => (
-                            <div
-                              key={item.title}
-                              className={`rounded-2xl border p-4 ${subtlePanelStyle}`}
-                            >
-                              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-black text-neutral-950">
-                                {index + 1}
-                              </span>
-                              <p className={`mt-3 font-black ${titleText}`}>
-                                {item.title}
-                              </p>
-                              <p className="mt-1 text-xs leading-5 text-neutral-400">
-                                {item.text}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {galleries.length > 0 && (
-                      <div className={`rounded-2xl border p-2 sm:p-3 ${softPanelStyle}`}>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:grid-cols-4">
-                          {galleryFilters.map((filter) => (
-                            <button
-                              key={filter.key}
-                              type="button"
-                              onClick={() => setGalleryFilter(filter.key)}
-                              className={`rounded-xl px-2 py-2 text-xs font-black transition sm:px-3 sm:text-sm ${
-                                galleryFilter === filter.key
-                                  ? "bg-white text-neutral-950"
-                                  : dark
-                                    ? "bg-white/5 text-neutral-300 hover:bg-white/10"
-                                    : "bg-neutral-100 text-neutral-700 hover:bg-white"
-                              }`}
-                            >
-                              {filter.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {galleries.length > 0 && visibleGalleryCount === 0 && (
-                      <div className={`rounded-2xl border p-5 text-sm leading-6 ${softPanelStyle} ${softMuted}`}>
-                        Für diesen Filter gibt es aktuell keine Galerien.
-                      </div>
-                    )}
-
-                    {[
-                      {
-                        title: "Aktive Galerien",
-                        description: "Hier liegen die Galerien, an denen du gerade arbeitest.",
-                        items: visibleActiveGalleries,
-                      },
-                      {
-                        title: "Abgeschlossen",
-                        description: "Fertige Projekte bleiben hier gesammelt sichtbar.",
-                        items: visibleCompletedGalleries,
-                      },
-                    ].map((section) => {
-                      if (section.items.length === 0) return null;
-
-                      return (
-                        <section key={section.title} className="grid gap-3">
-                          <div className="flex items-end justify-between gap-3 px-1">
+                  <section className="min-w-0">
+                    {accountSection === "profile" ? (
+                      <div className="grid gap-4 xl:grid-cols-[1fr_0.86fr]">
+                        <div className={`rounded-[1.35rem] border p-4 sm:p-6 ${softPanelStyle}`}>
+                          <div className="flex items-start justify-between gap-4">
                             <div>
-                              <h4 className={`text-sm font-black uppercase tracking-[0.2em] ${softMuted}`}>
-                                {section.title}
-                              </h4>
-                              <p className="mt-1 text-xs text-neutral-500">
-                                {section.description}
+                              <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
+                                Profil bearbeiten
                               </p>
+                              <h2 className={`mt-2 text-2xl font-black ${titleText}`}>
+                                Deine Angaben
+                              </h2>
                             </div>
-                            <span className={`rounded-full px-3 py-1 text-xs font-black ${dark ? "bg-white/10 text-neutral-300" : "bg-neutral-100 text-neutral-700"}`}>
-                              {section.items.length}
-                            </span>
+                            <label className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${backButtonStyle}`}>
+                              {avatarUploading ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4" />
+                              )}
+                              Bild
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={uploadAvatar}
+                                disabled={avatarUploading}
+                                className="hidden"
+                              />
+                            </label>
                           </div>
 
-                          <div className="grid gap-3 lg:grid-cols-2">
-                            {section.items.map((gallery) => {
-                              const status = getGalleryStatus(gallery);
+                          <div className="mt-6 grid gap-4 sm:grid-cols-[120px_1fr] sm:items-start">
+                            <div className={`flex h-28 w-28 items-center justify-center overflow-hidden rounded-[1.5rem] border ${dark ? "border-white/10 bg-white/10" : "border-slate-300 bg-slate-200"}`}>
+                              {avatarPreview ? (
+                                <img
+                                  src={avatarPreview}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <UserRound className="h-10 w-10 text-neutral-400" />
+                              )}
+                            </div>
 
-                              return (
-                                <article
-                                  key={gallery.id}
-                                  className={`overflow-hidden rounded-2xl border transition hover:-translate-y-0.5 ${dark ? "border-white/10 bg-white/[0.06] hover:border-white/20 hover:bg-white/[0.09]" : "border-black/10 bg-white/80 hover:border-black/20 hover:bg-white"}`}
+                            <div className="grid gap-4">
+                              <label className="block">
+                                <span className={`text-xs font-bold uppercase tracking-[0.2em] ${muted}`}>
+                                  Benutzername
+                                </span>
+                                <input
+                                  value={profileName}
+                                  onChange={(event) => {
+                                    setProfileName(event.target.value);
+                                    setMessage("");
+                                  }}
+                                  placeholder="z. B. Felix"
+                                  className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                                />
+                              </label>
+                              <label className="block">
+                                <span className={`text-xs font-bold uppercase tracking-[0.2em] ${muted}`}>
+                                  Telefonnummer optional
+                                </span>
+                                <input
+                                  type="tel"
+                                  value={profilePhone}
+                                  onChange={(event) => {
+                                    setProfilePhone(event.target.value);
+                                    setMessage("");
+                                  }}
+                                  placeholder="+49 ..."
+                                  className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-neutral-950 outline-none focus:border-yellow-400"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={saveProfile}
+                                disabled={profileSaving}
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 sm:w-fit"
+                              >
+                                {profileSaving && (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                )}
+                                Profil speichern
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className={`rounded-[1.35rem] border p-4 sm:p-6 ${softPanelStyle}`}>
+                          <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
+                            Konto
+                          </p>
+                          <h2 className={`mt-2 text-2xl font-black ${titleText}`}>
+                            Sicherheit
+                          </h2>
+
+                          <button
+                            type="button"
+                            onClick={requestCurrentAccountPasswordReset}
+                            disabled={submitting}
+                            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60"
+                          >
+                            {submitting ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Mail className="h-4 w-4" />
+                            )}
+                            Reset-Mail senden
+                          </button>
+
+                          <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
+                            <div className="flex items-start gap-3">
+                              <Trash2 className="mt-0.5 h-5 w-5 text-red-200" />
+                              <div>
+                                <h3 className="font-black text-red-50">Konto löschen</h3>
+                                <p className="mt-1 text-sm leading-6 text-red-100/75">
+                                  Löscht Konto, Profilbild und Favoriten. Bewertungen bleiben ohne Konto-Verknüpfung bestehen.
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setDeletePanelOpen((current) => !current)}
+                              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-300/30 bg-red-300/10 px-4 py-3 text-sm font-black text-red-50 transition hover:bg-red-300/20"
+                            >
+                              {deletePanelOpen ? "Abbrechen" : "Löschen vorbereiten"}
+                            </button>
+
+                            {deletePanelOpen && (
+                              <div className="mt-4 rounded-2xl border border-red-300/20 bg-black/25 p-4">
+                                <label className="block">
+                                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-100/70">
+                                    Zur Bestätigung LÖSCHEN eingeben
+                                  </span>
+                                  <input
+                                    value={deleteConfirmText}
+                                    onChange={(event) => {
+                                      setDeleteConfirmText(event.target.value);
+                                      setMessage("");
+                                    }}
+                                    placeholder="LÖSCHEN"
+                                    className="mt-2 w-full rounded-2xl border border-red-300/20 bg-white px-4 py-3 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={deleteAccount}
+                                  disabled={deletingAccount || deleteConfirmText !== "LÖSCHEN"}
+                                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-sm font-black text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                  <div className="grid gap-0">
-                                  <button
-                                    type="button"
-                                    onClick={() => openGallery(gallery)}
-                                    className="relative aspect-[16/10] overflow-hidden bg-black/30"
-                                    aria-label="Galerie öffnen"
-                                  >
-                                    {gallery.cover_url ? (
-                                      <img
-                                        src={gallery.cover_url}
-                                        alt=""
-                                        loading="lazy"
-                                        decoding="async"
-                                        className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
-                                      />
-                                    ) : (
-                                      <div className="flex h-full min-h-32 items-center justify-center">
-                                        <ImageIcon className="h-8 w-8 text-neutral-500" />
-                                      </div>
-                                    )}
-                                    <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-black text-white backdrop-blur">
-                                      Code {gallery.access_code}
-                                    </span>
-                                  </button>
+                                  {deletingAccount ? (
+                                    <RefreshCw className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                  Endgültig löschen
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid gap-4">
+                        <div className={`overflow-hidden rounded-[1.35rem] border ${softPanelStyle}`}>
+                          <div className={`relative p-4 sm:p-6 ${dark ? "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.14),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))]" : "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.25),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.86),rgba(226,232,240,0.74))]"}`}>
+                            {accountHeroGallery?.cover_url && (
+                              <img
+                                src={accountHeroGallery.cover_url}
+                                alt=""
+                                className="absolute inset-0 h-full w-full object-cover opacity-10"
+                              />
+                            )}
+                            <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                              <div>
+                                <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
+                                  Deine Shootings
+                                </p>
+                                <h2 className={`mt-2 text-3xl font-black leading-tight sm:text-4xl ${titleText}`}>
+                                  Bilder, Favoriten und Downloads.
+                                </h2>
+                                <p className={`mt-3 max-w-2xl text-sm leading-6 ${muted}`}>
+                                  Alles Wichtige zu deinen Galerien bleibt hier gesammelt und schnell erreichbar.
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={loadGalleries}
+                                className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition md:w-fit ${backButtonStyle}`}
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                                Aktualisieren
+                              </button>
+                            </div>
+                          </div>
+                        </div>
 
-                                  <div className="flex flex-col gap-3 p-3 sm:p-5">
-                                    <div className="min-w-0">
-                                      <div className="flex flex-wrap items-center gap-2">
-                                        <span
-                                          className={`rounded-full px-3 py-1 text-xs font-black ${status.className}`}
-                                        >
+                        <form
+                          onSubmit={linkGalleryByCode}
+                          className={`rounded-[1.35rem] border p-4 sm:p-5 ${dark ? "border-yellow-400/20 bg-yellow-400/[0.07]" : "border-yellow-700/20 bg-yellow-100/60"}`}
+                        >
+                          <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                            <label className="min-w-0 flex-1">
+                              <span className={`text-xs font-bold uppercase tracking-[0.2em] ${dark ? "text-yellow-100/75" : "text-yellow-900"}`}>
+                                Galerie-Code hinzufügen
+                              </span>
+                              <input
+                                value={galleryCode}
+                                onChange={(event) => {
+                                  setGalleryCode(normalizeCode(event.target.value));
+                                  setMessage("");
+                                }}
+                                placeholder="z. B. GAL-ABC123"
+                                className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm font-black tracking-[0.12em] text-neutral-950 outline-none focus:border-yellow-400"
+                              />
+                            </label>
+                            <button
+                              type="submit"
+                              disabled={linkingGallery}
+                              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 md:w-fit"
+                            >
+                              {linkingGallery ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <KeyRound className="h-4 w-4" />
+                              )}
+                              Verknüpfen
+                            </button>
+                          </div>
+                        </form>
+
+                        {galleries.length > 0 && (
+                          <div className={`rounded-[1.35rem] border p-2 ${softPanelStyle}`}>
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                              {galleryFilters.map((filter) => (
+                                <button
+                                  key={filter.key}
+                                  type="button"
+                                  onClick={() => setGalleryFilter(filter.key)}
+                                  className={`rounded-2xl px-3 py-3 text-sm font-black transition ${
+                                    galleryFilter === filter.key
+                                      ? "bg-white text-neutral-950 shadow-lg"
+                                      : dark
+                                        ? "bg-white/[0.06] text-neutral-300 hover:bg-white/[0.1]"
+                                        : "bg-slate-100 text-slate-700 hover:bg-white"
+                                  }`}
+                                >
+                                  {filter.label}
+                                  <span className="ml-2 opacity-60">{filter.count}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {galleries.length === 0 && (
+                          <div className={`rounded-[1.35rem] border p-5 sm:p-7 ${softPanelStyle}`}>
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
+                                  Noch keine Galerie
+                                </p>
+                                <h3 className={`mt-2 text-2xl font-black ${titleText}`}>
+                                  Verbinde dein erstes Shooting
+                                </h3>
+                                <p className={`mt-2 max-w-xl text-sm leading-6 ${muted}`}>
+                                  Nutze oben deinen Galerie-Code oder öffne die Code-Seite.
+                                </p>
+                              </div>
+                              <Link
+                                href="/kunden"
+                                className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 sm:w-fit"
+                              >
+                                <KeyRound className="h-4 w-4" />
+                                Code-Seite
+                              </Link>
+                            </div>
+                          </div>
+                        )}
+
+                        {galleries.length > 0 && visibleGalleryCount === 0 && (
+                          <div className={`rounded-[1.35rem] border p-5 text-sm leading-6 ${softPanelStyle} ${softMuted}`}>
+                            Für diesen Filter gibt es aktuell keine Galerien.
+                          </div>
+                        )}
+
+                        {[
+                          {
+                            title: "Aktive Galerien",
+                            items: visibleActiveGalleries,
+                          },
+                          {
+                            title: "Abgeschlossen",
+                            items: visibleCompletedGalleries,
+                          },
+                        ].map((section) => {
+                          if (section.items.length === 0) return null;
+
+                          return (
+                            <section key={section.title} className="grid gap-3">
+                              <div className="flex items-center justify-between gap-3 px-1">
+                                <h3 className={`text-sm font-black uppercase tracking-[0.22em] ${softMuted}`}>
+                                  {section.title}
+                                </h3>
+                                <span className={`rounded-full px-3 py-1 text-xs font-black ${dark ? "bg-white/10 text-neutral-300" : "bg-slate-100 text-slate-700"}`}>
+                                  {section.items.length}
+                                </span>
+                              </div>
+
+                              <div className="grid gap-3 md:grid-cols-2">
+                                {section.items.map((gallery) => {
+                                  const status = getGalleryStatus(gallery);
+
+                                  return (
+                                    <article
+                                      key={gallery.id}
+                                      className={`overflow-hidden rounded-[1.35rem] border transition hover:-translate-y-0.5 ${dark ? "border-white/10 bg-white/[0.055] hover:border-white/20 hover:bg-white/[0.085]" : "border-slate-400/45 bg-slate-100/80 hover:bg-white"}`}
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() => openGallery(gallery)}
+                                        className="relative block aspect-[16/10] w-full overflow-hidden bg-black/30 text-left"
+                                        aria-label="Galerie öffnen"
+                                      >
+                                        {gallery.cover_url ? (
+                                          <img
+                                            src={gallery.cover_url}
+                                            alt=""
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
+                                          />
+                                        ) : (
+                                          <div className="flex h-full min-h-36 items-center justify-center">
+                                            <ImageIcon className="h-9 w-9 text-neutral-500" />
+                                          </div>
+                                        )}
+                                        <span className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-black text-white backdrop-blur">
                                           {status.label}
                                         </span>
-                                        {gallery.downloads_enabled && (
-                                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-black text-emerald-100">
-                                            <Download className="h-3.5 w-3.5" />
-                                            Downloads
-                                          </span>
+                                        <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-black text-white backdrop-blur">
+                                          Code {gallery.access_code}
+                                        </span>
+                                      </button>
+
+                                      <div className="grid gap-3 p-4">
+                                        <div>
+                                          <h4 className={`text-lg font-black ${titleText}`}>{gallery.title}</h4>
+                                          <p className={`mt-1 text-sm ${muted}`}>{gallery.client_name || "Kundengalerie"}</p>
+                                        </div>
+
+                                        {gallery.welcome_message && (
+                                          <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-sm leading-6 text-yellow-50">
+                                            <p className="line-clamp-3">{gallery.welcome_message}</p>
+                                          </div>
                                         )}
-                                        {gallery.archive_download_url && (
-                                          <span className="inline-flex items-center gap-1 rounded-full bg-sky-300/10 px-3 py-1 text-xs font-black text-sky-100">
-                                            <Download className="h-3.5 w-3.5" />
-                                            ZIP
+
+                                        <div className={`flex flex-wrap gap-2 text-xs font-bold ${softMuted}`}>
+                                          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 ${dark ? "bg-black/25" : "bg-white"}`}>
+                                            <ImageIcon className="h-3.5 w-3.5" />
+                                            {gallery.image_count || 0} Bilder
                                           </span>
-                                        )}
-                                        {gallery.status === "completed" &&
-                                          !gallery.downloads_enabled &&
-                                          !gallery.archive_download_url && (
-                                            <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-black text-neutral-300">
-                                              Downloads gesperrt
+                                          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 ${dark ? "bg-yellow-400/10 text-yellow-100" : "bg-yellow-100 text-yellow-900"}`}>
+                                            <Heart className="h-3.5 w-3.5" />
+                                            {gallery.favorite_count || 0} Favoriten
+                                          </span>
+                                          {gallery.downloads_enabled && (
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-3 py-1 text-emerald-100">
+                                              <Download className="h-3.5 w-3.5" />
+                                              Download
                                             </span>
                                           )}
-                                      </div>
-                                      <h4 className="mt-3 text-base font-black sm:text-lg">
-                                        {gallery.title}
-                                      </h4>
-                                      <p className="mt-1 text-sm text-neutral-400">
-                                        {gallery.client_name || "Kundengalerie"}
-                                      </p>
-                                      {gallery.welcome_message && (
-                                        <div className="mt-3 rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-sm leading-6 text-yellow-50 sm:rounded-2xl">
-                                          <p className="text-[0.65rem] font-black uppercase tracking-[0.22em] text-yellow-100/70">
-                                            Persönliche Nachricht
-                                          </p>
-                                          <p className="mt-1 line-clamp-3">
-                                            {gallery.welcome_message}
-                                          </p>
                                         </div>
-                                      )}
-                                      {gallery.expires_at && (
-                                        <p className="mt-2 text-xs text-neutral-500">
-                                          bis {formatDate(gallery.expires_at)}
-                                        </p>
-                                      )}
-                                      <div className={`mt-3 flex flex-wrap gap-2 text-xs font-bold sm:mt-4 ${softMuted}`}>
-                                        <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 ${dark ? "bg-black/25" : "bg-neutral-100"}`}>
-                                          <ImageIcon className="h-3.5 w-3.5" />
-                                          {gallery.image_count || 0} Bilder
-                                        </span>
-                                        <span className={`inline-flex items-center gap-1 rounded-full bg-yellow-400/10 px-3 py-1 ${dark ? "text-yellow-100" : "text-yellow-800"}`}>
-                                          <Heart className="h-3.5 w-3.5" />
-                                          {gallery.favorite_count || 0} Favoriten
-                                        </span>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => openGallery(gallery)}
+                                          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                        >
+                                          <ImageIcon className="h-4 w-4" />
+                                          Galerie öffnen
+                                        </button>
+                                        {gallery.archive_download_url && (
+                                          <a
+                                            href={gallery.archive_download_url}
+                                            download
+                                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-300/25 bg-sky-300/10 px-4 py-3 text-sm font-black text-sky-100 transition hover:-translate-y-0.5 hover:bg-sky-300/15 hover:shadow-xl"
+                                          >
+                                            <Download className="h-4 w-4" />
+                                            ZIP herunterladen
+                                          </a>
+                                        )}
                                       </div>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => openGallery(gallery)}
-                                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
-                                    >
-                                      <ImageIcon className="h-4 w-4" />
-                                      Galerie öffnen
-                                    </button>
-                                    {gallery.archive_download_url && (
-                                      <a
-                                        href={gallery.archive_download_url}
-                                        download
-                                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-sky-300/25 bg-sky-300/10 px-4 py-2.5 text-sm font-black text-sky-100 transition hover:-translate-y-0.5 hover:bg-sky-300/15 hover:shadow-xl"
-                                      >
-                                        <Download className="h-4 w-4" />
-                                        ZIP herunterladen
-                                      </a>
-                                    )}
-                                  </div>
-                                </div>
-                                </article>
-                              );
-                            })}
-                          </div>
-                        </section>
-                      );
-                    })}
-                  </div>
-                    </div>
-                  )}
+                                    </article>
+                                  );
+                                })}
+                              </div>
+                            </section>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </section>
                 </div>
               ) : mode === "resetConfirm" ? (
                 <form onSubmit={confirmPasswordReset}>
