@@ -1191,28 +1191,16 @@ export default function FeliixWxfPhotography() {
         </Section>
 
         <Section id="info" className="px-5 py-24">
-          <div
-            className={`mx-auto grid max-w-7xl gap-8 rounded-[2rem] border p-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center ${glass}`}
-          >
-            <div>
-              <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
-                {siteSettings.info_eyebrow}
-              </p>
-              <h2 className="mt-4 text-4xl font-bold md:text-5xl">
-                {siteSettings.info_heading}
-              </h2>
-              <p className={`mt-8 max-w-4xl text-lg leading-8 ${muted}`}>
-                {siteSettings.info_text}
-              </p>
-            </div>
-
-            <div className="overflow-hidden rounded-[1.5rem] border border-white/15 bg-black/20 shadow-lg">
-              <img
-                src={siteAssets.info_image?.url || DEFAULT_SITE_ASSETS.info_image.url}
-                alt="Felix Wolff"
-                className="aspect-[4/5] h-full w-full object-cover"
-              />
-            </div>
+          <div className={`mx-auto max-w-7xl rounded-[2rem] border p-8 ${glass}`}>
+            <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
+              {siteSettings.info_eyebrow}
+            </p>
+            <h2 className="mt-4 text-4xl font-bold md:text-5xl">
+              {siteSettings.info_heading}
+            </h2>
+            <p className={`mt-8 max-w-4xl text-lg leading-8 ${muted}`}>
+              {siteSettings.info_text}
+            </p>
           </div>
         </Section>
 
