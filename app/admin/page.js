@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowDown,
@@ -692,6 +692,14 @@ export default function AdminPage() {
   const [cropX, setCropX] = useState(50);
   const [cropY, setCropY] = useState(50);
   const [cropBusy, setCropBusy] = useState(false);
+  const cropFrameRef = useRef(null);
+  const cropInteractionRef = useRef({
+    pointers: new Map(),
+    lastX: 0,
+    lastY: 0,
+    pinchDistance: 0,
+    zoom: 1,
+  });
 
   const approvedReviews = reviews.filter((review) => review.is_approved);
   const pendingReviews = reviews.filter((review) => !review.is_approved);
@@ -1533,6 +1541,106 @@ export default function AdminPage() {
 
     return () => URL.revokeObjectURL(previewUrl);
   }, [activeCropFile]);
+
+  useEffect(() => {
+    cropInteractionRef.current.zoom = cropZoom;
+  }, [cropZoom]);
+
+  const clampCropValue = (value) => Math.min(100, Math.max(0, value));
+
+  const moveCropPosition = (deltaX, deltaY) => {
+    const frame = cropFrameRef.current;
+    if (!frame) return;
+
+    const rect = frame.getBoundingClientRect();
+    const zoom = Math.max(1, cropInteractionRef.current.zoom || 1);
+    const xChange = rect.width ? (deltaX / rect.width) * 100 / zoom : 0;
+    const yChange = rect.height ? (deltaY / rect.height) * 100 / zoom : 0;
+
+    setCropX((current) => clampCropValue(current - xChange));
+    setCropY((current) => clampCropValue(current - yChange));
+  };
+
+  const getPointerDistance = (pointers) => {
+    if (pointers.length < 2) return 0;
+
+    const [first, second] = pointers;
+    return Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY);
+  };
+
+  const handleCropPointerDown = (event) => {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    cropInteractionRef.current.pointers.set(event.pointerId, {
+      clientX: event.clientX,
+      clientY: event.clientY,
+    });
+    cropInteractionRef.current.lastX = event.clientX;
+    cropInteractionRef.current.lastY = event.clientY;
+
+    const pointers = Array.from(cropInteractionRef.current.pointers.values());
+    cropInteractionRef.current.pinchDistance = getPointerDistance(pointers);
+  };
+
+  const handleCropPointerMove = (event) => {
+    const interaction = cropInteractionRef.current;
+
+    if (!interaction.pointers.has(event.pointerId)) return;
+
+    interaction.pointers.set(event.pointerId, {
+      clientX: event.clientX,
+      clientY: event.clientY,
+    });
+
+    const pointers = Array.from(interaction.pointers.values());
+
+    if (pointers.length >= 2) {
+      const nextDistance = getPointerDistance(pointers);
+
+      if (interaction.pinchDistance > 0 && nextDistance > 0) {
+        const scale = nextDistance / interaction.pinchDistance;
+        setCropZoom((current) => {
+          const nextZoom = Math.min(2.8, Math.max(1, current * scale));
+          interaction.zoom = nextZoom;
+          return nextZoom;
+        });
+      }
+
+      interaction.pinchDistance = nextDistance;
+      return;
+    }
+
+    moveCropPosition(
+      event.clientX - interaction.lastX,
+      event.clientY - interaction.lastY
+    );
+    interaction.lastX = event.clientX;
+    interaction.lastY = event.clientY;
+  };
+
+  const handleCropPointerEnd = (event) => {
+    const interaction = cropInteractionRef.current;
+
+    interaction.pointers.delete(event.pointerId);
+
+    const pointers = Array.from(interaction.pointers.values());
+    interaction.pinchDistance = getPointerDistance(pointers);
+
+    if (pointers[0]) {
+      interaction.lastX = pointers[0].clientX;
+      interaction.lastY = pointers[0].clientY;
+    }
+  };
+
+  const handleCropWheel = (event) => {
+    event.preventDefault();
+    const direction = event.deltaY > 0 ? -1 : 1;
+
+    setCropZoom((current) => {
+      const nextZoom = Math.min(2.8, Math.max(1, current + direction * 0.08));
+      cropInteractionRef.current.zoom = nextZoom;
+      return nextZoom;
+    });
+  };
 
   const getSiteAssetCropPreset = (assetKey) => {
     const isHeroAsset = assetKey === "hero_before" || assetKey === "hero_after";
@@ -6551,6 +6659,9 @@ export default function AdminPage() {
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">
                   {cropSession.description}
                 </p>
+                <p className="mt-2 text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">
+                  Ziehen zum Verschieben · Mausrad oder Pinch zum Zoomen
+                </p>
               </div>
               <button
                 type="button"
@@ -6565,7 +6676,14 @@ export default function AdminPage() {
             <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_310px]">
               <div className="rounded-[1.5rem] border border-white/10 bg-black/35 p-4">
                 <div
-                  className="mx-auto max-h-[68vh] max-w-full overflow-hidden rounded-2xl border border-yellow-300/30 bg-neutral-900"
+                  ref={cropFrameRef}
+                  onPointerDown={handleCropPointerDown}
+                  onPointerMove={handleCropPointerMove}
+                  onPointerUp={handleCropPointerEnd}
+                  onPointerCancel={handleCropPointerEnd}
+                  onPointerLeave={handleCropPointerEnd}
+                  onWheel={handleCropWheel}
+                  className="mx-auto max-h-[68vh] max-w-full touch-none select-none overflow-hidden rounded-2xl border border-yellow-300/30 bg-neutral-900 cursor-grab active:cursor-grabbing"
                   style={{
                     aspectRatio: `${cropAspectWidth} / ${cropAspectHeight}`,
                   }}
