@@ -54,6 +54,25 @@ const DEFAULT_SITE_ASSETS = {
 
 const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "portrait,nature";
 
+const LOCAL_SEO_SERVICES = [
+  {
+    title: "Portraits",
+    text: "Natürliche Portraits in Hildburghausen, Eisfeld und Südthüringen.",
+  },
+  {
+    title: "Hochzeiten",
+    text: "Emotionale Hochzeitsmomente, Reportagen und Paarbilder in Thüringen.",
+  },
+  {
+    title: "Car Photography",
+    text: "Dynamische Autofotos, Detailshots und Social-Media-Content für Fahrzeuge.",
+  },
+  {
+    title: "Events",
+    text: "Unauffällige Eventfotos mit starkem Look für private und geschäftliche Anlässe.",
+  },
+];
+
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
   hero_title_line_1: "Bilder mit Charakter.",
@@ -1212,6 +1231,34 @@ export default function FeliixWxfPhotography() {
             <p className={`mt-8 max-w-4xl text-lg leading-8 ${muted}`}>
               {siteSettings.info_text}
             </p>
+          </div>
+        </Section>
+
+        <Section id="leistungen" className="px-5 pb-10">
+          <div className="mx-auto max-w-7xl">
+            <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
+              Leistungen vor Ort
+            </p>
+            <h2 className="mt-4 max-w-3xl text-3xl font-black md:text-4xl">
+              Fotograf für Hildburghausen, Eisfeld und Thüringen.
+            </h2>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {LOCAL_SEO_SERVICES.map((service) => (
+                <div
+                  key={service.title}
+                  className={`rounded-[1.5rem] border p-5 ${
+                    dark
+                      ? "border-white/10 bg-white/[0.07]"
+                      : "border-black/10 bg-white/75 shadow-sm"
+                  }`}
+                >
+                  <h3 className="text-lg font-black">{service.title}</h3>
+                  <p className={`mt-3 text-sm leading-6 ${muted}`}>
+                    {service.text}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </Section>
 
