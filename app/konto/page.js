@@ -787,37 +787,24 @@ export default function AccountPage() {
                       </button>
                     </div>
 
-                    <div className={`mt-5 rounded-2xl border p-4 ${subtlePanelStyle}`}>
+                    <div className={`mt-4 rounded-2xl border p-3 ${subtlePanelStyle}`}>
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
-                          <p className={`text-xl font-black ${titleText}`}>{galleries.length}</p>
-                          <p className={`mt-1 text-[0.68rem] font-bold uppercase tracking-[0.12em] ${muted}`}>Galerien</p>
+                          <p className={`text-base font-black sm:text-lg ${titleText}`}>{galleries.length}</p>
+                          <p className={`mt-0.5 text-[0.58rem] font-bold uppercase tracking-[0.1em] ${muted}`}>Galerien</p>
                         </div>
                         <div>
-                          <p className={`text-xl font-black ${titleText}`}>{completedGalleries.length}</p>
-                          <p className={`mt-1 text-[0.68rem] font-bold uppercase tracking-[0.12em] ${muted}`}>Fertig</p>
+                          <p className={`text-base font-black sm:text-lg ${titleText}`}>{completedGalleries.length}</p>
+                          <p className={`mt-0.5 text-[0.58rem] font-bold uppercase tracking-[0.1em] ${muted}`}>Fertig</p>
                         </div>
                         <div>
-                          <p className={`text-xl font-black ${titleText}`}>{downloadableGalleries.length}</p>
-                          <p className={`mt-1 text-[0.68rem] font-bold uppercase tracking-[0.12em] ${muted}`}>ZIP</p>
+                          <p className={`text-base font-black sm:text-lg ${titleText}`}>{downloadableGalleries.length}</p>
+                          <p className={`mt-0.5 text-[0.58rem] font-bold uppercase tracking-[0.1em] ${muted}`}>ZIP</p>
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-5 grid gap-2">
-                      <button
-                        type="button"
-                        onClick={requestCurrentAccountPasswordReset}
-                        disabled={submitting}
-                        className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${backButtonStyle}`}
-                      >
-                        {submitting ? (
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <KeyRound className="h-4 w-4" />
-                        )}
-                        Passwort-Mail
-                      </button>
                       <button
                         type="button"
                         onClick={logout}
@@ -993,7 +980,7 @@ export default function AccountPage() {
                       </div>
                     ) : (
                       <div className="grid gap-4">
-                        <div className={`overflow-hidden rounded-[1.35rem] border ${softPanelStyle}`}>
+                        <div className={`hidden overflow-hidden rounded-[1.35rem] border sm:block ${softPanelStyle}`}>
                           <div className={`relative p-4 sm:p-6 ${dark ? "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.14),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))]" : "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.25),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.86),rgba(226,232,240,0.74))]"}`}>
                             {accountHeroGallery?.cover_url && (
                               <img
@@ -1115,7 +1102,61 @@ export default function AccountPage() {
                           </div>
                         )}
 
-                        {[
+                        {galleryFilter === "downloads" && downloadableGalleries.length > 0 ? (
+                          <section className="grid gap-3">
+                            <div className="flex items-center justify-between gap-3 px-1">
+                              <h3 className={`text-sm font-black uppercase tracking-[0.22em] ${softMuted}`}>
+                                Download-Dateien
+                              </h3>
+                              <span className={`rounded-full px-3 py-1 text-xs font-black ${dark ? "bg-white/10 text-neutral-300" : "bg-slate-100 text-slate-700"}`}>
+                                {downloadableGalleries.length}
+                              </span>
+                            </div>
+
+                            <div className="grid gap-3">
+                              {downloadableGalleries.map((gallery) => (
+                                <article
+                                  key={gallery.id}
+                                  className={`rounded-[1.15rem] border p-4 ${dark ? "border-white/10 bg-white/[0.055]" : "border-slate-400/45 bg-slate-100/80"}`}
+                                >
+                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${dark ? "bg-sky-300/10 text-sky-100" : "bg-sky-100 text-sky-900"}`}>
+                                        <Download className="h-5 w-5" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <h4 className={`truncate text-base font-black ${titleText}`}>
+                                          {gallery.title || "Kundengalerie"}
+                                        </h4>
+                                        <p className={`mt-0.5 truncate text-xs ${muted}`}>
+                                          {gallery.archive_path
+                                            ? gallery.archive_path.split("/").pop()
+                                            : `${gallery.access_code || "galerie"}.zip`}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    {gallery.archive_download_url ? (
+                                      <a
+                                        href={gallery.archive_download_url}
+                                        download
+                                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:w-fit"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                        Herunterladen
+                                      </a>
+                                    ) : (
+                                      <span className={`inline-flex w-full shrink-0 items-center justify-center rounded-2xl border px-4 py-3 text-sm font-black sm:w-fit ${backButtonStyle}`}>
+                                        ZIP wird vorbereitet
+                                      </span>
+                                    )}
+                                  </div>
+                                </article>
+                              ))}
+                            </div>
+                          </section>
+                        ) : (
+                          [
                           {
                             title: "Aktive Galerien",
                             items: visibleActiveGalleries,
@@ -1124,7 +1165,7 @@ export default function AccountPage() {
                             title: "Abgeschlossen",
                             items: visibleCompletedGalleries,
                           },
-                        ].map((section) => {
+                          ].map((section) => {
                           if (section.items.length === 0) return null;
 
                           return (
@@ -1228,7 +1269,8 @@ export default function AccountPage() {
                               </div>
                             </section>
                           );
-                        })}
+                        })
+                        )}
                       </div>
                     )}
                   </section>
