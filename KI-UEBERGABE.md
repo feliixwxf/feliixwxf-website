@@ -403,6 +403,10 @@ Letzte größere Änderungen:
 - Admin-Kundenbereich wurde erneut neu sortiert, damit Kundensuche, Profilansicht und Galerieverwaltung auf Desktop und Mobil besser bedienbar sind.
 - Kundenfavoriten können besser gesammelt verwaltet werden.
 - Nicht mehr benötigte Starter-Assets aus dem ursprünglichen Create-Next-App-Setup wurden entfernt, damit die Übergabe schlanker bleibt.
+- Lokale SEO-Struktur wurde ergänzt:
+  - sichtbarer kompakter Leistungsbereich für Portraits, Hochzeiten, Car Photography und Events
+  - JSON-LD für Website, LocalBusiness/ProfessionalService und FAQPage
+  - GoogleBot-Metadaten mit großer Bildvorschau
 
 Vor Übergabe oder Deployment prüfen:
 
@@ -416,6 +420,8 @@ Letzter bekannter Build:
 - `npm run build` erfolgreich am 03.07.2026.
 
 Letzte bekannte Commits:
+- `6f7eba9 Improve local SEO structure`
+- `a5474e9 Update AI handoff notes`
 - `63871b6 Improve admin customer workspace`
 - `e16ce21 Improve customer favorite selection`
 - `dc0e2f5 Make review avatar selection optional`
