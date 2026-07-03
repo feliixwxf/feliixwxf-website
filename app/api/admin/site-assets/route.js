@@ -30,6 +30,20 @@ function safeFileName(name) {
     .slice(2)}.${String(extension || "jpg").toLowerCase()}`;
 }
 
+function withVersion(asset) {
+  if (!asset?.url) return asset;
+
+  const version = asset.updated_at
+    ? new Date(asset.updated_at).getTime()
+    : Date.now();
+  const separator = asset.url.includes("?") ? "&" : "?";
+
+  return {
+    ...asset,
+    url: `${asset.url}${separator}v=${version}`,
+  };
+}
+
 async function loadAssets() {
   const response = await fetch(
     `${supabaseRestUrl}/rest/v1/site_assets?select=key,url,path,updated_at`,
@@ -47,7 +61,9 @@ async function loadAssets() {
   const rows = await response.json();
 
   return {
-    assets: Object.fromEntries(rows.map((asset) => [asset.key, asset])),
+    assets: Object.fromEntries(
+      rows.map((asset) => [asset.key, withVersion(asset)])
+    ),
   };
 }
 
@@ -178,5 +194,5 @@ export async function POST(request) {
   }
 
   const [asset] = await upsertResponse.json();
-  return NextResponse.json({ asset });
+  return NextResponse.json({ asset: withVersion(asset) });
 }

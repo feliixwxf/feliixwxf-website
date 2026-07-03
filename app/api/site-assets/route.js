@@ -5,6 +5,20 @@ import {
   supabaseHeaders,
 } from "../_lib/supabase";
 
+function withVersion(asset) {
+  if (!asset?.url) return asset;
+
+  const version = asset.updated_at
+    ? new Date(asset.updated_at).getTime()
+    : Date.now();
+  const separator = asset.url.includes("?") ? "&" : "?";
+
+  return {
+    ...asset,
+    url: `${asset.url}${separator}v=${version}`,
+  };
+}
+
 export async function GET() {
   try {
     if (!hasSupabaseConfig) {
@@ -26,7 +40,9 @@ export async function GET() {
     }
 
     const rows = await response.json();
-    const assets = Object.fromEntries(rows.map((asset) => [asset.key, asset]));
+    const assets = Object.fromEntries(
+      rows.map((asset) => [asset.key, withVersion(asset)])
+    );
 
     return NextResponse.json({ assets });
   } catch (error) {

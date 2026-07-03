@@ -407,7 +407,7 @@ export default function FeliixWxfPhotography() {
       })
       .catch(() => {});
 
-    fetch("/api/site-assets")
+    fetch(`/api/site-assets?t=${Date.now()}`, { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (data?.assets) {
