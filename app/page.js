@@ -52,6 +52,22 @@ const DEFAULT_SITE_ASSETS = {
   info_image: { url: "/images/fw.jpg" },
 };
 
+function loadCachedSiteAssets() {
+  if (typeof window === "undefined") return DEFAULT_SITE_ASSETS;
+
+  try {
+    const cachedAssets = window.localStorage.getItem("feliix-site-assets");
+    if (!cachedAssets) return DEFAULT_SITE_ASSETS;
+
+    return {
+      ...DEFAULT_SITE_ASSETS,
+      ...JSON.parse(cachedAssets),
+    };
+  } catch {
+    return DEFAULT_SITE_ASSETS;
+  }
+}
+
 const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "portrait,nature";
 
 const LOCAL_SEO_SERVICES = [
@@ -351,8 +367,7 @@ export default function FeliixWxfPhotography() {
   const [contactMessage, setContactMessage] = useState("");
   const [contactSent, setContactSent] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
-  const [siteAssets, setSiteAssets] = useState(DEFAULT_SITE_ASSETS);
-  const [siteAssetsLoaded, setSiteAssetsLoaded] = useState(false);
+  const [siteAssets, setSiteAssets] = useState(loadCachedSiteAssets);
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
   const [siteSettingsLoaded, setSiteSettingsLoaded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -412,13 +427,21 @@ export default function FeliixWxfPhotography() {
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (data?.assets) {
-          setSiteAssets((current) => ({ ...current, ...data.assets }));
+          setSiteAssets((current) => {
+            const nextAssets = { ...current, ...data.assets };
+
+            try {
+              localStorage.setItem(
+                "feliix-site-assets",
+                JSON.stringify(nextAssets)
+              );
+            } catch {}
+
+            return nextAssets;
+          });
         }
-        setSiteAssetsLoaded(true);
       })
-      .catch(() => {
-        setSiteAssetsLoaded(true);
-      });
+      .catch(() => {});
 
     fetch("/api/site-settings")
       .then((response) => (response.ok ? response.json() : null))
@@ -1173,60 +1196,52 @@ export default function FeliixWxfPhotography() {
                 }}
                 className="relative aspect-[4/5] touch-none select-none overflow-hidden rounded-[1.5rem]"
               >
-                {!siteAssetsLoaded ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-950">
-                    <div className="h-3 w-3 rounded-full bg-white/70 shadow-[0_0_24px_rgba(255,255,255,0.65)]" />
-                  </div>
-                ) : (
-                  <>
-                    <img
-                      src={
-                        siteAssets.hero_after?.url ||
-                        DEFAULT_SITE_ASSETS.hero_after.url
-                      }
-                      alt="Nachher"
-                      draggable="false"
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
+                <img
+                  src={
+                    siteAssets.hero_after?.url ||
+                    DEFAULT_SITE_ASSETS.hero_after.url
+                  }
+                  alt="Nachher"
+                  draggable="false"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
 
-                    <div
-                      ref={beforeRef}
-                      className="absolute inset-0 overflow-hidden"
-                      style={{ clipPath: "inset(0 50% 0 0)" }}
-                    >
-                      <img
-                        src={
-                          siteAssets.hero_before?.url ||
-                          DEFAULT_SITE_ASSETS.hero_before.url
-                        }
-                        alt="Vorher"
-                        draggable="false"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
+                <div
+                  ref={beforeRef}
+                  className="absolute inset-0 overflow-hidden"
+                  style={{ clipPath: "inset(0 50% 0 0)" }}
+                >
+                  <img
+                    src={
+                      siteAssets.hero_before?.url ||
+                      DEFAULT_SITE_ASSETS.hero_before.url
+                    }
+                    alt="Vorher"
+                    draggable="false"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
 
-                    <div
-                      ref={lineRef}
-                      className="absolute top-0 h-full w-1 bg-white shadow-lg"
-                      style={{ left: "50%" }}
-                    />
+                <div
+                  ref={lineRef}
+                  className="absolute top-0 h-full w-1 bg-white shadow-lg"
+                  style={{ left: "50%" }}
+                />
 
-                    <div
-                      ref={handleRef}
-                      className={`absolute top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-white/70 bg-black/45 text-2xl text-white shadow-lg ${buttonHover}`}
-                      style={{ left: "50%" }}
-                    >
-                      ↔
-                    </div>
+                <div
+                  ref={handleRef}
+                  className={`absolute top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-white/70 bg-black/45 text-2xl text-white shadow-lg ${buttonHover}`}
+                  style={{ left: "50%" }}
+                >
+                  ↔
+                </div>
 
-                    <div className="absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
-                      Vorher
-                    </div>
-                    <div className="absolute right-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
-                      Nachher
-                    </div>
-                  </>
-                )}
+                <div className="absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
+                  Vorher
+                </div>
+                <div className="absolute right-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
+                  Nachher
+                </div>
               </div>
             </div>
           </div>
@@ -1458,10 +1473,10 @@ export default function FeliixWxfPhotography() {
                       className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400 md:col-span-2"
                     />
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-3 md:col-span-2">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/10">
+                    <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.07] p-3 md:col-span-2">
+                      <div className="flex min-w-0 items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/10 sm:h-10 sm:w-10">
                             {reviewAvatar ? (
                               <img
                                 src={reviewAvatar}
@@ -1478,12 +1493,12 @@ export default function FeliixWxfPhotography() {
                               <Star className="h-4 w-4 text-yellow-400" />
                             )}
                           </div>
-                          <div>
-                            <p className="text-sm font-semibold">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold">
                               Avatar auswählen{" "}
                               <span className={muted}>(optional)</span>
                             </p>
-                            <p className={`text-xs ${muted}`}>
+                            <p className={`hidden text-xs sm:block ${muted}`}>
                               {reviewAvatar
                                 ? "Ausgewählter Charakter wird genutzt."
                                 : currentCustomer?.avatar_url
@@ -1496,44 +1511,46 @@ export default function FeliixWxfPhotography() {
                         <button
                           type="button"
                           onClick={() => setShowReviewAvatars((current) => !current)}
-                          className={`rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/20 ${buttonHover}`}
+                          className={`shrink-0 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-xs font-semibold transition hover:bg-white/20 sm:px-4 sm:text-sm ${buttonHover}`}
                         >
                           {showReviewAvatars ? "Schließen" : "Auswählen"}
                         </button>
                       </div>
 
                       {showReviewAvatars && (
-                        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                          {REVIEW_AVATARS.map((avatar) => (
-                            <button
-                              type="button"
-                              key={avatar.url}
-                              onClick={() => setReviewAvatar(avatar.url)}
-                              className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border transition ${
-                                reviewAvatar === avatar.url
-                                  ? "border-yellow-400 bg-yellow-400/15 ring-2 ring-yellow-400/40"
-                                  : "border-white/15 bg-white/10 hover:border-white/35"
-                              }`}
-                              aria-label={avatar.label}
-                              title={avatar.label}
-                            >
-                              <img
-                                src={avatar.url}
-                                alt=""
-                                className="h-full w-full object-cover"
-                              />
-                            </button>
-                          ))}
+                        <div className="mt-3 max-w-full overflow-hidden">
+                          <div className="flex max-h-14 gap-2 overflow-x-auto overscroll-x-contain pb-2">
+                            {REVIEW_AVATARS.map((avatar) => (
+                              <button
+                                type="button"
+                                key={avatar.url}
+                                onClick={() => setReviewAvatar(avatar.url)}
+                                className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border transition ${
+                                  reviewAvatar === avatar.url
+                                    ? "border-yellow-400 bg-yellow-400/15 ring-2 ring-yellow-400/40"
+                                    : "border-white/15 bg-white/10 hover:border-white/35"
+                                }`}
+                                aria-label={avatar.label}
+                                title={avatar.label}
+                              >
+                                <img
+                                  src={avatar.url}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              </button>
+                            ))}
 
-                          {reviewAvatar && (
-                            <button
-                              type="button"
-                              onClick={() => setReviewAvatar("")}
-                              className="shrink-0 rounded-full border border-white/15 bg-white/10 px-3 text-xs font-semibold transition hover:bg-white/20"
-                            >
-                              Profilbild nutzen
-                            </button>
-                          )}
+                            {reviewAvatar && (
+                              <button
+                                type="button"
+                                onClick={() => setReviewAvatar("")}
+                                className="h-10 shrink-0 rounded-full border border-white/15 bg-white/10 px-3 text-xs font-semibold transition hover:bg-white/20"
+                              >
+                                Profilbild
+                              </button>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
