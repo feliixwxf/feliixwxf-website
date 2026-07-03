@@ -153,6 +153,9 @@ export default function CustomerGalleryPage() {
     [favorites]
   );
   const favoriteImages = images.filter((image) => favoriteImageIds.has(image.id));
+  const favoriteCount = favorites.length;
+  const favoriteProgress =
+    images.length > 0 ? Math.round((favoriteCount / images.length) * 100) : 0;
   const visibleImages = viewMode === "favorites" ? favoriteImages : images;
   const selectedImageIndex = selectedImage
     ? images.findIndex((image) => image.id === selectedImage.id)
@@ -170,7 +173,7 @@ export default function CustomerGalleryPage() {
   const galleryActionHint =
     gallery?.status === "completed"
       ? "Deine Galerie ist abgeschlossen. Du kannst deine Favoriten und Bilder weiterhin ansehen."
-      : "Markiere deine Favoriten, damit ich deine Auswahl direkt sehen kann.";
+      : "Markiere deine Favoriten. Deine Auswahl wird direkt gespeichert und ist für mich im Admin sichtbar.";
   const galleryDownloadHint = gallery?.downloads_enabled
     ? "Downloads sind freigegeben."
     : "Downloads sind aktuell deaktiviert. Die Bilder sind als geschützte Vorschau sichtbar.";
@@ -486,8 +489,8 @@ export default function CustomerGalleryPage() {
                       <p className="mt-1 text-xs text-neutral-400">Bilder</p>
                     </div>
                     <div className="rounded-2xl bg-yellow-400/10 p-2 text-center text-yellow-100 sm:p-3">
-                      <p className="text-xl font-black sm:text-2xl">{favorites.length}</p>
-                      <p className="mt-1 text-xs">Favoriten</p>
+                      <p className="text-xl font-black sm:text-2xl">{favoriteCount}</p>
+                      <p className="mt-1 text-xs">Auswahl</p>
                     </div>
                     <div className="rounded-2xl bg-white/[0.08] p-2 text-center sm:p-3">
                       <p
@@ -558,8 +561,12 @@ export default function CustomerGalleryPage() {
                   </div>
 
                   <div className="grid gap-2 sm:flex sm:flex-wrap sm:items-center">
+                    <span className="inline-flex items-center justify-center gap-2 rounded-full bg-yellow-400/10 px-4 py-2 text-center text-sm font-black text-yellow-100">
+                      <Heart className="h-4 w-4 fill-current" />
+                      {favoriteCount} gespeichert
+                    </span>
                     <span className="rounded-full bg-white/[0.08] px-4 py-2 text-center text-sm font-bold text-neutral-300">
-                      {visibleImages.length} von {images.length} Bildern
+                      Ansicht: {visibleImages.length}/{images.length}
                     </span>
                     <button
                       type="button"
@@ -582,6 +589,35 @@ export default function CustomerGalleryPage() {
                     )}
                   </div>
                 </div>
+
+                {images.length > 0 && (
+                  <section className="mt-4 rounded-[1.3rem] border border-yellow-400/20 bg-yellow-400/10 p-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.22em] text-yellow-100/70">
+                          Deine Auswahl
+                        </p>
+                        <p className="mt-1 text-sm font-bold text-yellow-50">
+                          {favoriteCount === 0
+                            ? "Noch keine Favoriten markiert."
+                            : `${favoriteCount} Favorit${
+                                favoriteCount === 1 ? "" : "en"
+                              } markiert.`}
+                        </p>
+                      </div>
+                      <p className="text-sm leading-6 text-yellow-100/75 md:max-w-md md:text-right">
+                        Alles wird automatisch gespeichert. Du kannst jederzeit
+                        weiter auswählen oder Favoriten wieder entfernen.
+                      </p>
+                    </div>
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/25">
+                      <div
+                        className="h-full rounded-full bg-yellow-400 transition-all"
+                        style={{ width: `${favoriteProgress}%` }}
+                      />
+                    </div>
+                  </section>
+                )}
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {visibleImages.length === 0 && (
@@ -660,7 +696,7 @@ export default function CustomerGalleryPage() {
                               type="button"
                               onClick={() => toggleFavorite(image)}
                               disabled={busyImageId === image.id}
-                              className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition disabled:opacity-60 ${
+                              className={`inline-flex h-10 items-center justify-center gap-2 rounded-full border px-3 text-sm font-black transition disabled:opacity-60 ${
                                 isFavorite
                                   ? "border-yellow-400 bg-yellow-400 text-black"
                                   : "border-white/10 bg-white/10 text-white hover:bg-white/15"
@@ -676,6 +712,9 @@ export default function CustomerGalleryPage() {
                                   }`}
                                 />
                               )}
+                              <span className="hidden sm:inline">
+                                {isFavorite ? "Markiert" : "Merken"}
+                              </span>
                             </button>
                           </div>
                         </div>
@@ -693,9 +732,9 @@ export default function CustomerGalleryPage() {
                     <div>
                       <h2 className="font-black">Auswahl gespeichert</h2>
                       <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-300">
-                        Deine Favoriten werden direkt gespeichert. Du kannst die
-                        Galerie später erneut über den gleichen Code oder QR-Code
-                        öffnen und weiter auswählen.
+                        Deine Favoriten werden direkt gespeichert und im Admin
+                        angezeigt. Du kannst die Galerie später erneut über den
+                        gleichen Code oder QR-Code öffnen und weiter auswählen.
                       </p>
                     </div>
                     </div>
