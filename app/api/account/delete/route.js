@@ -86,6 +86,17 @@ export async function DELETE(request) {
     return applyCustomerSessionCookies(response, customerSession);
   }
 
+  if (body.deleteDataAccepted !== true) {
+    const response = NextResponse.json(
+      {
+        error:
+          "Bitte bestätige, dass Konto- und Profildaten gelöscht werden sollen.",
+      },
+      { status: 400 }
+    );
+    return applyCustomerSessionCookies(response, customerSession);
+  }
+
   const email = user.email.toLowerCase();
   const galleryResponse = await fetch(
     `${supabaseBaseUrl}/rest/v1/client_galleries?select=id&client_email=ilike.${encodeURIComponent(

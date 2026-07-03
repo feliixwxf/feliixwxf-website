@@ -89,6 +89,7 @@ export default function AccountPage() {
   const [linkingGallery, setLinkingGallery] = useState(false);
   const [deletePanelOpen, setDeletePanelOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteDataAccepted, setDeleteDataAccepted] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -452,13 +453,21 @@ export default function AccountPage() {
       return;
     }
 
+    if (!deleteDataAccepted) {
+      showMessage("Bitte bestätige per Haken, dass deine Kontodaten gelöscht werden sollen.", "error");
+      return;
+    }
+
     setDeletingAccount(true);
     setMessage("");
 
     const response = await fetch("/api/account/delete", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ confirm: deleteConfirmText }),
+      body: JSON.stringify({
+        confirm: deleteConfirmText,
+        deleteDataAccepted,
+      }),
     });
     const data = await response.json().catch(() => ({}));
 
@@ -475,6 +484,7 @@ export default function AccountPage() {
     setAvatarPreview("");
     setGalleryCode("");
     setDeleteConfirmText("");
+    setDeleteDataAccepted(false);
     setDeletePanelOpen(false);
     setMode("login");
     showMessage("Dein Konto und die verknüpften Kontodaten wurden gelöscht.", "success");
@@ -923,7 +933,7 @@ export default function AccountPage() {
                             ) : (
                               <Mail className="h-4 w-4" />
                             )}
-                            Reset-Mail senden
+                            Passwort zurücksetzen
                           </button>
 
                           <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
@@ -938,7 +948,10 @@ export default function AccountPage() {
                             </div>
                             <button
                               type="button"
-                              onClick={() => setDeletePanelOpen((current) => !current)}
+                              onClick={() => {
+                                setDeletePanelOpen((current) => !current);
+                                setDeleteDataAccepted(false);
+                              }}
                               className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-300/30 bg-red-300/10 px-4 py-3 text-sm font-black text-red-50 transition hover:bg-red-300/20"
                             >
                               {deletePanelOpen ? "Abbrechen" : "Löschen vorbereiten"}
@@ -960,10 +973,32 @@ export default function AccountPage() {
                                     className="mt-2 w-full rounded-2xl border border-red-300/20 bg-white px-4 py-3 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
                                   />
                                 </label>
+                                <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-2xl border border-red-300/20 bg-red-300/10 p-3 text-sm leading-6 text-red-50">
+                                  <input
+                                    type="checkbox"
+                                    checked={deleteDataAccepted}
+                                    onChange={(event) => {
+                                      setDeleteDataAccepted(event.target.checked);
+                                      setMessage("");
+                                    }}
+                                    className="mt-1 h-4 w-4 rounded border-red-200 accent-red-500"
+                                  />
+                                  <span>
+                                    Ich bestätige, dass mein Konto, Profilbild,
+                                    Telefonnummer, Favoriten und verknüpfte
+                                    Kontodaten gelöscht werden. Bewertungen
+                                    bleiben wie vereinbart bestehen und können
+                                    per E-Mail zur Löschung angefragt werden.
+                                  </span>
+                                </label>
                                 <button
                                   type="button"
                                   onClick={deleteAccount}
-                                  disabled={deletingAccount || deleteConfirmText !== "LÖSCHEN"}
+                                  disabled={
+                                    deletingAccount ||
+                                    deleteConfirmText !== "LÖSCHEN" ||
+                                    !deleteDataAccepted
+                                  }
                                   className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-sm font-black text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                   {deletingAccount ? (
@@ -1406,7 +1441,7 @@ export default function AccountPage() {
                       ) : (
                         <Mail className="h-5 w-5" />
                       )}
-                      {submitting ? "Sende..." : "Reset-Mail senden"}
+                      {submitting ? "Sende..." : "Passwort zurücksetzen"}
                     </button>
 
                     <button

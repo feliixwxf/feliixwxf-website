@@ -40,16 +40,28 @@ const supabaseRestUrl = SUPABASE_URL
   ? SUPABASE_URL.replace(/\/rest\/v1\/?$/, "").replace(/\/$/, "")
   : "";
 
+const REVIEW_AVATAR_URLS = new Set(
+  Array.from(
+    { length: 12 },
+    (_, index) => `/images/review-avatars/avatar-${index + 1}.svg`
+  )
+);
+
 function cleanReview(review) {
   const name = String(review?.name || "").trim().slice(0, 60);
   const text = String(review?.text || "").trim().slice(0, 600);
   const stars = Number(review?.stars || 5);
+  const avatarUrl = String(review?.avatar_url || "").trim();
 
-  return {
+  const clean = {
     name,
     text,
     stars: Math.min(5, Math.max(0.5, stars)),
   };
+
+  if (REVIEW_AVATAR_URLS.has(avatarUrl)) clean.avatar_url = avatarUrl;
+
+  return clean;
 }
 
 async function fetchReviews(select) {
@@ -163,12 +175,14 @@ export async function POST(request) {
     const review = cleanReview(body);
     const reviewPayload = {
       ...review,
-      name: user?.name || review.name,
+      name: review.name || user?.name || "",
       is_approved: false,
     };
 
     if (user?.id) reviewPayload.customer_user_id = user.id;
-    if (user?.avatar_url) reviewPayload.avatar_url = user.avatar_url;
+    if (!reviewPayload.avatar_url && user?.avatar_url) {
+      reviewPayload.avatar_url = user.avatar_url;
+    }
 
     if (!reviewPayload.name || !reviewPayload.text) {
       const response = NextResponse.json(

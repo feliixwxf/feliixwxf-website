@@ -75,14 +75,10 @@ const CLIENT_GALLERY_CHECKLIST = [
   { key: "client_informed", label: "Kunde informiert" },
 ];
 
-const REVIEW_AVATARS = [
-  { label: "Avatar 1", url: "/images/review-avatars/avatar-1.svg" },
-  { label: "Avatar 2", url: "/images/review-avatars/avatar-2.svg" },
-  { label: "Avatar 3", url: "/images/review-avatars/avatar-3.svg" },
-  { label: "Avatar 4", url: "/images/review-avatars/avatar-4.svg" },
-  { label: "Avatar 5", url: "/images/review-avatars/avatar-5.svg" },
-  { label: "Avatar 6", url: "/images/review-avatars/avatar-6.svg" },
-];
+const REVIEW_AVATARS = Array.from({ length: 12 }, (_, index) => ({
+  label: `Avatar ${index + 1}`,
+  url: `/images/review-avatars/avatar-${index + 1}.svg`,
+}));
 
 const SITE_ASSET_GROUPS = [
   {

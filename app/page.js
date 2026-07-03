@@ -37,6 +37,11 @@ const DEFAULT_REVIEWS = [
   },
 ];
 
+const REVIEW_AVATARS = Array.from({ length: 12 }, (_, index) => ({
+  label: `Avatar ${index + 1}`,
+  url: `/images/review-avatars/avatar-${index + 1}.svg`,
+}));
+
 const DEFAULT_SITE_ASSETS = {
   hero_after: { url: "/images/nacher.jpg" },
   hero_before: { url: "/images/vorher.jpg" },
@@ -314,6 +319,7 @@ export default function FeliixWxfPhotography() {
   const [rating, setRating] = useState(0);
   const [reviewName, setReviewName] = useState("");
   const [reviewText, setReviewText] = useState("");
+  const [reviewAvatar, setReviewAvatar] = useState(REVIEW_AVATARS[0].url);
   const [showPopup, setShowPopup] = useState(false);
   const [popupClosed, setPopupClosed] = useState(false);
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
@@ -676,6 +682,7 @@ export default function FeliixWxfPhotography() {
       name: reviewName.trim(),
       text: reviewText.trim(),
       stars: rating || 5,
+      avatar_url: reviewAvatar,
       website: formData.get("website") || "",
       startedAt: reviewFormStartedAtRef.current,
     };
@@ -1373,6 +1380,32 @@ export default function FeliixWxfPhotography() {
                             }`}
                           >
                             {num}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 md:col-span-2">
+                      <p className={`mb-3 text-sm ${muted}`}>Avatar wählen</p>
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {REVIEW_AVATARS.map((avatar) => (
+                          <button
+                            type="button"
+                            key={avatar.url}
+                            onClick={() => setReviewAvatar(avatar.url)}
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border transition ${
+                              reviewAvatar === avatar.url
+                                ? "border-yellow-400 bg-yellow-400/15 ring-2 ring-yellow-400/40"
+                                : "border-white/15 bg-white/10 hover:border-white/35"
+                            }`}
+                            aria-label={avatar.label}
+                            title={avatar.label}
+                          >
+                            <img
+                              src={avatar.url}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
                           </button>
                         ))}
                       </div>
