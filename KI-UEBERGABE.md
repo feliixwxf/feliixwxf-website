@@ -1,6 +1,6 @@
 # feliix.wxf Website - KI-Übergabe
 
-Stand: 28.06.2026
+Stand: 03.07.2026
 
 Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt ohne langes Einlesen weitergeführt werden kann.
 
@@ -153,6 +153,7 @@ Wichtig:
 - Wenn ein Kunde sein Konto löscht, bleiben Bewertungen bestehen, aber die Konto-Verknüpfung wird entfernt und `account_deleted_at` gesetzt.
 - Profilbild und Benutzername können bei Bewertungen angezeigt werden.
 - Der Bewertungsname ist im Formular vorbefüllt, kann aber geändert werden.
+- Avatar-Auswahl ist optional und einklappbar; vorhandenes Profilbild wird bevorzugt, falls kein Avatar gewählt wird.
 - Die öffentliche Durchschnittsanzeige zeigt Anzahl und Durchschnitt. Die Sterneanzeige rundet visuell auf halbe Sterne ab.
 
 Wichtige Dateien:
@@ -269,6 +270,7 @@ Admin kann:
 - Website-Texte und Kontaktinfos ändern
 - Kundenkonten per E-Mail suchen und Profile kompakt öffnen
 - Kundendaten wie E-Mail, Benutzername, Telefonnummer, Profilbild, Erstelldatum und letzte Aktivität einsehen
+- Kontoerstellungen im Protokoll sehen, inklusive Benutzername und E-Mail
 - Wartungsmodus aktivieren/deaktivieren. Kontaktformular bleibt im Wartungsmodus erreichbar.
 
 Sicherheitsdetails:
@@ -282,6 +284,11 @@ Sicherheitsdetails:
   - Galerie-Löschung in eigenem Sicherheitsbereich
 - Adminbereiche wurden vereinfacht und unnötige Erklärungstexte entfernt.
 - Einstellungen sind bewusst knapp gehalten: Wartung, neu laden, Website öffnen, Kunden, Bewertungen, Logout.
+- Kundenbereich im Admin ist neu sortiert:
+  - Kennzahlen oben
+  - Kundensuche und Kundenprofil getrennt
+  - Galerieverwaltung darunter
+  - mobile Buttons laufen untereinander statt gequetscht nebeneinander
 
 ## Portfolio
 
@@ -363,6 +370,7 @@ Letzte größere Änderungen:
 - Admin-Schnellzugriff wurde gekürzt.
 - Favicon/Seitentitel wurden auf feliix.wxf/Kamera umgestellt.
 - Kundenkonto wurde optisch reduziert und übersichtlicher gemacht.
+- Kundenkonto wurde später komplett neu aufgebaut: schlankerer Profilbereich, klarere Galerie-/Downloadanzeige und weniger Statistikballast.
 - Kundenkonto passt sich dem Light/Dark Mode an; Light Mode ist bewusst etwas grauer und abgegrenzter.
 - Konto-Header zeigt bei eingeloggten Nutzern den Benutzernamen in der Website-Navigation.
 - Admin-Kundenkontosuche öffnet kompakte Kundenprofile mit E-Mail, Telefon, Profilbild und Aktivitätsdaten.
@@ -390,6 +398,11 @@ Letzte größere Änderungen:
 - Benutzername ist bei der Kontoerstellung Pflichtfeld.
 - Neue Bewertungen lösen eine E-Mail-Benachrichtigung an Felix aus.
 - Kundenkonto-Löschung bleibt datenschutzfreundlich, Bewertungen bleiben aber nachvollziehbar erhalten.
+- Kundenkonto-Löschung verlangt eine klare Bestätigung plus Haken, dass alle Kontodaten gelöscht werden sollen.
+- Admin-Protokoll speichert neue Kontoerstellungen mit Benutzername und E-Mail.
+- Admin-Kundenbereich wurde erneut neu sortiert, damit Kundensuche, Profilansicht und Galerieverwaltung auf Desktop und Mobil besser bedienbar sind.
+- Kundenfavoriten können besser gesammelt verwaltet werden.
+- Nicht mehr benötigte Starter-Assets aus dem ursprünglichen Create-Next-App-Setup wurden entfernt, damit die Übergabe schlanker bleibt.
 
 Vor Übergabe oder Deployment prüfen:
 
@@ -400,19 +413,19 @@ git push
 ```
 
 Letzter bekannter Build:
-- `npm run build` erfolgreich am 28.06.2026.
+- `npm run build` erfolgreich am 03.07.2026.
 
 Letzte bekannte Commits:
-- `4fa1286 Add contact form success feedback`
-- `22ee0a9 Strengthen homepage review and contact CTA`
-- `d1ed42b Add wedding SEO terms`
-- `0c7674b Add local SEO metadata`
-- `ad9ac85 Improve mobile admin navigation`
-- `335aa81 Simplify mobile account dashboard`
-- `b1f8560 Refresh customer account dashboard`
-- `aefaa12 Add review avatar selection`
-- `f1e340a Keep contact form in maintenance mode`
-- `b70b146 Add admin maintenance mode`
+- `63871b6 Improve admin customer workspace`
+- `e16ce21 Improve customer favorite selection`
+- `dc0e2f5 Make review avatar selection optional`
+- `7a9a538 Add review avatar selection and safer account deletion`
+- `64db7c6 Simplify account downloads layout`
+- `35ab38b Redesign customer account layout`
+- `d0b5fea Disable public info image`
+- `d943402 Add admin cleanup and info image asset`
+- `8902220 Add touch controls to image cropper`
+- `0ec749e Improve admin delete and image upload flow`
 
 ## Wichtige Hinweise für eine nächste KI
 
