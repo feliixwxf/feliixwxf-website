@@ -4079,36 +4079,37 @@ export default function AdminPage() {
 
             {activeTab === "clients" && (
               <div className="mt-8">
-	                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-	                  <div>
-	                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
-	                      Kunden
-	                    </p>
-	                    <h2 className="mt-3 text-3xl font-black">
-	                      Kunden & Galerien
-	                    </h2>
-	                    <p className="mt-3 max-w-2xl text-neutral-300">
-	                      Suche Kundenkonten per E-Mail, öffne passende Galerien
-	                      und verwalte Codes, Uploads und Favoriten an einem Ort.
-	                    </p>
-	                  </div>
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Kunden
+                    </p>
+                    <h2 className="mt-3 text-3xl font-black">
+                      Kundenbereich
+                    </h2>
+                    <p className="mt-3 max-w-2xl text-neutral-300">
+                      Galerien, Codes, Uploads und Kundensuche klar getrennt.
+                    </p>
+                  </div>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid gap-2 sm:flex sm:flex-wrap">
                     <button
                       type="button"
                       onClick={() =>
                         setShowClientGalleryForm((current) => !current)
                       }
-                      className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:w-fit"
                     >
                       <Plus className="h-4 w-4" />
-                      {showClientGalleryForm ? "Formular schließen" : "Neue Galerie"}
+                      {showClientGalleryForm
+                        ? "Formular schließen"
+                        : "Neue Galerie"}
                     </button>
                     <a
                       href="/kunden"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit"
                     >
                       <ExternalLink className="h-4 w-4" />
                       Kundenseite öffnen
@@ -4116,206 +4117,264 @@ export default function AdminPage() {
                     <button
                       type="button"
                       onClick={loadClientGalleries}
-                      className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit"
                     >
                       <RefreshCw className="h-4 w-4" />
                       Neu laden
                     </button>
-	                  </div>
-	                </div>
+                  </div>
+                </div>
 
-	                <section className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
-	                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-	                    <div className="min-w-0">
-	                      <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
-	                        Kundenkonto suchen
-	                      </p>
-	                      <h3 className="mt-2 text-xl font-black">
-	                        Per E-Mail finden
-	                      </h3>
-	                    </div>
-	                  </div>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {[
+                    {
+                      label: "Galerien",
+                      value: clientGalleries.length,
+                      helper: "gesamt",
+                    },
+                    {
+                      label: "Aktiv",
+                      value: clientGalleryStats.active,
+                      helper: "laufende Projekte",
+                    },
+                    {
+                      label: "Auswahl offen",
+                      value: clientProjectsNeedingReview.length,
+                      helper: "Favoriten prüfen",
+                    },
+                    {
+                      label: "Abgeschlossen",
+                      value: clientGalleryStats.completed,
+                      helper: "fertige Galerien",
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-[1.3rem] border border-white/10 bg-white/[0.08] p-4"
+                    >
+                      <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-3xl font-black text-white">
+                        {item.value}
+                      </p>
+                      <p className="mt-1 text-sm text-neutral-400">
+                        {item.helper}
+                      </p>
+                    </div>
+                  ))}
+                </div>
 
-	                  <form
-	                    onSubmit={searchCustomerAccounts}
-	                    className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]"
-	                  >
-	                    <label className="relative block min-w-0">
-	                      <span className="sr-only">Kundenkonto per E-Mail suchen</span>
-	                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
-	                      <input
-	                        type="email"
-	                        value={customerAccountSearch}
-	                        onChange={(event) =>
-	                          setCustomerAccountSearch(event.target.value)
-	                        }
-	                        placeholder="kunde@email.de"
-	                        className="w-full rounded-2xl border border-white/10 bg-black/25 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-yellow-400/70"
-	                      />
-	                    </label>
+                <section className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_1.15fr]">
+                  <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-neutral-950">
+                        <Search className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                          Kundenkonto
+                        </p>
+                        <h3 className="mt-1 text-xl font-black">
+                          Per E-Mail suchen
+                        </h3>
+                      </div>
+                    </div>
 
-	                    <button
-	                      type="submit"
-	                      disabled={customerAccountLoading}
-	                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 lg:w-fit"
-	                    >
-	                      <Search className="h-4 w-4" />
-	                      {customerAccountLoading ? "Suche..." : "Konto suchen"}
-	                    </button>
-	                  </form>
+                    <form
+                      onSubmit={searchCustomerAccounts}
+                      className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+                    >
+                      <label className="relative block min-w-0">
+                        <span className="sr-only">
+                          Kundenkonto per E-Mail suchen
+                        </span>
+                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+                        <input
+                          type="email"
+                          value={customerAccountSearch}
+                          onChange={(event) =>
+                            setCustomerAccountSearch(event.target.value)
+                          }
+                          placeholder="kunde@email.de"
+                          className="w-full rounded-2xl border border-white/10 bg-black/25 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-yellow-400/70"
+                        />
+                      </label>
 
-	                  {customerAccountSearched && customerAccounts.length === 0 && (
-	                    <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-neutral-400">
-	                      Kein Kundenkonto mit dieser E-Mail gefunden.
-	                    </div>
-	                  )}
+                      <button
+                        type="submit"
+                        disabled={customerAccountLoading}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60 sm:w-fit"
+                      >
+                        <Search className="h-4 w-4" />
+                        {customerAccountLoading ? "Suche..." : "Suchen"}
+                      </button>
+                    </form>
 
-	                  {customerAccounts.length > 0 && (
-	                    <div className="mt-4 grid gap-4 xl:grid-cols-[0.75fr_1.25fr]">
-	                      <div className="grid gap-2">
-	                        {customerAccounts.map((account) => {
-	                          const active = selectedCustomerAccount?.id === account.id;
+                    {customerAccountSearched && customerAccounts.length === 0 && (
+                      <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-neutral-400">
+                        Kein Kundenkonto mit dieser E-Mail gefunden.
+                      </div>
+                    )}
 
-	                          return (
-	                            <button
-	                              key={account.id}
-	                              type="button"
-	                              onClick={() => setSelectedCustomerAccount(account)}
-	                              className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition ${
-	                                active
-	                                  ? "border-yellow-400/50 bg-yellow-400/10"
-	                                  : "border-white/10 bg-black/20 hover:bg-white/[0.06]"
-	                              }`}
-	                            >
-	                              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10">
-	                                {account.avatar_url ? (
-	                                  <img
-	                                    src={account.avatar_url}
-	                                    alt=""
-	                                    className="h-full w-full object-cover"
-	                                  />
-	                                ) : (
-	                                  <UserRound className="h-5 w-5 text-neutral-400" />
-	                                )}
-	                              </div>
-	                              <div className="min-w-0">
-	                                <p className="truncate font-black text-white">
-	                                  {account.name || "Ohne Namen"}
-	                                </p>
-	                                <p className="truncate text-sm text-neutral-400">
-	                                  {account.email}
-	                                </p>
-	                              </div>
-	                            </button>
-	                          );
-	                        })}
-	                      </div>
+                    {customerAccounts.length > 0 && (
+                      <div className="mt-4 grid gap-3">
+                        {customerAccounts.map((account) => {
+                          const active = selectedCustomerAccount?.id === account.id;
 
-	                      {selectedCustomerAccount && (
-	                        <article className="rounded-2xl border border-white/10 bg-black/25 p-4">
-	                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-	                            <div className="flex min-w-0 gap-4">
-	                              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
-	                                {selectedCustomerAccount.avatar_url ? (
-	                                  <img
-	                                    src={selectedCustomerAccount.avatar_url}
-	                                    alt=""
-	                                    className="h-full w-full object-cover"
-	                                  />
-	                                ) : (
-	                                  <UserRound className="h-7 w-7 text-neutral-400" />
-	                                )}
-	                              </div>
-	                              <div className="min-w-0">
-	                                <h4 className="truncate text-xl font-black">
-	                                  {selectedCustomerAccount.name || "Ohne Namen"}
-	                                </h4>
-	                                <a
-	                                  href={`mailto:${selectedCustomerAccount.email}`}
-	                                  className="mt-1 block break-all text-sm font-semibold text-sky-200 transition hover:text-sky-100"
-	                                >
-	                                  {selectedCustomerAccount.email}
-	                                </a>
-	                                {selectedCustomerAccount.phone ? (
-	                                  <a
-	                                    href={`tel:${selectedCustomerAccount.phone.replace(/[^\d+]/g, "")}`}
-	                                    className="mt-1 inline-flex text-sm font-semibold text-emerald-200 transition hover:text-emerald-100"
-	                                  >
-	                                    {selectedCustomerAccount.phone}
-	                                  </a>
-	                                ) : (
-	                                  <p className="mt-1 text-sm text-neutral-500">
-	                                    Keine Telefonnummer
-	                                  </p>
-	                                )}
-	                              </div>
-	                            </div>
+                          return (
+                            <button
+                              key={account.id}
+                              type="button"
+                              onClick={() => setSelectedCustomerAccount(account)}
+                              className={`flex items-center gap-3 rounded-2xl border p-3 text-left transition ${
+                                active
+                                  ? "border-yellow-400/50 bg-yellow-400/10"
+                                  : "border-white/10 bg-black/20 hover:bg-white/[0.06]"
+                              }`}
+                            >
+                              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10">
+                                {account.avatar_url ? (
+                                  <img
+                                    src={account.avatar_url}
+                                    alt=""
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <UserRound className="h-5 w-5 text-neutral-400" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="truncate font-black text-white">
+                                  {account.name || "Ohne Namen"}
+                                </p>
+                                <p className="truncate text-sm text-neutral-400">
+                                  {account.email}
+                                </p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-	                            <span
-	                              className={`w-fit rounded-full px-3 py-1 text-xs font-black ${
-	                                selectedCustomerAccount.email_confirmed_at
-	                                  ? "bg-emerald-400/15 text-emerald-100"
-	                                  : "bg-yellow-400/15 text-yellow-100"
-	                              }`}
-	                            >
-	                              {selectedCustomerAccount.email_confirmed_at
-	                                ? "Bestätigt"
-	                                : "Offen"}
-	                            </span>
-	                          </div>
+                  <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+                    {!selectedCustomerAccount ? (
+                      <div className="flex h-full min-h-44 flex-col justify-center rounded-2xl border border-dashed border-white/10 bg-black/20 p-6 text-neutral-400">
+                        <UserRound className="h-8 w-8" />
+                        <p className="mt-4 font-bold">
+                          Suche ein Kundenkonto, um Profil und Galerien zu sehen.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="flex min-w-0 gap-4">
+                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+                              {selectedCustomerAccount.avatar_url ? (
+                                <img
+                                  src={selectedCustomerAccount.avatar_url}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <UserRound className="h-7 w-7 text-neutral-400" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="truncate text-xl font-black">
+                                {selectedCustomerAccount.name || "Ohne Namen"}
+                              </h4>
+                              <a
+                                href={`mailto:${selectedCustomerAccount.email}`}
+                                className="mt-1 block break-all text-sm font-semibold text-sky-200 transition hover:text-sky-100"
+                              >
+                                {selectedCustomerAccount.email}
+                              </a>
+                              {selectedCustomerAccount.phone ? (
+                                <a
+                                  href={`tel:${selectedCustomerAccount.phone.replace(/[^\d+]/g, "")}`}
+                                  className="mt-1 inline-flex text-sm font-semibold text-emerald-200 transition hover:text-emerald-100"
+                                >
+                                  {selectedCustomerAccount.phone}
+                                </a>
+                              ) : (
+                                <p className="mt-1 text-sm text-neutral-500">
+                                  Keine Telefonnummer
+                                </p>
+                              )}
+                            </div>
+                          </div>
 
-	                          <div className="mt-5 grid gap-3 sm:grid-cols-3">
-	                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-	                              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
-	                                Erstellt
-	                              </p>
-	                              <p className="mt-2 font-black">
-	                                {formatDate(selectedCustomerAccount.created_at)}
-	                              </p>
-	                            </div>
-	                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-	                              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
-	                                Zuletzt aktiv
-	                              </p>
-	                              <p className="mt-2 font-black">
-	                                {selectedCustomerAccount.last_sign_in_at
-	                                  ? formatDate(selectedCustomerAccount.last_sign_in_at)
-	                                  : "Noch nie"}
-	                              </p>
-	                            </div>
-	                            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-	                              <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
-	                                Galerien
-	                              </p>
-	                              <p className="mt-2 font-black">
-	                                {customerAccountGalleries.length}
-	                              </p>
-	                            </div>
-	                          </div>
+                          <span
+                            className={`w-fit rounded-full px-3 py-1 text-xs font-black ${
+                              selectedCustomerAccount.email_confirmed_at
+                                ? "bg-emerald-400/15 text-emerald-100"
+                                : "bg-yellow-400/15 text-yellow-100"
+                            }`}
+                          >
+                            {selectedCustomerAccount.email_confirmed_at
+                              ? "Bestätigt"
+                              : "Offen"}
+                          </span>
+                        </div>
 
-	                          <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-	                            <button
-	                              type="button"
-	                              onClick={() => focusClientAccountEmail(selectedCustomerAccount)}
-	                              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
-	                            >
-	                              <Search className="h-4 w-4" />
-	                              Galerien anzeigen
-	                            </button>
-	                            <button
-	                              type="button"
-	                              onClick={() => prepareGalleryForAccount(selectedCustomerAccount)}
-	                              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
-	                            >
-	                              <Plus className="h-4 w-4" />
-	                              Galerie vorbereiten
-	                            </button>
-	                          </div>
-	                        </article>
-	                      )}
-	                    </div>
-	                  )}
-	                </section>
+                        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                            <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                              Erstellt
+                            </p>
+                            <p className="mt-2 font-black">
+                              {formatDate(selectedCustomerAccount.created_at)}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                            <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                              Zuletzt aktiv
+                            </p>
+                            <p className="mt-2 font-black">
+                              {selectedCustomerAccount.last_sign_in_at
+                                ? formatDate(selectedCustomerAccount.last_sign_in_at)
+                                : "Noch nie"}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                            <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
+                              Galerien
+                            </p>
+                            <p className="mt-2 font-black">
+                              {customerAccountGalleries.length}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-5 grid gap-2 sm:flex">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              focusClientAccountEmail(selectedCustomerAccount)
+                            }
+                            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                          >
+                            <Search className="h-4 w-4" />
+                            Galerien anzeigen
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              prepareGalleryForAccount(selectedCustomerAccount)
+                            }
+                            className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                          >
+                            <Plus className="h-4 w-4" />
+                            Galerie vorbereiten
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </article>
+                </section>
 
 	                {showClientGalleryForm && (
                 <form

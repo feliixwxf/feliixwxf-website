@@ -6,6 +6,7 @@ import {
   setCustomerCookies,
 } from "../_lib/auth";
 import { checkBotSubmission } from "../../_lib/spam-protection";
+import { logAdminActivity } from "../../admin/_lib/activity";
 
 export async function POST(request) {
   if (!requireAccountConfig()) return accountConfigMissing();
@@ -87,6 +88,13 @@ export async function POST(request) {
       { status: 400 }
     );
   }
+
+  await logAdminActivity({
+    action: "Kundenkonto erstellt",
+    targetType: "customer_account",
+    targetId: data.user?.id || email,
+    label: `${name} · ${data.user?.email || email}`,
+  });
 
   const result = NextResponse.json({
     user: {
