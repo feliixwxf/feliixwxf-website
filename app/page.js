@@ -319,7 +319,8 @@ export default function FeliixWxfPhotography() {
   const [rating, setRating] = useState(0);
   const [reviewName, setReviewName] = useState("");
   const [reviewText, setReviewText] = useState("");
-  const [reviewAvatar, setReviewAvatar] = useState(REVIEW_AVATARS[0].url);
+  const [reviewAvatar, setReviewAvatar] = useState("");
+  const [showReviewAvatars, setShowReviewAvatars] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupClosed, setPopupClosed] = useState(false);
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
@@ -682,10 +683,11 @@ export default function FeliixWxfPhotography() {
       name: reviewName.trim(),
       text: reviewText.trim(),
       stars: rating || 5,
-      avatar_url: reviewAvatar,
       website: formData.get("website") || "",
       startedAt: reviewFormStartedAtRef.current,
     };
+
+    if (reviewAvatar) newReview.avatar_url = reviewAvatar;
 
     try {
       const response = await fetch("/api/reviews", {
@@ -708,6 +710,8 @@ export default function FeliixWxfPhotography() {
       setRating(0);
       setReviewName(nextName);
       setReviewText("");
+      setReviewAvatar("");
+      setShowReviewAvatars(false);
       formElement.reset();
       reviewFormStartedAtRef.current = Date.now();
       setReviewMessageType("success");
@@ -1385,32 +1389,6 @@ export default function FeliixWxfPhotography() {
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-4 md:col-span-2">
-                      <p className={`mb-3 text-sm ${muted}`}>Avatar wählen</p>
-                      <div className="flex gap-2 overflow-x-auto pb-1">
-                        {REVIEW_AVATARS.map((avatar) => (
-                          <button
-                            type="button"
-                            key={avatar.url}
-                            onClick={() => setReviewAvatar(avatar.url)}
-                            className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border transition ${
-                              reviewAvatar === avatar.url
-                                ? "border-yellow-400 bg-yellow-400/15 ring-2 ring-yellow-400/40"
-                                : "border-white/15 bg-white/10 hover:border-white/35"
-                            }`}
-                            aria-label={avatar.label}
-                            title={avatar.label}
-                          >
-                            <img
-                              src={avatar.url}
-                              alt=""
-                              className="h-full w-full object-cover"
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
                     <textarea
                       name="text"
                       required
@@ -1420,6 +1398,86 @@ export default function FeliixWxfPhotography() {
                       placeholder="Schreib kurz, wie dein Shooting war..."
                       className="rounded-2xl border bg-white/90 px-4 py-4 text-neutral-950 outline-none transition-transform focus:scale-[1.01] focus:border-yellow-400 md:col-span-2"
                     />
+
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-3 md:col-span-2">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white/10">
+                            {reviewAvatar ? (
+                              <img
+                                src={reviewAvatar}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : currentCustomer?.avatar_url ? (
+                              <img
+                                src={currentCustomer.avatar_url}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <Star className="h-4 w-4 text-yellow-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">
+                              Avatar auswählen{" "}
+                              <span className={muted}>(optional)</span>
+                            </p>
+                            <p className={`text-xs ${muted}`}>
+                              {reviewAvatar
+                                ? "Ausgewählter Charakter wird genutzt."
+                                : currentCustomer?.avatar_url
+                                  ? "Ohne Auswahl wird dein Profilbild genutzt."
+                                  : "Ohne Auswahl erscheint ein Standardbild."}
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowReviewAvatars((current) => !current)}
+                          className={`rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/20 ${buttonHover}`}
+                        >
+                          {showReviewAvatars ? "Schließen" : "Auswählen"}
+                        </button>
+                      </div>
+
+                      {showReviewAvatars && (
+                        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                          {REVIEW_AVATARS.map((avatar) => (
+                            <button
+                              type="button"
+                              key={avatar.url}
+                              onClick={() => setReviewAvatar(avatar.url)}
+                              className={`flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border transition ${
+                                reviewAvatar === avatar.url
+                                  ? "border-yellow-400 bg-yellow-400/15 ring-2 ring-yellow-400/40"
+                                  : "border-white/15 bg-white/10 hover:border-white/35"
+                              }`}
+                              aria-label={avatar.label}
+                              title={avatar.label}
+                            >
+                              <img
+                                src={avatar.url}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            </button>
+                          ))}
+
+                          {reviewAvatar && (
+                            <button
+                              type="button"
+                              onClick={() => setReviewAvatar("")}
+                              className="shrink-0 rounded-full border border-white/15 bg-white/10 px-3 text-xs font-semibold transition hover:bg-white/20"
+                            >
+                              Profilbild nutzen
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
                     {reviewMessage && (
                       <p className={`text-sm leading-6 ${muted} md:col-span-2`}>
