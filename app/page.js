@@ -352,6 +352,7 @@ export default function FeliixWxfPhotography() {
   const [contactSent, setContactSent] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [siteAssets, setSiteAssets] = useState(DEFAULT_SITE_ASSETS);
+  const [siteAssetsLoaded, setSiteAssetsLoaded] = useState(false);
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
   const [siteSettingsLoaded, setSiteSettingsLoaded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -413,8 +414,11 @@ export default function FeliixWxfPhotography() {
         if (data?.assets) {
           setSiteAssets((current) => ({ ...current, ...data.assets }));
         }
+        setSiteAssetsLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        setSiteAssetsLoaded(true);
+      });
 
     fetch("/api/site-settings")
       .then((response) => (response.ok ? response.json() : null))
@@ -1169,52 +1173,60 @@ export default function FeliixWxfPhotography() {
                 }}
                 className="relative aspect-[4/5] touch-none select-none overflow-hidden rounded-[1.5rem]"
               >
-                <img
-                  src={
-                    siteAssets.hero_after?.url ||
-                    DEFAULT_SITE_ASSETS.hero_after.url
-                  }
-                  alt="Nachher"
-                  draggable="false"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
+                {!siteAssetsLoaded ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-950">
+                    <div className="h-3 w-3 rounded-full bg-white/70 shadow-[0_0_24px_rgba(255,255,255,0.65)]" />
+                  </div>
+                ) : (
+                  <>
+                    <img
+                      src={
+                        siteAssets.hero_after?.url ||
+                        DEFAULT_SITE_ASSETS.hero_after.url
+                      }
+                      alt="Nachher"
+                      draggable="false"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
 
-                <div
-                  ref={beforeRef}
-                  className="absolute inset-0 overflow-hidden"
-                  style={{ clipPath: "inset(0 50% 0 0)" }}
-                >
-                  <img
-                    src={
-                      siteAssets.hero_before?.url ||
-                      DEFAULT_SITE_ASSETS.hero_before.url
-                    }
-                    alt="Vorher"
-                    draggable="false"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+                    <div
+                      ref={beforeRef}
+                      className="absolute inset-0 overflow-hidden"
+                      style={{ clipPath: "inset(0 50% 0 0)" }}
+                    >
+                      <img
+                        src={
+                          siteAssets.hero_before?.url ||
+                          DEFAULT_SITE_ASSETS.hero_before.url
+                        }
+                        alt="Vorher"
+                        draggable="false"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
 
-                <div
-                  ref={lineRef}
-                  className="absolute top-0 h-full w-1 bg-white shadow-lg"
-                  style={{ left: "50%" }}
-                />
+                    <div
+                      ref={lineRef}
+                      className="absolute top-0 h-full w-1 bg-white shadow-lg"
+                      style={{ left: "50%" }}
+                    />
 
-                <div
-                  ref={handleRef}
-                  className={`absolute top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-white/70 bg-black/45 text-2xl text-white shadow-lg ${buttonHover}`}
-                  style={{ left: "50%" }}
-                >
-                  ↔
-                </div>
+                    <div
+                      ref={handleRef}
+                      className={`absolute top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize items-center justify-center rounded-full border border-white/70 bg-black/45 text-2xl text-white shadow-lg ${buttonHover}`}
+                      style={{ left: "50%" }}
+                    >
+                      ↔
+                    </div>
 
-                <div className="absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
-                  Vorher
-                </div>
-                <div className="absolute right-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
-                  Nachher
-                </div>
+                    <div className="absolute left-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
+                      Vorher
+                    </div>
+                    <div className="absolute right-4 top-4 rounded-full bg-black/55 px-3 py-1 text-sm text-white">
+                      Nachher
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
