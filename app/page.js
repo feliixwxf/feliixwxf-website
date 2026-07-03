@@ -43,14 +43,28 @@ const REVIEW_AVATARS = Array.from({ length: 12 }, (_, index) => ({
 }));
 
 const DEFAULT_SITE_ASSETS = {
-  hero_after: { url: "/images/nacher.jpg" },
-  hero_before: { url: "/images/vorher.jpg" },
+  hero_after: { url: "" },
+  hero_before: { url: "" },
   cover_car: { url: "/images/hyundaititel.jpg" },
   cover_portrait: { url: "/images/fw.jpg" },
   cover_nature: { url: "/images/startpoint.jpg" },
   cover_event: { url: "/images/abititel.jpg" },
   info_image: { url: "/images/fw.jpg" },
 };
+
+function cleanHeroAssetFallbacks(assets) {
+  return {
+    ...assets,
+    hero_after:
+      assets.hero_after?.url === "/images/nacher.jpg"
+        ? { ...assets.hero_after, url: "" }
+        : assets.hero_after,
+    hero_before:
+      assets.hero_before?.url === "/images/vorher.jpg"
+        ? { ...assets.hero_before, url: "" }
+        : assets.hero_before,
+  };
+}
 
 function loadCachedSiteAssets() {
   if (typeof window === "undefined") return DEFAULT_SITE_ASSETS;
@@ -59,10 +73,10 @@ function loadCachedSiteAssets() {
     const cachedAssets = window.localStorage.getItem("feliix-site-assets");
     if (!cachedAssets) return DEFAULT_SITE_ASSETS;
 
-    return {
+    return cleanHeroAssetFallbacks({
       ...DEFAULT_SITE_ASSETS,
       ...JSON.parse(cachedAssets),
-    };
+    });
   } catch {
     return DEFAULT_SITE_ASSETS;
   }
@@ -428,7 +442,10 @@ export default function FeliixWxfPhotography() {
       .then((data) => {
         if (data?.assets) {
           setSiteAssets((current) => {
-            const nextAssets = { ...current, ...data.assets };
+            const nextAssets = cleanHeroAssetFallbacks({
+              ...current,
+              ...data.assets,
+            });
 
             try {
               localStorage.setItem(
@@ -1196,30 +1213,28 @@ export default function FeliixWxfPhotography() {
                 }}
                 className="relative aspect-[4/5] touch-none select-none overflow-hidden rounded-[1.5rem]"
               >
-                <img
-                  src={
-                    siteAssets.hero_after?.url ||
-                    DEFAULT_SITE_ASSETS.hero_after.url
-                  }
-                  alt="Nachher"
-                  draggable="false"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
+                {siteAssets.hero_after?.url && (
+                  <img
+                    src={siteAssets.hero_after.url}
+                    alt="Nachher"
+                    draggable="false"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
 
                 <div
                   ref={beforeRef}
                   className="absolute inset-0 overflow-hidden"
                   style={{ clipPath: "inset(0 50% 0 0)" }}
                 >
-                  <img
-                    src={
-                      siteAssets.hero_before?.url ||
-                      DEFAULT_SITE_ASSETS.hero_before.url
-                    }
-                    alt="Vorher"
-                    draggable="false"
-                    className="h-full w-full object-cover"
-                  />
+                  {siteAssets.hero_before?.url && (
+                    <img
+                      src={siteAssets.hero_before.url}
+                      alt="Vorher"
+                      draggable="false"
+                      className="h-full w-full object-cover"
+                    />
+                  )}
                 </div>
 
                 <div
