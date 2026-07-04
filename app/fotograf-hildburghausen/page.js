@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BeforeAfterSlider from "@/components/before-after-slider";
 
 const pageUrl = "https://www.feliixwxf.de/fotograf-hildburghausen";
 
@@ -98,12 +99,20 @@ export default function FotografHildburghausenPage() {
           <Link href="/" className="text-lg font-black tracking-wide">
             feliix.wxf
           </Link>
-          <Link
-            href="/#kontakt"
-            className="rounded-full bg-white px-4 py-2 text-sm font-bold text-neutral-950"
-          >
-            Termin anfragen
-          </Link>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link
+              href="/"
+              className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold"
+            >
+              Website
+            </Link>
+            <Link
+              href="/#kontakt"
+              className="rounded-full bg-white px-4 py-2 text-sm font-bold text-neutral-950"
+            >
+              Kontakt
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -135,14 +144,16 @@ export default function FotografHildburghausenPage() {
               >
                 Portfolio ansehen
               </Link>
+              <Link
+                href="/#bewertung"
+                className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold"
+              >
+                Bewertungen
+              </Link>
             </div>
           </div>
 
-          <img
-            src="/images/hyundaititel.jpg"
-            alt="Car Photography und Fotograf in Hildburghausen"
-            className="aspect-[4/5] w-full rounded-[2rem] object-cover shadow-2xl"
-          />
+          <BeforeAfterSlider />
         </div>
       </section>
 
@@ -188,6 +199,26 @@ export default function FotografHildburghausenPage() {
               Rückmeldung zu Ablauf, Termin und Möglichkeiten.
             </p>
           </div>
+        </div>
+        <div className="mx-auto mt-10 flex max-w-6xl flex-wrap gap-3">
+          <Link
+            href="/"
+            className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold"
+          >
+            Zur Website
+          </Link>
+          <Link
+            href="/#kontakt"
+            className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-black text-black"
+          >
+            Kontaktformular öffnen
+          </Link>
+          <Link
+            href="/#bewertung"
+            className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold"
+          >
+            Kundenbewertungen
+          </Link>
         </div>
       </section>
     </main>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BeforeAfterSlider from "@/components/before-after-slider";
 
 const pageUrl = "https://www.feliixwxf.de/fotograf-eisfeld";
 
@@ -86,22 +87,26 @@ export default function FotografEisfeldPage() {
           <Link href="/" className="text-lg font-black tracking-wide">
             feliix.wxf
           </Link>
-          <Link
-            href="/#kontakt"
-            className="rounded-full bg-white px-4 py-2 text-sm font-bold text-neutral-950"
-          >
-            Shooting planen
-          </Link>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link
+              href="/"
+              className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold"
+            >
+              Website
+            </Link>
+            <Link
+              href="/#kontakt"
+              className="rounded-full bg-white px-4 py-2 text-sm font-bold text-neutral-950"
+            >
+              Kontakt
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className="px-5 pb-16 pt-10">
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[0.85fr_1fr]">
-          <img
-            src="/images/fw.jpg"
-            alt="Fotograf in Eisfeld und Südthüringen"
-            className="order-2 aspect-[4/5] w-full rounded-[2rem] object-cover shadow-2xl lg:order-1"
-          />
+          <BeforeAfterSlider className="order-2 lg:order-1" />
 
           <div className="order-1 lg:order-2">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-400">
@@ -127,6 +132,12 @@ export default function FotografEisfeldPage() {
                 className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold"
               >
                 Bewertungen ansehen
+              </Link>
+              <Link
+                href="/#portfolio"
+                className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold"
+              >
+                Portfolio öffnen
               </Link>
             </div>
           </div>
@@ -179,6 +190,26 @@ export default function FotografEisfeldPage() {
                 </p>
               </article>
             ))}
+          </div>
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Link
+              href="/"
+              className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold"
+            >
+              Zur Website
+            </Link>
+            <Link
+              href="/#kontakt"
+              className="rounded-full bg-yellow-400 px-5 py-3 text-sm font-black text-black"
+            >
+              Kontaktformular öffnen
+            </Link>
+            <Link
+              href="/#bewertung"
+              className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-bold"
+            >
+              Kundenbewertungen
+            </Link>
           </div>
         </div>
       </section>
