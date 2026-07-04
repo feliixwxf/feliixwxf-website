@@ -88,18 +88,22 @@ const LOCAL_SEO_SERVICES = [
   {
     title: "Portraits",
     text: "Natürliche Portraits in Hildburghausen, Eisfeld und Südthüringen.",
+    href: "/fotograf-hildburghausen",
   },
   {
     title: "Hochzeiten",
     text: "Emotionale Hochzeitsmomente, Reportagen und Paarbilder in Thüringen.",
+    href: "/fotograf-hildburghausen",
   },
   {
     title: "Car Photography",
     text: "Dynamische Autofotos, Detailshots und Social-Media-Content für Fahrzeuge.",
+    href: "/fotograf-eisfeld",
   },
   {
     title: "Events",
     text: "Unauffällige Eventfotos mit starkem Look für private und geschäftliche Anlässe.",
+    href: "/fotograf-eisfeld",
   },
 ];
 
@@ -1286,19 +1290,20 @@ export default function FeliixWxfPhotography() {
             </h2>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {LOCAL_SEO_SERVICES.map((service) => (
-                <div
+                <a
                   key={service.title}
+                  href={service.href}
                   className={`rounded-[1.5rem] border p-5 ${
                     dark
-                      ? "border-white/10 bg-white/[0.07]"
-                      : "border-black/10 bg-white/75 shadow-sm"
-                  }`}
+                      ? "border-white/10 bg-white/[0.07] hover:bg-white/[0.11]"
+                      : "border-black/10 bg-white/75 shadow-sm hover:bg-white"
+                  } transition`}
                 >
                   <h3 className="text-lg font-black">{service.title}</h3>
                   <p className={`mt-3 text-sm leading-6 ${muted}`}>
                     {service.text}
                   </p>
-                </div>
+                </a>
               ))}
             </div>
           </div>
