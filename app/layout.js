@@ -79,9 +79,13 @@ export const metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico?v=3",
-    shortcut: "/favicon.ico?v=3",
-    apple: "/icon.svg?v=3",
+    icon: [
+      { url: "/icon.png?v=4", sizes: "512x512", type: "image/png" },
+      { url: "/icon.svg?v=4", type: "image/svg+xml" },
+      { url: "/favicon.ico?v=4", sizes: "any" },
+    ],
+    shortcut: "/icon.png?v=4",
+    apple: "/icon.png?v=4",
   },
 };
 
@@ -200,9 +204,10 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <link rel="icon" href="/favicon.ico?v=3" sizes="any" />
-        <link rel="shortcut icon" href="/favicon.ico?v=3" />
-        <link rel="apple-touch-icon" href="/icon.svg?v=3" />
+        <link rel="icon" href="/icon.png?v=4" type="image/png" sizes="512x512" />
+        <link rel="icon" href="/icon.svg?v=4" type="image/svg+xml" />
+        <link rel="shortcut icon" href="/icon.png?v=4" />
+        <link rel="apple-touch-icon" href="/icon.png?v=4" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
