@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { Camera, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
+import LegalBackButton from "@/components/legal-back-button";
 
 export const metadata = {
   title: "Impressum",
@@ -14,13 +14,7 @@ export default function ImpressumPage() {
   return (
     <main className="min-h-screen bg-neutral-950 px-5 py-10 text-white">
       <div className="mx-auto max-w-3xl">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-neutral-200 transition hover:bg-white/15"
-        >
-          <Camera className="h-4 w-4" />
-          Zur Website
-        </Link>
+        <LegalBackButton />
 
         <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl sm:p-8">
           <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
