@@ -699,6 +699,8 @@ export default function AdminPage() {
     pinchDistance: 0,
     zoom: 1,
   });
+  const portfolioPointerDragRef = useRef(null);
+  const portfolioDropTargetRef = useRef(null);
 
   const approvedReviews = reviews.filter((review) => review.is_approved);
   const pendingReviews = reviews.filter((review) => !review.is_approved);
@@ -2941,6 +2943,18 @@ export default function AdminPage() {
     await savePortfolioImageOrder(categoryValue, nextCategoryImages, imageId);
   };
 
+  const setPortfolioDropTargetSafe = (target) => {
+    portfolioDropTargetRef.current = target;
+    setPortfolioDropTarget(target);
+  };
+
+  const clearPortfolioDrag = () => {
+    portfolioPointerDragRef.current = null;
+    portfolioDropTargetRef.current = null;
+    setPortfolioDrag(null);
+    setPortfolioDropTarget(null);
+  };
+
   const beginPortfolioDrag = (categoryValue, imageId) => {
     if (!portfolioDragEnabled) return;
 
@@ -2948,7 +2962,7 @@ export default function AdminPage() {
     const currentIndex = getOrderedCategoryImages(categoryValue).findIndex(
       (image) => image.id === imageId
     );
-    setPortfolioDropTarget({ categoryValue, index: currentIndex });
+    setPortfolioDropTargetSafe({ categoryValue, index: currentIndex });
   };
 
   const updatePortfolioDropTarget = (event, categoryValue, index) => {
@@ -2958,38 +2972,84 @@ export default function AdminPage() {
 
     const rect = event.currentTarget.getBoundingClientRect();
     const isAfterMiddle = event.clientY > rect.top + rect.height / 2;
-    setPortfolioDropTarget({
+    setPortfolioDropTargetSafe({
       categoryValue,
       index: index + (isAfterMiddle ? 1 : 0),
     });
   };
 
+  const updatePortfolioPointerTarget = (event) => {
+    const currentDrag = portfolioPointerDragRef.current;
+    if (!currentDrag) return;
+
+    const target = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest("[data-portfolio-drop-index]");
+
+    if (!target) return;
+
+    const categoryValue = target.dataset.portfolioDropCategory;
+    if (categoryValue !== currentDrag.categoryValue) return;
+
+    const index = Number(target.dataset.portfolioDropIndex || 0);
+    const rect = target.getBoundingClientRect();
+    const isAfterMiddle = event.clientY > rect.top + rect.height / 2;
+
+    setPortfolioDropTargetSafe({
+      categoryValue,
+      index: index + (isAfterMiddle ? 1 : 0),
+    });
+  };
+
+  const beginPortfolioPointerDrag = (event, categoryValue, imageId) => {
+    if (!portfolioDragEnabled || event.button > 0) return;
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    portfolioPointerDragRef.current = {
+      categoryValue,
+      imageId,
+      pointerId: event.pointerId,
+    };
+    beginPortfolioDrag(categoryValue, imageId);
+  };
+
+  const finishPortfolioPointerDrag = (event, categoryValue) => {
+    if (!portfolioPointerDragRef.current) return;
+
+    event.preventDefault();
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    finishPortfolioDrag(categoryValue);
+  };
+
   const finishPortfolioDrag = async (categoryValue) => {
+    const currentDrag = portfolioPointerDragRef.current || portfolioDrag;
+    const currentDropTarget =
+      portfolioDropTargetRef.current || portfolioDropTarget;
+
     if (
-      !portfolioDrag ||
-      !portfolioDropTarget ||
-      portfolioDrag.categoryValue !== categoryValue ||
-      portfolioDropTarget.categoryValue !== categoryValue
+      !currentDrag ||
+      !currentDropTarget ||
+      currentDrag.categoryValue !== categoryValue ||
+      currentDropTarget.categoryValue !== categoryValue
     ) {
-      setPortfolioDrag(null);
-      setPortfolioDropTarget(null);
+      clearPortfolioDrag();
       return;
     }
 
     const categoryImages = getOrderedCategoryImages(categoryValue);
     const currentIndex = categoryImages.findIndex(
-      (image) => image.id === portfolioDrag.imageId
+      (image) => image.id === currentDrag.imageId
     );
 
     if (currentIndex < 0) {
-      setPortfolioDrag(null);
-      setPortfolioDropTarget(null);
+      clearPortfolioDrag();
       return;
     }
 
     const nextCategoryImages = [...categoryImages];
     const [movedImage] = nextCategoryImages.splice(currentIndex, 1);
-    let targetIndex = portfolioDropTarget.index;
+    let targetIndex = currentDropTarget.index;
 
     if (currentIndex < targetIndex) targetIndex -= 1;
 
@@ -3000,12 +3060,11 @@ export default function AdminPage() {
       await savePortfolioImageOrder(
         categoryValue,
         nextCategoryImages,
-        portfolioDrag.imageId
+        currentDrag.imageId
       );
     }
 
-    setPortfolioDrag(null);
-    setPortfolioDropTarget(null);
+    clearPortfolioDrag();
   };
 
   return (
@@ -3983,6 +4042,8 @@ export default function AdminPage() {
                                 )}
 
                             <article
+                              data-portfolio-drop-category={category.value}
+                              data-portfolio-drop-index={index}
                               onDragOver={(event) =>
                                 updatePortfolioDropTarget(
                                   event,
@@ -4018,18 +4079,35 @@ export default function AdminPage() {
                                   />
                                   Auswahl
                                 </label>
-                                <button
-                                  type="button"
-                                  draggable={portfolioDragEnabled}
-                                  onDragStart={() =>
-                                    beginPortfolioDrag(category.value, image.id)
+                                <span
+                                  role="button"
+                                  tabIndex={portfolioDragEnabled ? 0 : -1}
+                                  aria-disabled={!portfolioDragEnabled}
+                                  onPointerDown={(event) =>
+                                    beginPortfolioPointerDrag(
+                                      event,
+                                      category.value,
+                                      image.id
+                                    )
                                   }
-                                  onDragEnd={() => {
-                                    setPortfolioDrag(null);
-                                    setPortfolioDropTarget(null);
-                                  }}
-                                  disabled={!portfolioDragEnabled}
-                                  className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-white/20 bg-black/55 px-3 py-2 text-xs font-black text-white backdrop-blur-md transition hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-40"
+                                  onPointerMove={updatePortfolioPointerTarget}
+                                  onPointerUp={(event) =>
+                                    finishPortfolioPointerDrag(
+                                      event,
+                                      category.value
+                                    )
+                                  }
+                                  onPointerCancel={(event) =>
+                                    finishPortfolioPointerDrag(
+                                      event,
+                                      category.value
+                                    )
+                                  }
+                                  className={`absolute right-3 top-3 z-10 flex select-none items-center gap-2 rounded-full border border-white/20 bg-black/55 px-3 py-2 text-xs font-black text-white backdrop-blur-md transition hover:bg-black/70 ${
+                                    portfolioDragEnabled
+                                      ? "cursor-grab active:cursor-grabbing"
+                                      : "cursor-not-allowed opacity-40"
+                                  }`}
                                   title={
                                     portfolioDragEnabled
                                       ? "Bild ziehen und neu einsortieren"
@@ -4038,10 +4116,11 @@ export default function AdminPage() {
                                 >
                                   <GripVertical className="h-4 w-4" />
                                   Ziehen
-                                </button>
+                                </span>
                                 <img
                                   src={image.url}
                                   alt=""
+                                  draggable="false"
                                   className="h-full w-full object-cover"
                                 />
                               </div>
