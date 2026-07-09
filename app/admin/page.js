@@ -83,7 +83,6 @@ const REVIEW_AVATARS = Array.from({ length: 12 }, (_, index) => ({
 const SITE_ASSET_GROUPS = [
   {
     title: "Startseite",
-    description: "Diese Bilder steuern den Vorher/Nachher-Slider oben auf der Website.",
     assets: [
       { key: "hero_before", label: "Vorher-Bild" },
       { key: "hero_after", label: "Nachher-Bild" },
@@ -91,7 +90,6 @@ const SITE_ASSET_GROUPS = [
   },
   {
     title: "Portfolio-Titelbilder",
-    description: "Diese Bilder sind nur die Kacheln im Portfolio. Die Galerie selbst bleibt getrennt.",
     assets: [
       { key: "cover_car", label: "Car" },
       { key: "cover_portrait", label: "Portrait" },
@@ -101,7 +99,6 @@ const SITE_ASSET_GROUPS = [
   },
   {
     title: "Info-Bereich",
-    description: "Bild rechts neben deinem kurzen Über-mich-Text.",
     assets: [{ key: "info_image", label: "Info-Bild" }],
   },
 ];
@@ -332,7 +329,6 @@ const TEXT_FIELD_GROUPS = [
   },
   {
     title: "Info & Portfolio",
-    description: "Texte für den Info-Block und die Portfolio-Überschrift.",
     fields: [
       { key: "info_eyebrow", label: "Info kleine Zeile", placeholder: "Info" },
       {
@@ -360,7 +356,6 @@ const TEXT_FIELD_GROUPS = [
   },
   {
     title: "Bewertungen",
-    description: "Überschriften und Erklärung im Bewertungsbereich.",
     fields: [
       {
         key: "reviews_eyebrow",
@@ -3208,9 +3203,6 @@ export default function AdminPage() {
                   <span className="block truncate text-base font-black">
                     {activeTabDetails.label}
                   </span>
-                  <span className="block truncate text-xs text-neutral-500">
-                    {activeTabDetails.description}
-                  </span>
                 </span>
               </div>
 
@@ -3669,9 +3661,6 @@ export default function AdminPage() {
                               className="aspect-[3/4] w-full object-cover"
                             />
                           </div>
-                          <p className="mt-2 text-xs leading-5 text-neutral-500">
-                            So wird das Bild in der Galerie-Kachel angezeigt.
-                          </p>
                         </div>
 
                         <div>
@@ -3685,9 +3674,6 @@ export default function AdminPage() {
                               className="max-h-full max-w-full object-contain"
                             />
                           </div>
-                          <p className="mt-2 text-xs leading-5 text-neutral-500">
-                            Hier siehst du, wie viel Rand beim Zuschnitt bleibt.
-                          </p>
                         </div>
 
                         <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
@@ -3716,7 +3702,6 @@ export default function AdminPage() {
                                 ? `${imagePreviewSize.width} x ${imagePreviewSize.height}px`
                                 : "wird gelesen..."}
                             </p>
-                            <p>Empfohlen: Hochformat 3:4 oder genug Rand.</p>
                           </div>
                         </div>
                       </div>
@@ -3785,7 +3770,7 @@ export default function AdminPage() {
 
                   {imageSortMode !== "manual" && (
                     <p className="mt-2 text-xs text-neutral-500">
-                      Hoch/Runter ist nur bei eigener Reihenfolge aktiv.
+                      Verschieben nur bei eigener Reihenfolge.
                     </p>
                   )}
                 </div>
@@ -4752,14 +4737,11 @@ export default function AdminPage() {
                               <div className="min-w-0">
                                 <p className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                                   <CircleHelp className="h-3.5 w-3.5" />
-                                  Nächster Schritt
+                                  Aktion
                                 </p>
                                 <h4 className="mt-1 font-black text-neutral-100">
                                   {activeClientProjectStep.label}
                                 </h4>
-                                <p className="mt-1 text-sm leading-6 text-neutral-500">
-                                  {activeClientProjectStep.helper}
-                                </p>
                               </div>
                               <button
                                 type="button"
@@ -5019,9 +5001,6 @@ export default function AdminPage() {
                                 placeholder="z. B. Schön, dass du da bist. Hier findest du deine Auswahl vom Shooting."
                                 className="mt-2 w-full resize-y rounded-xl border border-white/10 bg-white px-3 py-2 text-sm leading-6 text-neutral-950 outline-none focus:border-yellow-400"
                               />
-                              <p className="mt-2 text-xs leading-5 text-neutral-500">
-                                Dieser Text erscheint oben in der Kundengalerie.
-                              </p>
                               <button
                                 type="button"
                                 onClick={() =>
@@ -5053,9 +5032,6 @@ export default function AdminPage() {
                               <span>
                                 <span className="block font-black">
                                   Projektstatus & Checkliste
-                                </span>
-                                <span className="mt-1 block text-sm text-neutral-500">
-                                  Sichtbarkeit, Downloads und Abschluss nur bei Bedarf öffnen.
                                 </span>
                               </span>
                               <span
@@ -5352,10 +5328,6 @@ export default function AdminPage() {
                             <span className="text-sm font-semibold text-neutral-300">
                               Kundenbild hochladen
                             </span>
-                            <span className="mt-1 block text-xs leading-5 text-neutral-500">
-                              Originaldatei bis 15 MB. Für flüssiges Laden sind
-                              JPG/WebP mit ca. 2000-3000 px Kantenlänge ideal.
-                            </span>
                             <input
                               type="file"
                               accept="image/*"
@@ -5442,10 +5414,6 @@ export default function AdminPage() {
                               <h4 className="mt-3 text-lg font-black text-white">
                                 Favoriten des Kunden
                               </h4>
-                              <p className="mt-1 text-sm leading-6 text-yellow-100/70">
-                                Hier siehst du nur die Bilder, die der Kunde in
-                                seiner Galerie markiert hat.
-                              </p>
                               <p className="mt-2 text-xs text-yellow-100/55">
                                 Zuletzt markiert:{" "}
                                 {activeClientGallery.favorite_last_at
@@ -5657,10 +5625,6 @@ export default function AdminPage() {
                     <h2 className="mt-3 text-3xl font-black">
                       Startseite und Portfolio-Kacheln
                     </h2>
-                    <p className="mt-3 max-w-2xl text-neutral-300">
-                      Hier tauschst du die sichtbaren Titelbilder, ohne die
-                      Galerie-Uploads zu verändern.
-                    </p>
                   </div>
 
                   <button
@@ -5862,10 +5826,6 @@ export default function AdminPage() {
                     <h2 className="mt-3 text-3xl font-black">
                       Website-Texte bearbeiten
                     </h2>
-                    <p className="mt-3 max-w-2xl text-neutral-300">
-                      Hier änderst du sichtbare Texte auf der Website, ohne in
-                      den Code zu gehen.
-                    </p>
                   </div>
 
                   <button
@@ -5969,10 +5929,6 @@ export default function AdminPage() {
                     <h2 className="mt-3 text-3xl font-black">
                       Kontaktinfos bearbeiten
                     </h2>
-                    <p className="mt-3 max-w-2xl text-neutral-300">
-                      Diese Angaben erscheinen auf der Website im Kontaktbereich
-                      und teilweise im Impressum.
-                    </p>
                   </div>
 
                   <button
@@ -6378,9 +6334,6 @@ export default function AdminPage() {
                     <span className="mt-5 block text-xl font-black">
                       Daten neu laden
                     </span>
-                    <span className="mt-2 block text-sm text-neutral-400">
-                      Inhalte aktualisieren
-                    </span>
                   </button>
 
                   <a
@@ -6395,9 +6348,6 @@ export default function AdminPage() {
                     <span className="mt-5 block text-xl font-black">
                       Website öffnen
                     </span>
-                    <span className="mt-2 block text-sm text-neutral-400">
-                      Live-Ansicht
-                    </span>
                   </a>
 
                   <button
@@ -6410,9 +6360,6 @@ export default function AdminPage() {
                     </span>
                     <span className="mt-5 block text-xl font-black">
                       Kunden öffnen
-                    </span>
-                    <span className="mt-2 block text-sm text-neutral-400">
-                      Galerien verwalten
                     </span>
                   </button>
 
@@ -6443,9 +6390,6 @@ export default function AdminPage() {
                     </span>
                     <span className="mt-5 block text-xl font-black">
                       Ausloggen
-                    </span>
-                    <span className="mt-2 block text-sm text-red-100/70">
-                      Admin-Sitzung beenden.
                     </span>
                   </button>
                 </div>
@@ -6490,9 +6434,6 @@ export default function AdminPage() {
                         <h3 className="text-xl font-black">
                           Sicherheitscheck
                         </h3>
-                        <p className="mt-1 text-sm text-neutral-400">
-                          Supabase, Buckets und Tabellen.
-                        </p>
                       </div>
                     </div>
 
@@ -6567,8 +6508,7 @@ export default function AdminPage() {
                     <div className="mt-5 max-h-[560px] space-y-3 overflow-y-auto pr-1">
                       {activityLogs.length === 0 && (
                         <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-neutral-400">
-                          Noch keine Einträge. Falls die Tabelle fehlt, die
-                          aktuelle SQL-Datei in Supabase ausführen.
+                          Noch keine Einträge.
                         </div>
                       )}
 
@@ -6612,10 +6552,6 @@ export default function AdminPage() {
                     <h2 className="mt-3 text-3xl font-black">
                       Meldungen von Besuchern
                     </h2>
-                    <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-400">
-                      Technische Fehler und sichtbare Fehlermeldungen aus der
-                      Website. Inhalte aus Formularen werden nicht gespeichert.
-                    </p>
                   </div>
 
                   <button
