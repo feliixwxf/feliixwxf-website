@@ -2990,7 +2990,7 @@ export default function AdminPage() {
         {!authenticated ? (
           <form
             onSubmit={handleLogin}
-            className="mt-10 max-w-md rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 backdrop-blur-md"
+            className="mt-10 max-w-md rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 backdrop-blur-md"
           >
             <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
               <Lock className="h-5 w-5" />
@@ -3030,74 +3030,8 @@ export default function AdminPage() {
           </form>
         ) : (
           <section className="mt-4 grid gap-3 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)]">
-            <aside className="xl:min-h-0 xl:overflow-y-auto xl:pr-1">
+            <aside className="hidden xl:block xl:min-h-0 xl:overflow-y-auto xl:pr-1">
               <nav className="rounded-[1.25rem] border border-white/10 bg-black/25 p-2">
-                <div className="grid gap-2 xl:hidden">
-                  <label className="block">
-                    <span className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
-                      Bereich
-                    </span>
-                    <select
-                      value={activeTab}
-                      onChange={(event) => setActiveTab(event.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm font-black text-neutral-950 outline-none focus:border-yellow-400"
-                    >
-                      {tabGroups.map((group) => (
-                        <optgroup key={group.title} label={group.title}>
-                          {group.tabs.map((tab) => (
-                            <option key={tab.value} value={tab.value}>
-                              {tab.label}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </label>
-
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {[
-                      {
-                        label: "Kunden",
-                        icon: Users,
-                        tab: "clients",
-                      },
-                      {
-                        label: "Bewertungen",
-                        icon: MessageSquare,
-                        tab: "reviews",
-                      },
-                      {
-                        label: "Portfolio",
-                        icon: Images,
-                        tab: "portfolio",
-                      },
-                    ].map((item) => {
-                      const Icon = item.icon;
-                      const active = activeTab === item.tab;
-
-                      return (
-                        <button
-                          key={item.label}
-                          type="button"
-                          onClick={() => {
-                            setActiveTab(item.tab);
-                            if (item.tab === "reviews") setReviewFilter("pending");
-                          }}
-                          className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-center text-xs font-black transition ${
-                            active
-                              ? "border-white bg-white text-neutral-950"
-                              : "border-white/10 bg-white/[0.055] text-neutral-300 hover:bg-white/10"
-                          }`}
-                        >
-                          <Icon className="h-4 w-4" />
-                          <span className="truncate">{item.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="hidden xl:block">
                 <div className="grid grid-cols-3 gap-1.5 p-1.5">
                   {[
                     {
@@ -3188,32 +3122,90 @@ export default function AdminPage() {
                     </div>
                   </div>
                 ))}
-                </div>
               </nav>
             </aside>
 
             <div className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.045] p-3 shadow-xl backdrop-blur-xl sm:rounded-[1.5rem] sm:p-4 md:p-5 xl:min-h-0 xl:overflow-y-auto">
-              <div className="mb-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3 xl:hidden">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
-                  {React.createElement(activeTabDetails.icon, {
-                    className: "h-5 w-5",
-                  })}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-base font-black">
-                    {activeTabDetails.label}
-                  </span>
-                </span>
+              <div className="mb-4 xl:hidden">
+                {activeTab === "dashboard" ? (
+                  <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                      Admin Menü
+                    </p>
+                    <div className="mt-4 grid gap-2">
+                      {tabGroups.map((group) => (
+                        <div key={group.title}>
+                          <p className="mb-2 px-1 text-[0.68rem] font-black uppercase tracking-[0.2em] text-neutral-600">
+                            {group.title}
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {group.tabs
+                              .filter((tab) => tab.value !== "dashboard")
+                              .map((tab) => {
+                                const Icon = tab.icon;
+
+                                return (
+                                  <button
+                                    key={tab.value}
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveTab(tab.value);
+                                      if (tab.value === "reviews") {
+                                        setReviewFilter("pending");
+                                      }
+                                    }}
+                                    className="flex min-h-20 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.07] p-3 text-left transition active:scale-[0.99]"
+                                  >
+                                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                                      <Icon className="h-5 w-5" />
+                                    </span>
+                                    <span className="min-w-0 flex-1">
+                                      <span className="block truncate text-sm font-black">
+                                        {tab.label}
+                                      </span>
+                                      {typeof tab.count === "number" && (
+                                        <span className="mt-1 inline-flex rounded-full bg-white/10 px-2 py-0.5 text-[0.7rem] font-bold text-neutral-300">
+                                          {tab.count}
+                                        </span>
+                                      )}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("dashboard")}
+                      className="inline-flex h-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 px-4 text-sm font-black"
+                    >
+                      Übersicht
+                    </button>
+                    <div className="flex min-w-0 flex-1 items-center gap-3 rounded-full border border-white/10 bg-black/20 px-4 py-2.5">
+                      {React.createElement(activeTabDetails.icon, {
+                        className: "h-4 w-4 shrink-0",
+                      })}
+                      <span className="truncate text-sm font-black">
+                        {activeTabDetails.label}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
             {activeTab === "dashboard" && (
               <div>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="hidden flex-col gap-4 sm:flex sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Admin Start
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Was ist gerade wichtig?
                     </h2>
                   </div>
@@ -3227,19 +3219,19 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                <div className="mt-8 hidden gap-4 sm:grid md:grid-cols-2 xl:grid-cols-5">
                   <button
                     type="button"
                     onClick={() => {
                       setActiveTab("reviews");
                       setReviewFilter("pending");
                     }}
-                    className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-6 text-left transition hover:-translate-y-1 hover:bg-yellow-400/15"
+                    className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-yellow-400/15"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400/15">
                       <Clock className="h-5 w-5 text-yellow-100" />
                     </div>
-                    <p className="mt-5 text-3xl font-black">
+                    <p className="mt-5 text-2xl font-black sm:text-3xl">
                       {pendingReviews.length}
                     </p>
                     <h3 className="mt-2 text-lg font-black">
@@ -3250,12 +3242,12 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("portfolio")}
-                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
                       <Images className="h-5 w-5" />
                     </div>
-                    <p className="mt-5 text-3xl font-black">{images.length}</p>
+                    <p className="mt-5 text-2xl font-black sm:text-3xl">{images.length}</p>
                     <h3 className="mt-2 text-lg font-black">
                       Galerie-Bilder
                     </h3>
@@ -3264,12 +3256,12 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("covers")}
-                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
                       <ImageIcon className="h-5 w-5" />
                     </div>
-                    <p className="mt-5 text-3xl font-black">
+                    <p className="mt-5 text-2xl font-black sm:text-3xl">
                       {SITE_ASSET_GROUPS.flatMap((group) => group.assets).length -
                         missingCoverAssets.length}
                     </p>
@@ -3279,12 +3271,12 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("clients")}
-                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
                       <Users className="h-5 w-5" />
                     </div>
-                    <p className="mt-5 text-3xl font-black">
+                    <p className="mt-5 text-2xl font-black sm:text-3xl">
                       {clientGalleries.length}
                     </p>
                     <h3 className="mt-2 text-lg font-black">
@@ -3295,7 +3287,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("contact")}
-                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
                       <Mail className="h-5 w-5" />
@@ -3307,11 +3299,11 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-4 hidden sm:block">
                   <button
                     type="button"
                     onClick={() => setActiveTab("texts")}
-                    className="flex w-full flex-col gap-4 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12] md:flex-row md:items-center md:justify-between"
+                    className="flex w-full flex-col gap-4 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12] md:flex-row md:items-center md:justify-between"
                   >
                     <span>
                       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
@@ -3362,7 +3354,7 @@ export default function AdminPage() {
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10">
                               <Icon className="h-5 w-5" />
                             </div>
-                            <span className="text-3xl font-black">
+                            <span className="text-2xl font-black sm:text-3xl">
                               {item.value}
                             </span>
                           </div>
@@ -3425,7 +3417,7 @@ export default function AdminPage() {
                 </section>
 
                 <div className="hidden">
-                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6">
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <h3 className="text-2xl font-black">
@@ -3463,7 +3455,7 @@ export default function AdminPage() {
                     </div>
                   </section>
 
-                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6">
                     <div className="flex items-center justify-between gap-4">
                       <div>
                         <h3 className="text-2xl font-black">Checkliste</h3>
@@ -3515,7 +3507,7 @@ export default function AdminPage() {
                   </section>
                 </div>
 
-                <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-black/20 p-6">
+                <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-black/20 p-4 sm:p-6">
                   <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] xl:items-center">
                     <div className="min-w-0">
                       <h3 className="text-xl font-black">Schnellzugriff</h3>
@@ -3570,7 +3562,7 @@ export default function AdminPage() {
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Portfolio
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Bilder verwalten
                     </h2>
                     <p className="mt-3 max-w-2xl text-neutral-300">
@@ -3590,7 +3582,7 @@ export default function AdminPage() {
 
                 <form
                   onSubmit={uploadImage}
-                  className="mt-6 grid gap-4 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 backdrop-blur-md md:grid-cols-[1fr_1fr_auto]"
+                  className="mt-6 grid gap-4 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 backdrop-blur-md md:grid-cols-[1fr_1fr_auto]"
                 >
                   <label className="block">
                     <span className="text-sm font-semibold text-neutral-300">
@@ -3816,13 +3808,13 @@ export default function AdminPage() {
 
                 <div className="mt-8 space-y-8">
                   {images.length === 0 && (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-neutral-300">
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-neutral-300">
                       Noch keine hochgeladenen Portfolio-Bilder vorhanden.
                     </div>
                   )}
 
                   {images.length > 0 && visibleImageCount === 0 && (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-neutral-300">
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-neutral-300">
                       Keine Bilder zu deiner Suche gefunden.
                     </div>
                   )}
@@ -4069,7 +4061,7 @@ export default function AdminPage() {
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Kunden
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Kundenbereich
                     </h2>
                     <p className="mt-3 max-w-2xl text-neutral-300">
@@ -4140,7 +4132,7 @@ export default function AdminPage() {
                       <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                         {item.label}
                       </p>
-                      <p className="mt-2 text-3xl font-black text-white">
+                      <p className="mt-2 text-2xl font-black sm:text-3xl text-white">
                         {item.value}
                       </p>
                       <p className="mt-1 text-sm text-neutral-400">
@@ -4246,7 +4238,7 @@ export default function AdminPage() {
 
                   <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
                     {!selectedCustomerAccount ? (
-                      <div className="flex h-full min-h-44 flex-col justify-center rounded-2xl border border-dashed border-white/10 bg-black/20 p-6 text-neutral-400">
+                      <div className="flex h-full min-h-44 flex-col justify-center rounded-2xl border border-dashed border-white/10 bg-black/20 p-4 sm:p-6 text-neutral-400">
                         <UserRound className="h-8 w-8" />
                         <p className="mt-4 font-bold">
                           Suche ein Kundenkonto, um Profil und Galerien zu sehen.
@@ -4364,7 +4356,7 @@ export default function AdminPage() {
 	                {showClientGalleryForm && (
                 <form
                   onSubmit={createClientGallery}
-                  className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
+                  className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6"
                 >
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                     <label className="block min-w-0">
@@ -4627,7 +4619,7 @@ export default function AdminPage() {
 
                   <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
                     {!activeClientGallery ? (
-                      <div className="rounded-2xl border border-white/10 bg-black/20 p-6 text-neutral-300">
+                      <div className="rounded-2xl border border-white/10 bg-black/20 p-4 sm:p-6 text-neutral-300">
                         Erstelle links zuerst eine Kundengalerie.
                       </div>
                     ) : (
@@ -5622,7 +5614,7 @@ export default function AdminPage() {
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Titelbilder
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Startseite und Portfolio-Kacheln
                     </h2>
                   </div>
@@ -5638,7 +5630,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="mt-8 space-y-8">
-                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-6">
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-4 sm:p-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                       <div>
                         <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
@@ -5703,7 +5695,7 @@ export default function AdminPage() {
                   {SITE_ASSET_GROUPS.map((group) => (
                     <section
                       key={group.title}
-                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-6"
+                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-4 sm:p-6"
                     >
                       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                         <div>
@@ -5823,7 +5815,7 @@ export default function AdminPage() {
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Texte
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Website-Texte bearbeiten
                     </h2>
                   </div>
@@ -5842,7 +5834,7 @@ export default function AdminPage() {
                   {TEXT_FIELD_GROUPS.map((group) => (
                     <section
                       key={group.title}
-                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
+                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6"
                     >
                       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                         <div>
@@ -5926,7 +5918,7 @@ export default function AdminPage() {
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Kontakt
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Kontaktinfos bearbeiten
                     </h2>
                   </div>
@@ -5943,7 +5935,7 @@ export default function AdminPage() {
 
                 <form
                   onSubmit={saveSiteSettings}
-                  className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6"
+                  className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6"
                 >
                   <div className="grid gap-5 lg:grid-cols-2">
                     {CONTACT_FIELDS.map((field) => {
@@ -6008,7 +6000,7 @@ export default function AdminPage() {
                   </div>
                 </form>
 
-                <section className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6">
+                <section className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div className="max-w-xl">
                       <div className="flex items-center gap-3">
@@ -6080,7 +6072,7 @@ export default function AdminPage() {
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Bewertungen
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Bewertungen moderieren
                     </h2>
                     <p className="mt-3 text-sm text-neutral-400">
@@ -6128,7 +6120,7 @@ export default function AdminPage() {
 
                 <div className="mt-6 grid gap-4">
                   {visibleReviews.length === 0 && (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-neutral-300">
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-neutral-300">
                       In dieser Ansicht gibt es gerade keine Bewertungen.
                     </div>
                   )}
@@ -6136,7 +6128,7 @@ export default function AdminPage() {
                   {visibleReviews.map((review) => (
                     <article
                       key={review.id}
-                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 backdrop-blur-md"
+                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 backdrop-blur-md"
                     >
                       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                         <div>
@@ -6283,14 +6275,14 @@ export default function AdminPage() {
                 <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                   Einstellungen
                 </p>
-                <h2 className="mt-3 text-3xl font-black">Schnellzugriff</h2>
+                <h2 className="mt-3 text-2xl font-black sm:text-3xl">Schnellzugriff</h2>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <button
                     type="button"
                     onClick={toggleMaintenanceMode}
                     disabled={maintenanceSaving}
-                    className={`group rounded-[1.5rem] border p-6 text-left transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    className={`group rounded-[1.5rem] border p-4 sm:p-6 text-left transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 ${
                       String(siteSettings.maintenance_mode) === "true"
                         ? "border-yellow-400/25 bg-yellow-400/10 text-yellow-50 hover:bg-yellow-400/15"
                         : "border-emerald-400/20 bg-emerald-400/10 text-emerald-50 hover:bg-emerald-400/15"
@@ -6326,7 +6318,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={refreshDashboard}
-                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
                       <RefreshCw className="h-5 w-5" />
@@ -6340,7 +6332,7 @@ export default function AdminPage() {
                     href="/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
                       <ExternalLink className="h-5 w-5" />
@@ -6353,7 +6345,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("clients")}
-                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
                       <Users className="h-5 w-5" />
@@ -6366,7 +6358,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("reviews")}
-                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
                       <MessageSquare className="h-5 w-5" />
@@ -6383,7 +6375,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="group rounded-[1.5rem] border border-red-400/20 bg-red-500/10 p-6 text-left text-red-50 transition hover:-translate-y-1 hover:bg-red-500/15"
+                    className="group rounded-[1.5rem] border border-red-400/20 bg-red-500/10 p-4 sm:p-6 text-left text-red-50 transition hover:-translate-y-1 hover:bg-red-500/15"
                   >
                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/15 transition group-hover:bg-red-500/20">
                       <LogOut className="h-5 w-5" />
@@ -6403,7 +6395,7 @@ export default function AdminPage() {
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Protokoll
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Sicherheit & Verlauf
                     </h2>
                   </div>
@@ -6549,7 +6541,7 @@ export default function AdminPage() {
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Nutzerfehler
                     </p>
-                    <h2 className="mt-3 text-3xl font-black">
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Meldungen von Besuchern
                     </h2>
                   </div>
@@ -6566,7 +6558,7 @@ export default function AdminPage() {
 
                 <div className="mt-6 grid gap-4">
                   {userErrorsLoadError && (
-                    <div className="rounded-[1.5rem] border border-red-400/25 bg-red-500/10 p-6 text-red-100">
+                    <div className="rounded-[1.5rem] border border-red-400/25 bg-red-500/10 p-4 sm:p-6 text-red-100">
                       <p className="text-sm font-black uppercase tracking-[0.22em]">
                         Nutzerfehler konnten nicht geladen werden
                       </p>
@@ -6577,7 +6569,7 @@ export default function AdminPage() {
                   )}
 
                   {!userErrorsLoadError && userErrors.length === 0 && (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-6 text-neutral-300">
+                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4 sm:p-6 text-neutral-300">
                       Noch keine Nutzerfehler vorhanden.
                     </div>
                   )}
@@ -6838,7 +6830,7 @@ export default function AdminPage() {
 
       {confirmAction && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-5 backdrop-blur-lg">
-          <div className="w-full max-w-lg rounded-[2rem] border border-red-400/20 bg-neutral-950 p-6 text-white shadow-2xl">
+          <div className="w-full max-w-lg rounded-[2rem] border border-red-400/20 bg-neutral-950 p-4 sm:p-6 text-white shadow-2xl">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-500/15 text-red-100">
                 <Trash2 className="h-5 w-5" />
