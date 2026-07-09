@@ -2180,17 +2180,46 @@ export default function FeliixWxfPhotography() {
 
               <div>
                 <h3 className="text-2xl font-bold text-white">
+                  Hosting und CDN mit Vercel
+                </h3>
+                <p className="mt-3">
+                  Diese Website wird bei Vercel gehostet. Anbieter ist Vercel
+                  Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA. Vercel
+                  stellt Webhosting-Kapazitäten, Infrastruktur-Dienstleistungen
+                  und ein weltweites Content Delivery Network bereit, damit die
+                  Website schnell, sicher und zuverlässig ausgeliefert werden
+                  kann.
+                </p>
+                <p className="mt-3">
+                  Beim Aufruf der Website können technisch erforderliche Daten
+                  wie IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene
+                  Seiten, Browser- und Geräteinformationen, Betriebssystem,
+                  Referrer-URL sowie weitere technische Verbindungsdaten
+                  verarbeitet werden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f
+                  DSGVO. Das berechtigte Interesse liegt in der sicheren,
+                  schnellen und fehlerfreien Bereitstellung des Onlineangebots.
+                </p>
+                <p className="mt-3">
+                  Da Vercel seinen Sitz in den USA hat, kann eine Übermittlung
+                  personenbezogener Daten in die USA nicht ausgeschlossen
+                  werden. Mit Vercel wurde ein Data Processing Addendum
+                  abgeschlossen, das die EU-Standardvertragsklauseln enthält.
+                  IP-Adressen und Server-Logfiles werden nur so lange
+                  verarbeitet und gespeichert, wie dies für Betrieb,
+                  Funktionalität und IT-Sicherheit erforderlich ist.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white">
                   Externe Dienste
                 </h3>
                 <p className="mt-3">
                   Diese Website nutzt externe Dienste zur Bereitstellung und
-                  Verwaltung der Inhalte. Vercel wird für Hosting und
-                  Auslieferung der Website genutzt. Supabase wird für Datenbank,
+                  Verwaltung der Inhalte. Supabase wird für Datenbank,
                   Kundenkonten, Bewertungen, Kundengalerien und Bildspeicher
                   genutzt. Formspree kann für die Verarbeitung von
-                  Kontaktformularen eingesetzt werden. Externe Bildquellen
-                  können nur dort verwendet werden, wo keine eigenen Bilder
-                  hinterlegt sind.
+                  Kontaktformularen eingesetzt werden.
                 </p>
                 <p className="mt-3">
                   Im Adminbereich können Kundenkonten anhand von E-Mail-Adresse

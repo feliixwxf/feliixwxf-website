@@ -57,6 +57,16 @@ const sections = [
     ],
   },
   {
+    title: "Hosting und Content Delivery Network mit Vercel",
+    paragraphs: [
+      "Diese Website wird bei Vercel gehostet. Anbieter ist Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA. Vercel stellt Webhosting-Kapazitäten, Infrastruktur-Dienstleistungen und ein weltweites Content Delivery Network (CDN) bereit, damit die Inhalte der Website schnell, sicher und zuverlässig ausgeliefert werden können.",
+      "Beim Aufruf der Website können durch Vercel technisch erforderliche Daten verarbeitet werden. Dazu gehören insbesondere IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seiten, Browser- und Geräteinformationen, Betriebssystem, Referrer-URL sowie weitere technische Verbindungsdaten.",
+      "Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Das berechtigte Interesse liegt in der sicheren, schnellen und fehlerfreien Bereitstellung des Onlineangebots durch einen professionellen Cloud- und Hosting-Anbieter.",
+      "Da Vercel ein Anbieter mit Sitz in den USA ist, kann eine Übermittlung personenbezogener Daten in die USA nicht ausgeschlossen werden. Mit Vercel wurde ein Data Processing Addendum abgeschlossen, das die EU-Standardvertragsklauseln enthält, um ein angemessenes Datenschutzniveau bei Datenübermittlungen in Drittstaaten sicherzustellen.",
+      "IP-Adressen und Server-Logfiles werden nur so lange verarbeitet und gespeichert, wie dies für die Bereitstellung des Dienstes, die technische Funktionalität und die IT-Sicherheit erforderlich ist. Soweit verfügbar, werden datenschutzfreundliche Einstellungen wie die Anonymisierung von IP-Adressen und Logdaten genutzt.",
+    ],
+  },
+  {
     title: "Speicherdauer",
     paragraphs: [
       "Daten werden nur so lange gespeichert, wie sie für die jeweiligen Zwecke erforderlich sind. Kundengalerien können nach Abschluss eines Projekts deaktiviert, mit einem Ablaufdatum versehen oder gelöscht werden.",
@@ -66,7 +76,7 @@ const sections = [
   {
     title: "Externe Dienste",
     paragraphs: [
-      "Diese Website nutzt externe Dienste zur Bereitstellung und Verwaltung der Inhalte. Vercel wird für Hosting und Auslieferung der Website genutzt. Supabase wird für Datenbank, Kundenkonten, Bewertungen, Kundengalerien und Bildspeicher genutzt. Formspree kann für Kontaktformulare eingesetzt werden.",
+      "Diese Website nutzt externe Dienste zur Bereitstellung und Verwaltung der Inhalte. Supabase wird für Datenbank, Kundenkonten, Bewertungen, Kundengalerien und Bildspeicher genutzt. Formspree kann für Kontaktformulare eingesetzt werden.",
       "Bei diesen Diensten können technische Daten wie IP-Adresse, Zeitpunkt des Zugriffs, Geräte- und Browserinformationen oder Formularinhalte verarbeitet werden, soweit dies für Betrieb, Sicherheit und Anfragebearbeitung erforderlich ist.",
       "Soweit diese Dienste personenbezogene Daten im Auftrag verarbeiten, sollten entsprechende Vereinbarungen zur Auftragsverarbeitung geprüft und abgeschlossen werden.",
     ],
