@@ -14,6 +14,7 @@ import {
   ExternalLink,
   EyeOff,
   Eye,
+  GripVertical,
   Heart,
   Image as ImageIcon,
   Images,
@@ -654,6 +655,8 @@ export default function AdminPage() {
   const [imageSearch, setImageSearch] = useState("");
   const [imageCategoryFilter, setImageCategoryFilter] = useState("all");
   const [imageSortMode, setImageSortMode] = useState("manual");
+  const [portfolioDrag, setPortfolioDrag] = useState(null);
+  const [portfolioDropTarget, setPortfolioDropTarget] = useState(null);
   const [selectedImageIds, setSelectedImageIds] = useState([]);
   const [collapsedPortfolioCategories, setCollapsedPortfolioCategories] =
     useState({});
@@ -706,6 +709,8 @@ export default function AdminPage() {
         ? approvedReviews
         : reviews;
   const normalizedImageSearch = imageSearch.trim().toLowerCase();
+  const portfolioDragEnabled =
+    imageSortMode === "manual" && !normalizedImageSearch;
   const imagesByCategory = CATEGORIES.map((category) => ({
     ...category,
     images: sortImages(
@@ -2860,8 +2865,50 @@ export default function AdminPage() {
     });
   };
 
-  const moveImage = async (categoryValue, imageId, direction) => {
-    const categoryImages = images
+  const savePortfolioImageOrder = async (
+    categoryValue,
+    nextCategoryImages,
+    busyTarget = "portfolio-order"
+  ) => {
+    setBusyImageId(busyTarget);
+    setMessage("");
+
+    setImages((current) =>
+      current.map((image) => {
+        if (image.category !== categoryValue) return image;
+
+        const newIndex = nextCategoryImages.findIndex(
+          (item) => item.id === image.id
+        );
+
+        return newIndex >= 0 ? { ...image, sort_order: newIndex } : image;
+      })
+    );
+
+    const response = await fetch("/api/admin/images", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderedIds: nextCategoryImages.map((image) => image.id),
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Sortierung konnte nicht gespeichert werden.",
+        "error"
+      );
+      await loadImages();
+    } else {
+      showMessage("Sortierung wurde gespeichert.", "success");
+    }
+
+    setBusyImageId(null);
+  };
+
+  const getOrderedCategoryImages = (categoryValue) =>
+    images
       .filter((image) => image.category === categoryValue)
       .sort((a, b) => {
         const orderDifference =
@@ -2871,6 +2918,9 @@ export default function AdminPage() {
 
         return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       });
+
+  const moveImage = async (categoryValue, imageId, direction) => {
+    const categoryImages = getOrderedCategoryImages(categoryValue);
     const currentIndex = categoryImages.findIndex(
       (image) => image.id === imageId
     );
@@ -2888,39 +2938,74 @@ export default function AdminPage() {
     const [movedImage] = nextCategoryImages.splice(currentIndex, 1);
     nextCategoryImages.splice(targetIndex, 0, movedImage);
 
-    setBusyImageId(imageId);
-    setMessage("");
+    await savePortfolioImageOrder(categoryValue, nextCategoryImages, imageId);
+  };
 
-    setImages((current) =>
-      current.map((image) => {
-        const newIndex = nextCategoryImages.findIndex(
-          (item) => item.id === image.id
-        );
+  const beginPortfolioDrag = (categoryValue, imageId) => {
+    if (!portfolioDragEnabled) return;
 
-        return newIndex >= 0 ? { ...image, sort_order: newIndex } : image;
-      })
+    setPortfolioDrag({ categoryValue, imageId });
+    const currentIndex = getOrderedCategoryImages(categoryValue).findIndex(
+      (image) => image.id === imageId
     );
+    setPortfolioDropTarget({ categoryValue, index: currentIndex });
+  };
 
-    const response = await fetch("/api/admin/images", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderedIds: nextCategoryImages.map((image) => image.id),
-      }),
+  const updatePortfolioDropTarget = (event, categoryValue, index) => {
+    if (!portfolioDrag || portfolioDrag.categoryValue !== categoryValue) return;
+
+    event.preventDefault();
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const isAfterMiddle = event.clientY > rect.top + rect.height / 2;
+    setPortfolioDropTarget({
+      categoryValue,
+      index: index + (isAfterMiddle ? 1 : 0),
     });
-    const data = await response.json();
+  };
 
-    if (!response.ok) {
-      showMessage(
-        data.error || "Sortierung konnte nicht gespeichert werden.",
-        "error"
-      );
-      await loadImages();
-    } else {
-      showMessage("Sortierung wurde gespeichert.", "success");
+  const finishPortfolioDrag = async (categoryValue) => {
+    if (
+      !portfolioDrag ||
+      !portfolioDropTarget ||
+      portfolioDrag.categoryValue !== categoryValue ||
+      portfolioDropTarget.categoryValue !== categoryValue
+    ) {
+      setPortfolioDrag(null);
+      setPortfolioDropTarget(null);
+      return;
     }
 
-    setBusyImageId(null);
+    const categoryImages = getOrderedCategoryImages(categoryValue);
+    const currentIndex = categoryImages.findIndex(
+      (image) => image.id === portfolioDrag.imageId
+    );
+
+    if (currentIndex < 0) {
+      setPortfolioDrag(null);
+      setPortfolioDropTarget(null);
+      return;
+    }
+
+    const nextCategoryImages = [...categoryImages];
+    const [movedImage] = nextCategoryImages.splice(currentIndex, 1);
+    let targetIndex = portfolioDropTarget.index;
+
+    if (currentIndex < targetIndex) targetIndex -= 1;
+
+    targetIndex = Math.max(0, Math.min(targetIndex, nextCategoryImages.length));
+
+    if (currentIndex !== targetIndex) {
+      nextCategoryImages.splice(targetIndex, 0, movedImage);
+      await savePortfolioImageOrder(
+        categoryValue,
+        nextCategoryImages,
+        portfolioDrag.imageId
+      );
+    }
+
+    setPortfolioDrag(null);
+    setPortfolioDropTarget(null);
   };
 
   return (
@@ -3765,6 +3850,19 @@ export default function AdminPage() {
                       Verschieben nur bei eigener Reihenfolge.
                     </p>
                   )}
+
+                  {imageSortMode === "manual" && normalizedImageSearch && (
+                    <p className="mt-2 text-xs text-yellow-100">
+                      Suche leeren, um Bilder per Drag & Drop zu sortieren.
+                    </p>
+                  )}
+
+                  {portfolioDragEnabled && (
+                    <p className="mt-2 text-xs text-neutral-500">
+                      Ziehe ein Bild am Griff. Die gelbe Linie zeigt, wo es
+                      eingefügt wird.
+                    </p>
+                  )}
                 </div>
 
                 {images.length > 0 && (
@@ -3862,11 +3960,42 @@ export default function AdminPage() {
                               Noch keine Uploads in dieser Kategorie.
                             </div>
                           ) : (
-                            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <div
+                              className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                              onDragOver={(event) => {
+                                if (
+                                  portfolioDrag?.categoryValue ===
+                                  category.value
+                                ) {
+                                  event.preventDefault();
+                                }
+                              }}
+                              onDrop={() => finishPortfolioDrag(category.value)}
+                            >
                           {category.images.map((image, index) => (
+                            <React.Fragment key={image.id}>
+                              {portfolioDropTarget?.categoryValue ===
+                                category.value &&
+                                portfolioDropTarget.index === index && (
+                                  <div className="flex min-h-24 items-center justify-center rounded-[1.5rem] border-2 border-dashed border-yellow-400 bg-yellow-400/10 text-sm font-black text-yellow-100 sm:min-h-40">
+                                    Hier einfügen
+                                  </div>
+                                )}
+
                             <article
-                              key={image.id}
-                              className={`overflow-hidden rounded-[1.5rem] border bg-white/[0.08] backdrop-blur-md ${
+                              onDragOver={(event) =>
+                                updatePortfolioDropTarget(
+                                  event,
+                                  category.value,
+                                  index
+                                )
+                              }
+                              onDrop={() => finishPortfolioDrag(category.value)}
+                              className={`overflow-hidden rounded-[1.5rem] border bg-white/[0.08] backdrop-blur-md transition ${
+                                portfolioDrag?.imageId === image.id
+                                  ? "scale-[0.98] opacity-55"
+                                  : ""
+                              } ${
                                 selectedImageIds.includes(image.id)
                                   ? "border-yellow-400/70"
                                   : "border-white/10"
@@ -3889,6 +4018,27 @@ export default function AdminPage() {
                                   />
                                   Auswahl
                                 </label>
+                                <button
+                                  type="button"
+                                  draggable={portfolioDragEnabled}
+                                  onDragStart={() =>
+                                    beginPortfolioDrag(category.value, image.id)
+                                  }
+                                  onDragEnd={() => {
+                                    setPortfolioDrag(null);
+                                    setPortfolioDropTarget(null);
+                                  }}
+                                  disabled={!portfolioDragEnabled}
+                                  className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-full border border-white/20 bg-black/55 px-3 py-2 text-xs font-black text-white backdrop-blur-md transition hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-40"
+                                  title={
+                                    portfolioDragEnabled
+                                      ? "Bild ziehen und neu einsortieren"
+                                      : "Sortieren nur bei eigener Reihenfolge ohne Suche"
+                                  }
+                                >
+                                  <GripVertical className="h-4 w-4" />
+                                  Ziehen
+                                </button>
                                 <img
                                   src={image.url}
                                   alt=""
@@ -4044,7 +4194,16 @@ export default function AdminPage() {
                                 </div>
                               </div>
                             </article>
+                            </React.Fragment>
                           ))}
+                              {portfolioDropTarget?.categoryValue ===
+                                category.value &&
+                                portfolioDropTarget.index ===
+                                  category.images.length && (
+                                  <div className="flex min-h-24 items-center justify-center rounded-[1.5rem] border-2 border-dashed border-yellow-400 bg-yellow-400/10 text-sm font-black text-yellow-100 sm:min-h-40">
+                                    Am Ende einfügen
+                                  </div>
+                                )}
                             </div>
                           ))}
                       </div>
