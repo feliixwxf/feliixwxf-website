@@ -1729,7 +1729,14 @@ export default function FeliixWxfPhotography() {
                 <p className={`text-xs leading-6 ${muted} md:col-span-2`}>
                   Mit dem Absenden erklärst du dich einverstanden, dass deine
                   Angaben zur Bearbeitung deiner Anfrage verarbeitet werden.
-                  Weitere Informationen findest du im Datenschutz.
+                  Weitere Informationen findest du im{" "}
+                  <a
+                    href="/datenschutz"
+                    className="font-bold underline decoration-white/30 underline-offset-4 transition hover:decoration-white"
+                  >
+                    Datenschutz
+                  </a>
+                  .
                 </p>
 
                 {contactMessage && (
@@ -2240,19 +2247,13 @@ export default function FeliixWxfPhotography() {
         <div className="flex flex-col items-center justify-center gap-3 md:flex-row md:gap-6">
           <p>© {new Date().getFullYear()} feliix.wxf</p>
 
-          <button
-            onClick={() => setShowImpressum(true)}
-            className="transition hover:text-white"
-          >
+          <a href="/impressum" className="transition hover:text-white">
             Impressum
-          </button>
+          </a>
 
-          <button
-            onClick={() => setShowDatenschutz(true)}
-            className="transition hover:text-white"
-          >
+          <a href="/datenschutz" className="transition hover:text-white">
             Datenschutz
-          </button>
+          </a>
         </div>
       </footer>
     </div>

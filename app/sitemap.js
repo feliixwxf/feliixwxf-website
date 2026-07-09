@@ -22,5 +22,17 @@ export default function sitemap() {
       changeFrequency: "monthly",
       priority: 0.9,
     },
+    {
+      url: `${baseUrl}/impressum`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.2,
+    },
+    {
+      url: `${baseUrl}/datenschutz`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.2,
+    },
   ];
 }

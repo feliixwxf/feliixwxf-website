@@ -1626,7 +1626,7 @@ export default function AccountPage() {
                         <span>
                           Ich habe die{" "}
                           <Link
-                            href="/?datenschutz=1"
+                            href="/datenschutz"
                             className="font-bold text-white underline decoration-white/40 underline-offset-4 transition hover:decoration-white"
                           >
                             Datenschutzhinweise
