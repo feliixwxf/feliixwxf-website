@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BeforeAfterSlider from "@/components/before-after-slider";
+import LegalBackButton from "@/components/legal-back-button";
 
 const pageUrl = "https://www.feliixwxf.de/fotograf-eisfeld";
 
@@ -83,24 +84,8 @@ export default function FotografEisfeldPage() {
       />
 
       <section className="px-5 py-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <Link href="/" className="text-lg font-black tracking-wide">
-            feliix.wxf
-          </Link>
-          <div className="flex flex-wrap justify-end gap-2">
-            <Link
-              href="/"
-              className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold"
-            >
-              Website
-            </Link>
-            <Link
-              href="/#kontakt"
-              className="rounded-full bg-white px-4 py-2 text-sm font-bold text-neutral-950"
-            >
-              Kontakt
-            </Link>
-          </div>
+        <div className="mx-auto max-w-6xl">
+          <LegalBackButton />
         </div>
       </section>
 
