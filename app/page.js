@@ -408,40 +408,46 @@ export default function FeliixWxfPhotography() {
 
     if (savedTheme) setTheme(savedTheme);
 
-    fetch("/api/reviews")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (data?.reviews?.length) {
-          setReviews([...data.reviews, ...DEFAULT_REVIEWS]);
-        }
-      })
-      .catch(() => {
-        setReviewMessageType("error");
-        setReviewMessage(
-          "Online-Bewertungen konnten gerade nicht geladen werden."
-        );
-      });
+    const loadReviews = () => {
+      fetch("/api/reviews")
+        .then((response) => (response.ok ? response.json() : null))
+        .then((data) => {
+          if (data?.reviews?.length) {
+            setReviews([...data.reviews, ...DEFAULT_REVIEWS]);
+          }
+        })
+        .catch(() => {
+          setReviewMessageType("error");
+          setReviewMessage(
+            "Online-Bewertungen konnten gerade nicht geladen werden."
+          );
+        });
+    };
 
-    fetch("/api/account/session")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (data?.authenticated && data.user) {
-          setCurrentCustomer(data.user);
-          setReviewName((current) => current || data.user.name || "");
-        }
-      })
-      .catch(() => {});
+    const loadAccountSession = () => {
+      fetch("/api/account/session")
+        .then((response) => (response.ok ? response.json() : null))
+        .then((data) => {
+          if (data?.authenticated && data.user) {
+            setCurrentCustomer(data.user);
+            setReviewName((current) => current || data.user.name || "");
+          }
+        })
+        .catch(() => {});
+    };
 
-    fetch("/api/portfolio-images")
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (Array.isArray(data?.images)) {
-          setUploadedImages(data.images);
-        }
-      })
-      .catch(() => {});
+    const loadPortfolioImages = () => {
+      fetch("/api/portfolio-images")
+        .then((response) => (response.ok ? response.json() : null))
+        .then((data) => {
+          if (Array.isArray(data?.images)) {
+            setUploadedImages(data.images);
+          }
+        })
+        .catch(() => {});
+    };
 
-    fetch(`/api/site-assets?t=${Date.now()}`, { cache: "no-store" })
+    fetch("/api/site-assets")
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (data?.assets) {
@@ -476,8 +482,17 @@ export default function FeliixWxfPhotography() {
         setSiteSettingsLoaded(true);
       });
 
+    const secondaryLoadTimer = window.setTimeout(() => {
+      loadReviews();
+      loadAccountSession();
+      loadPortfolioImages();
+    }, 650);
+
     const timer = setTimeout(() => setShowPopup(true), 8000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(secondaryLoadTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -1222,6 +1237,11 @@ export default function FeliixWxfPhotography() {
                     src={siteAssets.hero_after.url}
                     alt="Nachher"
                     draggable="false"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                    width="1200"
+                    height="1500"
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 )}
@@ -1236,6 +1256,11 @@ export default function FeliixWxfPhotography() {
                       src={siteAssets.hero_before.url}
                       alt="Vorher"
                       draggable="false"
+                      loading="eager"
+                      decoding="async"
+                      fetchPriority="high"
+                      width="1200"
+                      height="1500"
                       className="h-full w-full object-cover"
                     />
                   )}

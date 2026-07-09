@@ -19,24 +19,31 @@ function withVersion(asset) {
   };
 }
 
+const publicCacheHeaders = {
+  "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=86400",
+};
+
 export async function GET() {
   try {
     if (!hasSupabaseConfig) {
-      return NextResponse.json({ assets: {} });
+      return NextResponse.json({ assets: {} }, { headers: publicCacheHeaders });
     }
 
     const response = await fetch(
       `${supabaseBaseUrl}/rest/v1/site_assets?select=key,url,path,updated_at`,
       {
         headers: supabaseHeaders,
-        cache: "no-store",
+        next: { revalidate: 300 },
       }
     );
 
     if (!response.ok) {
       const details = await response.text();
       console.error("Could not load site assets:", details);
-      return NextResponse.json({ assets: {} }, { status: 200 });
+      return NextResponse.json(
+        { assets: {} },
+        { status: 200, headers: publicCacheHeaders }
+      );
     }
 
     const rows = await response.json();
@@ -44,9 +51,12 @@ export async function GET() {
       rows.map((asset) => [asset.key, withVersion(asset)])
     );
 
-    return NextResponse.json({ assets });
+    return NextResponse.json({ assets }, { headers: publicCacheHeaders });
   } catch (error) {
     console.error("Site asset GET failed:", error);
-    return NextResponse.json({ assets: {} }, { status: 200 });
+    return NextResponse.json(
+      { assets: {} },
+      { status: 200, headers: publicCacheHeaders }
+    );
   }
 }
