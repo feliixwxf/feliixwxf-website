@@ -636,6 +636,10 @@ export default function AdminPage() {
   const [securityChecks, setSecurityChecks] = useState([]);
   const [userErrors, setUserErrors] = useState([]);
   const [userErrorsLoadError, setUserErrorsLoadError] = useState("");
+  const [contactInquiries, setContactInquiries] = useState([]);
+  const [contactInquiriesLoadError, setContactInquiriesLoadError] =
+    useState("");
+  const [contactInquiryFilter, setContactInquiryFilter] = useState("new");
   const [customerAccountLoading, setCustomerAccountLoading] = useState(false);
   const [customerAccountSearched, setCustomerAccountSearched] = useState(false);
   const [selectedCustomerAccount, setSelectedCustomerAccount] = useState(null);
@@ -765,6 +769,12 @@ export default function AdminPage() {
   const archivedPortfolioKeys = parseArchivedPortfolioKeys(
     settingsDraft.portfolio_archived_keys
   );
+  const newContactInquiries = contactInquiries.filter(
+    (inquiry) => inquiry.status !== "answered"
+  );
+  const answeredContactInquiries = contactInquiries.filter(
+    (inquiry) => inquiry.status === "answered"
+  );
   const tabs = [
     {
       value: "dashboard",
@@ -793,6 +803,13 @@ export default function AdminPage() {
       icon: Users,
     },
     {
+      value: "inquiries",
+      label: "Anfragen",
+      description: "Kontaktformular",
+      count: newContactInquiries.length,
+      icon: Mail,
+    },
+    {
       value: "texts",
       label: "Texte",
       description: "Website-Texte",
@@ -802,7 +819,7 @@ export default function AdminPage() {
       value: "contact",
       label: "Kontakt",
       description: "Daten & Links",
-      icon: Mail,
+      icon: Phone,
     },
     {
       value: "reviews",
@@ -833,7 +850,7 @@ export default function AdminPage() {
   const tabGroups = [
     {
       title: "Alltag",
-      values: ["dashboard", "clients", "reviews"],
+      values: ["dashboard", "inquiries", "clients", "reviews"],
     },
     {
       title: "Website",
@@ -1030,6 +1047,13 @@ export default function AdminPage() {
         : dateB - dateA;
     });
   const latestClientGallery = clientGalleries[0];
+  const visibleContactInquiries = contactInquiries.filter((inquiry) =>
+    contactInquiryFilter === "answered"
+      ? inquiry.status === "answered"
+      : contactInquiryFilter === "all"
+        ? true
+        : inquiry.status !== "answered"
+  );
   const activeCropFile = cropSession?.files?.[cropSession.index] || null;
   const cropAspectWidth = cropSession?.aspectWidth || 3;
   const cropAspectHeight = cropSession?.aspectHeight || 4;
@@ -1267,6 +1291,83 @@ export default function AdminPage() {
     setUserErrors(data.errors || []);
   };
 
+  const loadContactInquiries = async () => {
+    setContactInquiriesLoadError("");
+
+    const response = await fetch("/api/admin/contact-inquiries", {
+      cache: "no-store",
+    }).catch(() => null);
+    const data = await response?.json().catch(() => ({}));
+
+    if (!response?.ok) {
+      setContactInquiries([]);
+      const details = data?.details ? ` Details: ${data.details}` : "";
+      setContactInquiriesLoadError(
+        `${data?.error || "Kontaktanfragen konnten nicht geladen werden."}${details}`
+      );
+      return;
+    }
+
+    setContactInquiries(data.inquiries || []);
+  };
+
+  const setContactInquiryStatus = async (inquiry, status) => {
+    const response = await fetch("/api/admin/contact-inquiries", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: inquiry.id, status }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Kontaktstatus konnte nicht gespeichert werden.",
+        "error"
+      );
+      return;
+    }
+
+    setContactInquiries((current) =>
+      current.map((item) => (item.id === inquiry.id ? data.inquiry : item))
+    );
+    showMessage(
+      status === "answered"
+        ? "Kontaktanfrage wurde als beantwortet markiert."
+        : "Kontaktanfrage wurde wieder geöffnet.",
+      "success"
+    );
+  };
+
+  const deleteContactInquiry = (inquiry) => {
+    requestConfirmation({
+      title: "Kontaktanfrage löschen?",
+      description:
+        "Diese Anfrage wird dauerhaft aus dem Adminbereich entfernt. Lösche sie nur, wenn du sie nicht mehr als Nachweis oder Erinnerung brauchst.",
+      confirmLabel: "Anfrage löschen",
+      onConfirm: async () => {
+        const response = await fetch("/api/admin/contact-inquiries", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: inquiry.id }),
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          showMessage(
+            data.error || "Kontaktanfrage konnte nicht gelöscht werden.",
+            "error"
+          );
+          return;
+        }
+
+        setContactInquiries((current) =>
+          current.filter((item) => item.id !== inquiry.id)
+        );
+        showMessage("Kontaktanfrage wurde gelöscht.", "success");
+      },
+    });
+  };
+
   const setUserErrorResolved = async (errorLog, isResolved) => {
     const response = await fetch("/api/admin/user-errors", {
       method: "PATCH",
@@ -1334,6 +1435,7 @@ export default function AdminPage() {
       loadActivityLogs(),
       loadSecurityChecks(),
       loadUserErrors(),
+      loadContactInquiries(),
     ]);
     showMessage("Admin-Daten wurden neu geladen.", "success");
   };
@@ -1412,6 +1514,7 @@ export default function AdminPage() {
             loadActivityLogs(),
             loadSecurityChecks(),
             loadUserErrors(),
+            loadContactInquiries(),
           ]);
         }
       })
@@ -1425,6 +1528,12 @@ export default function AdminPage() {
     if (!authenticated || activeTab !== "user-errors") return;
 
     loadUserErrors();
+  }, [authenticated, activeTab]);
+
+  useEffect(() => {
+    if (!authenticated || activeTab !== "inquiries") return;
+
+    loadContactInquiries();
   }, [authenticated, activeTab]);
 
   const handleLogin = async (event) => {
@@ -1457,6 +1566,7 @@ export default function AdminPage() {
       loadActivityLogs(),
       loadSecurityChecks(),
       loadUserErrors(),
+      loadContactInquiries(),
     ]);
     setLoading(false);
   };
@@ -6300,6 +6410,183 @@ export default function AdminPage() {
                     </div>
                   </div>
                 </section>
+              </div>
+            )}
+
+            {activeTab === "inquiries" && (
+              <div className="mt-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Anfragen
+                    </p>
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
+                      Kontaktanfragen
+                    </h2>
+                    <p className="mt-3 text-sm text-neutral-400">
+                      {newContactInquiries.length} neu ·{" "}
+                      {answeredContactInquiries.length} beantwortet
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={loadContactInquiries}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Neu laden
+                  </button>
+                </div>
+
+                <div className="mt-6 flex gap-2 overflow-x-auto">
+                  {[
+                    {
+                      value: "new",
+                      label: "Neu",
+                      count: newContactInquiries.length,
+                    },
+                    {
+                      value: "answered",
+                      label: "Beantwortet",
+                      count: answeredContactInquiries.length,
+                    },
+                    {
+                      value: "all",
+                      label: "Alle",
+                      count: contactInquiries.length,
+                    },
+                  ].map((filter) => (
+                    <button
+                      key={filter.value}
+                      type="button"
+                      onClick={() => setContactInquiryFilter(filter.value)}
+                      className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition ${
+                        contactInquiryFilter === filter.value
+                          ? "bg-white text-neutral-950"
+                          : "border border-white/10 bg-white/10 text-neutral-300 hover:bg-white/15"
+                      }`}
+                    >
+                      {filter.label} ({filter.count})
+                    </button>
+                  ))}
+                </div>
+
+                {contactInquiriesLoadError && (
+                  <div className="mt-6 rounded-[1.5rem] border border-red-400/30 bg-red-500/10 p-4 text-sm leading-6 text-red-100">
+                    {contactInquiriesLoadError}
+                  </div>
+                )}
+
+                <div className="mt-6 grid gap-4">
+                  {!contactInquiriesLoadError &&
+                    visibleContactInquiries.length === 0 && (
+                      <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 text-neutral-300 sm:p-6">
+                        In dieser Ansicht gibt es gerade keine Kontaktanfragen.
+                      </div>
+                    )}
+
+                  {visibleContactInquiries.map((inquiry) => {
+                    const mailHref = `mailto:${inquiry.email}?subject=${encodeURIComponent(
+                      "Antwort auf deine Anfrage bei feliix.wxf"
+                    )}`;
+                    const phoneHref = inquiry.phone
+                      ? `tel:${String(inquiry.phone).replace(/[^\d+]/g, "")}`
+                      : "";
+
+                    return (
+                      <article
+                        key={inquiry.id}
+                        className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 backdrop-blur-md sm:p-6"
+                      >
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-black ${
+                                  inquiry.status === "answered"
+                                    ? "bg-emerald-400 text-neutral-950"
+                                    : "bg-yellow-400 text-neutral-950"
+                                }`}
+                              >
+                                {inquiry.status === "answered"
+                                  ? "Beantwortet"
+                                  : "Neu"}
+                              </span>
+                              <span className="text-xs font-semibold text-neutral-500">
+                                {formatDate(inquiry.created_at)}
+                              </span>
+                            </div>
+
+                            <h3 className="mt-4 text-xl font-black">
+                              {inquiry.name}
+                            </h3>
+                            <div className="mt-3 flex flex-wrap gap-2 text-sm">
+                              <a
+                                href={mailHref}
+                                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 font-bold text-neutral-200 transition hover:bg-white/15"
+                              >
+                                <Mail className="h-4 w-4" />
+                                {inquiry.email}
+                              </a>
+                              {inquiry.phone && (
+                                <a
+                                  href={phoneHref}
+                                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 font-bold text-neutral-200 transition hover:bg-white/15"
+                                >
+                                  <Phone className="h-4 w-4" />
+                                  {inquiry.phone}
+                                </a>
+                              )}
+                            </div>
+
+                            <p className="mt-4 whitespace-pre-wrap rounded-2xl border border-white/10 bg-black/20 p-4 leading-7 text-neutral-200">
+                              {inquiry.message}
+                            </p>
+                          </div>
+
+                          <div className="flex shrink-0 flex-wrap gap-2 lg:max-w-48 lg:flex-col">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setContactInquiryStatus(
+                                  inquiry,
+                                  inquiry.status === "answered"
+                                    ? "new"
+                                    : "answered"
+                                )
+                              }
+                              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                            >
+                              <CheckCircle2 className="h-4 w-4" />
+                              {inquiry.status === "answered"
+                                ? "Wieder öffnen"
+                                : "Erledigt"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => copyText(inquiry.email, "E-Mail kopiert.")}
+                              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                            >
+                              <Copy className="h-4 w-4" />
+                              E-Mail
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => deleteContactInquiry(inquiry)}
+                              className="inline-flex items-center justify-center gap-2 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Löschen
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

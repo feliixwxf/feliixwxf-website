@@ -29,7 +29,7 @@ const sections = [
     title: "Kontaktformular",
     paragraphs: [
       "Übermittelte Daten aus dem Kontaktformular werden zur Bearbeitung der Anfrage verarbeitet. Dazu können Name, E-Mail-Adresse, Telefonnummer und die Nachricht gehören.",
-      "Die Verarbeitung erfolgt, um die Anfrage beantworten und ein mögliches Shooting vorbereiten zu können.",
+      "Die Verarbeitung erfolgt, um die Anfrage beantworten und ein mögliches Shooting vorbereiten zu können. Kontaktanfragen können zusätzlich im geschützten Adminbereich gespeichert werden, damit Anfragen zuverlässig nachverfolgt und beantwortet werden können.",
     ],
   },
   {

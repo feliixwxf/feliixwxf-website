@@ -832,21 +832,41 @@ export default function FeliixWxfPhotography() {
         );
       }
 
+      const inquiryResponse = await fetch("/api/contact-inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          email: formData.get("email"),
+          phone: formData.get("phone"),
+          message: formData.get("message"),
+          source: "Kontaktformular",
+        }),
+      });
+      const inquiryData = await inquiryResponse.json().catch(() => ({}));
+
+      if (!inquiryResponse.ok) {
+        throw new Error(
+          inquiryData.error ||
+            "Die Anfrage konnte gerade nicht gespeichert werden. Bitte versuche es später nochmal."
+        );
+      }
+
       const response = await fetch(siteSettings.form_action, {
         method: "POST",
         body: formData,
         headers: {
           Accept: "application/json",
         },
-      });
-
-      if (!response.ok) throw new Error("Contact form could not be sent");
+      }).catch(() => null);
 
       formElement.reset();
       contactFormStartedAtRef.current = Date.now();
       setContactSent(true);
       setContactMessage(
-        "Danke! Deine Anfrage wurde gesendet. Ich melde mich in der Regel innerhalb von 24 Stunden."
+        response?.ok
+          ? "Danke! Deine Anfrage wurde gesendet. Ich melde mich in der Regel innerhalb von 24 Stunden."
+          : "Danke! Deine Anfrage wurde gespeichert. Ich melde mich schnellstmöglich bei dir."
       );
     } catch (error) {
       setContactMessage(
@@ -2087,7 +2107,10 @@ export default function FeliixWxfPhotography() {
                   Bearbeitung Ihrer Anfrage verarbeitet. Dazu können Name,
                   E-Mail-Adresse, Telefonnummer und Ihre Nachricht gehören.
                   Die Verarbeitung erfolgt, um Ihre Anfrage beantworten und ein
-                  mögliches Shooting vorbereiten zu können.
+                  mögliches Shooting vorbereiten zu können. Kontaktanfragen
+                  können zusätzlich im geschützten Adminbereich gespeichert
+                  werden, damit Anfragen zuverlässig nachverfolgt und
+                  beantwortet werden können.
                 </p>
               </div>
 
