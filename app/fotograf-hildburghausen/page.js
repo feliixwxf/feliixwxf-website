@@ -5,24 +5,27 @@ import LegalBackButton from "@/components/legal-back-button";
 const pageUrl = "https://www.feliixwxf.de/fotograf-hildburghausen";
 
 export const metadata = {
-  title: "Fotograf in Hildburghausen",
+  title: "Fotograf in Hildburghausen für Portraits, Hochzeiten & Autos",
   description:
-    "feliix.wxf ist dein Fotograf in Hildburghausen und Umgebung für Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung.",
+    "Fotograf in Hildburghausen und Südthüringen: Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung von feliix.wxf.",
   keywords: [
     "Fotograf Hildburghausen",
     "Fotograf in Hildburghausen",
     "Portraitfotograf Hildburghausen",
     "Hochzeitsfotograf Hildburghausen",
     "Car Photography Hildburghausen",
+    "Autofotograf Hildburghausen",
     "Eventfotograf Hildburghausen",
+    "Fotograf Südthüringen",
   ],
   alternates: {
     canonical: "/fotograf-hildburghausen",
   },
   openGraph: {
-    title: "Fotograf in Hildburghausen | feliix.wxf",
+    title:
+      "Fotograf in Hildburghausen für Portraits, Hochzeiten & Autos | feliix.wxf",
     description:
-      "Portraits, Hochzeiten, Autofotos, Events und Bildbearbeitung in Hildburghausen und Südthüringen.",
+      "Portraits, Hochzeiten, Car Photography, Events und Bildbearbeitung in Hildburghausen und Südthüringen.",
     url: pageUrl,
     type: "website",
     images: [
@@ -68,6 +71,56 @@ const jsonLd = {
   })),
 };
 
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Fotografie in Hildburghausen",
+  serviceType: [
+    "Portraitfotografie",
+    "Hochzeitsfotografie",
+    "Car Photography",
+    "Eventfotografie",
+    "Bildbearbeitung",
+  ],
+  description:
+    "Fotoshootings in Hildburghausen und Südthüringen mit natürlichem Look, moderner Bearbeitung und digitaler Bereitstellung.",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "feliix.wxf",
+    url: "https://www.feliixwxf.de",
+  },
+  areaServed: [
+    {
+      "@type": "City",
+      name: "Hildburghausen",
+    },
+    {
+      "@type": "AdministrativeArea",
+      name: "Südthüringen",
+    },
+  ],
+  url: pageUrl,
+};
+
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Startseite",
+      item: "https://www.feliixwxf.de",
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Fotograf in Hildburghausen",
+      item: pageUrl,
+    },
+  ],
+};
+
 const services = [
   {
     title: "Portraits",
@@ -93,6 +146,14 @@ export default function FotografHildburghausenPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <section className="px-5 py-8">

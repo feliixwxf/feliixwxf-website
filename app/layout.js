@@ -95,6 +95,12 @@ const websiteJsonLd = {
   name: "feliix.wxf",
   url: "https://www.feliixwxf.de",
   inLanguage: "de-DE",
+  publisher: {
+    "@type": "Organization",
+    name: "feliix.wxf",
+    url: "https://www.feliixwxf.de",
+    logo: "https://www.feliixwxf.de/icon.png",
+  },
 };
 
 const localBusinessJsonLd = {
@@ -104,6 +110,9 @@ const localBusinessJsonLd = {
   legalName: "Felix Wolff",
   url: "https://www.feliixwxf.de",
   image: "https://www.feliixwxf.de/images/nacher.jpg",
+  logo: "https://www.feliixwxf.de/icon.png",
+  description:
+    "Fotograf für Hildburghausen, Eisfeld und Südthüringen mit Fokus auf Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung.",
   email: "felixwolff411@gmail.com",
   telephone: "+4915259105754",
   priceRange: "€€",
@@ -118,6 +127,12 @@ const localBusinessJsonLd = {
     addressLocality: "Eisfeld",
     addressRegion: "Thüringen",
     addressCountry: "DE",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    addressCountry: "DE",
+    addressRegion: "Thüringen",
+    addressLocality: "Eisfeld",
   },
   areaServed: [
     "Hildburghausen",
@@ -139,21 +154,24 @@ const localBusinessJsonLd = {
       "@type": "Offer",
       itemOffered: {
         "@type": "Service",
-        name: "Portraitfotografie in Thüringen",
+        name: "Portraitfotografie in Hildburghausen, Eisfeld und Thüringen",
+        areaServed: ["Hildburghausen", "Eisfeld", "Südthüringen"],
       },
     },
     {
       "@type": "Offer",
       itemOffered: {
         "@type": "Service",
-        name: "Car Photography in Thüringen",
+        name: "Car Photography in Hildburghausen, Eisfeld und Thüringen",
+        areaServed: ["Hildburghausen", "Eisfeld", "Südthüringen"],
       },
     },
     {
       "@type": "Offer",
       itemOffered: {
         "@type": "Service",
-        name: "Hochzeitsfotografie in Thüringen",
+        name: "Hochzeitsfotografie in Hildburghausen, Eisfeld und Thüringen",
+        areaServed: ["Hildburghausen", "Eisfeld", "Südthüringen"],
       },
     },
     {
@@ -161,6 +179,7 @@ const localBusinessJsonLd = {
       itemOffered: {
         "@type": "Service",
         name: "Eventfotografie in Hildburghausen und Umgebung",
+        areaServed: ["Hildburghausen", "Eisfeld", "Südthüringen"],
       },
     },
   ],

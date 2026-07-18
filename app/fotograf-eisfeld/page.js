@@ -5,24 +5,26 @@ import LegalBackButton from "@/components/legal-back-button";
 const pageUrl = "https://www.feliixwxf.de/fotograf-eisfeld";
 
 export const metadata = {
-  title: "Fotograf in Eisfeld",
+  title: "Fotograf in Eisfeld für Portraits, Hochzeiten & Autos",
   description:
-    "feliix.wxf ist dein Fotograf in Eisfeld für Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung in Südthüringen.",
+    "Fotograf in Eisfeld und Südthüringen: natürliche Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung von feliix.wxf.",
   keywords: [
     "Fotograf Eisfeld",
     "Fotograf in Eisfeld",
     "Portraitfotograf Eisfeld",
     "Hochzeitsfotograf Eisfeld",
     "Car Photography Eisfeld",
+    "Autofotograf Eisfeld",
     "Eventfotograf Eisfeld",
+    "Fotograf Südthüringen",
   ],
   alternates: {
     canonical: "/fotograf-eisfeld",
   },
   openGraph: {
-    title: "Fotograf in Eisfeld | feliix.wxf",
+    title: "Fotograf in Eisfeld für Portraits, Hochzeiten & Autos | feliix.wxf",
     description:
-      "Fotoshootings in Eisfeld und Südthüringen: Portraits, Hochzeiten, Autos, Events und kreative Bildbearbeitung.",
+      "Fotoshootings in Eisfeld und Südthüringen: Portraits, Hochzeiten, Car Photography, Events und kreative Bildbearbeitung.",
     url: pageUrl,
     type: "website",
     images: [
@@ -68,6 +70,56 @@ const jsonLd = {
   })),
 };
 
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Fotografie in Eisfeld",
+  serviceType: [
+    "Portraitfotografie",
+    "Hochzeitsfotografie",
+    "Car Photography",
+    "Eventfotografie",
+    "Bildbearbeitung",
+  ],
+  description:
+    "Fotoshootings in Eisfeld und Südthüringen mit natürlichem Look, moderner Bearbeitung und digitaler Bereitstellung.",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "feliix.wxf",
+    url: "https://www.feliixwxf.de",
+  },
+  areaServed: [
+    {
+      "@type": "City",
+      name: "Eisfeld",
+    },
+    {
+      "@type": "AdministrativeArea",
+      name: "Südthüringen",
+    },
+  ],
+  url: pageUrl,
+};
+
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Startseite",
+      item: "https://www.feliixwxf.de",
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Fotograf in Eisfeld",
+      item: pageUrl,
+    },
+  ],
+};
+
 const steps = [
   "Anfrage mit Wunsch, Ort und Zeitraum senden.",
   "Gemeinsam passenden Look und Ablauf klären.",
@@ -81,6 +133,14 @@ export default function FotografEisfeldPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <section className="px-5 py-8">
