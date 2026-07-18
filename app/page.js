@@ -1044,7 +1044,7 @@ export default function FeliixWxfPhotography() {
               className={`relative ${
                 portfolioImageZoomed
                   ? "mx-auto min-h-full w-max"
-                  : "max-h-[92vh] w-full max-w-6xl"
+                  : "flex max-h-[92vh] w-full max-w-6xl items-center justify-center"
               }`}
               onClick={(event) => event.stopPropagation()}
             >
@@ -1088,7 +1088,11 @@ export default function FeliixWxfPhotography() {
               <button
                 type="button"
                 onClick={() => setPortfolioImageZoomed(!portfolioImageZoomed)}
-                className="block"
+                className={
+                  portfolioImageZoomed
+                    ? "block"
+                    : "flex w-full items-center justify-center"
+                }
                 aria-label={
                   portfolioImageZoomed
                     ? "Bild verkleinern"
@@ -1101,7 +1105,7 @@ export default function FeliixWxfPhotography() {
                   className={`mx-auto rounded-[1.5rem] object-contain shadow-2xl transition-[width,max-height] duration-200 ${
                     portfolioImageZoomed
                       ? "max-h-none w-[165vw] max-w-none md:w-[110vw]"
-                      : "max-h-[92vh] w-auto max-w-full"
+                      : "max-h-[92vh] w-auto max-w-[calc(100vw-2rem)]"
                   }`}
                 />
               </button>
