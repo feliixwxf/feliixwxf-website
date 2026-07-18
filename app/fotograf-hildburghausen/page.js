@@ -30,10 +30,10 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "/images/hyundaititel.jpg",
-        width: 1200,
-        height: 1600,
-        alt: "Fotograf in Hildburghausen feliix.wxf",
+        url: "/icon.png?v=5",
+        width: 512,
+        height: 512,
+        alt: "feliix.wxf Logo",
       },
     ],
   },
@@ -44,7 +44,7 @@ const jsonLd = {
   "@type": ["LocalBusiness", "ProfessionalService"],
   name: "feliix.wxf",
   url: pageUrl,
-  image: "https://www.feliixwxf.de/images/hyundaititel.jpg",
+  image: "https://www.feliixwxf.de/icon.png",
   email: "felixwolff411@gmail.com",
   telephone: "+4915259105754",
   priceRange: "€€",

@@ -53,10 +53,10 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "/images/nacher.jpg",
-        width: 1200,
-        height: 1600,
-        alt: "Fotografie und Bildbearbeitung von feliix.wxf",
+        url: "/icon.png?v=5",
+        width: 512,
+        height: 512,
+        alt: "feliix.wxf Logo",
       },
     ],
   },
@@ -65,7 +65,7 @@ export const metadata = {
     title: "feliix.wxf | Fotograf in Hildburghausen & Thüringen",
     description:
       "Portraitfotografie, Hochzeiten, Car Photography und Events in Thüringen.",
-    images: ["/images/nacher.jpg"],
+    images: ["/icon.png?v=5"],
   },
   robots: {
     index: true,
@@ -109,7 +109,7 @@ const localBusinessJsonLd = {
   name: "feliix.wxf",
   legalName: "Felix Wolff",
   url: "https://www.feliixwxf.de",
-  image: "https://www.feliixwxf.de/images/nacher.jpg",
+  image: "https://www.feliixwxf.de/icon.png",
   logo: "https://www.feliixwxf.de/icon.png",
   description:
     "Fotograf für Hildburghausen, Eisfeld und Südthüringen mit Fokus auf Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung.",
