@@ -177,6 +177,12 @@ export default function CustomerGalleryPage() {
   const galleryDownloadHint = gallery?.downloads_enabled
     ? "Downloads sind freigegeben."
     : "Downloads sind aktuell deaktiviert. Die Bilder sind als geschützte Vorschau sichtbar.";
+  const getImageDownloadUrl = (image) =>
+    gallery?.access_code && image?.id
+      ? `/api/client-gallery/download?code=${encodeURIComponent(
+          gallery.access_code
+        )}&image=${encodeURIComponent(image.id)}`
+      : "";
 
   const showMessage = (text, type = "info") => {
     setMessage(text);
@@ -682,10 +688,8 @@ export default function CustomerGalleryPage() {
                           <div className="flex gap-2">
                             {gallery.downloads_enabled && image.url && (
                               <a
-                                href={image.url}
+                                href={getImageDownloadUrl(image)}
                                 download
-                                target="_blank"
-                                rel="noopener noreferrer"
                                 className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400 text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
                                 aria-label="Bild herunterladen"
                               >
@@ -833,10 +837,8 @@ export default function CustomerGalleryPage() {
 
                 {gallery?.downloads_enabled && selectedImage.url && (
                   <a
-                    href={selectedImage.url}
+                    href={getImageDownloadUrl(selectedImage)}
                     download
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full bg-emerald-400 px-5 py-3 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
                   >
                     <Download className="h-5 w-5" />

@@ -4,6 +4,7 @@ import {
   supabaseBaseUrl,
   supabaseServiceHeaders,
 } from "./supabase";
+import sharp from "sharp";
 
 const SIGNED_IMAGE_EXPIRES_IN = 60 * 60 * 6;
 const SIGNED_ARCHIVE_EXPIRES_IN = 60 * 15;
@@ -111,6 +112,63 @@ export async function downloadClientGalleryStorageObject(path, fallbackUrl = "")
   if (!response.ok) return null;
 
   return Buffer.from(await response.arrayBuffer());
+}
+
+function escapeSvgText(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+export async function createWatermarkedClientImage(buffer, label = "feliix.wxf") {
+  if (!buffer) return null;
+
+  const image = sharp(buffer, { failOn: "none" }).rotate();
+  const metadata = await image.metadata();
+  const width = metadata.width || 1600;
+  const height = metadata.height || 1200;
+  const shortestSide = Math.min(width, height);
+  const fontSize = Math.max(42, Math.round(shortestSide * 0.085));
+  const strokeWidth = Math.max(2, Math.round(fontSize * 0.04));
+  const safeLabel = escapeSvgText(label || "feliix.wxf");
+
+  const watermark = Buffer.from(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      <defs>
+        <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="${Math.max(2, Math.round(fontSize * 0.06))}" stdDeviation="${Math.max(
+            4,
+            Math.round(fontSize * 0.08)
+          )}" flood-color="#000000" flood-opacity="0.34"/>
+        </filter>
+      </defs>
+      <g transform="translate(${width / 2} ${height / 2}) rotate(-18)" filter="url(#softShadow)">
+        <text
+          x="0"
+          y="0"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="${fontSize}"
+          font-weight="900"
+          letter-spacing="${Math.round(fontSize * 0.12)}"
+          fill="#ffffff"
+          fill-opacity="0.28"
+          stroke="#111111"
+          stroke-width="${strokeWidth}"
+          stroke-opacity="0.18"
+          paint-order="stroke"
+        >${safeLabel}</text>
+      </g>
+    </svg>
+  `);
+
+  return image
+    .composite([{ input: watermark, blend: "over" }])
+    .jpeg({ quality: 94, mozjpeg: true })
+    .toBuffer();
 }
 
 export async function uploadClientGalleryStorageObject(

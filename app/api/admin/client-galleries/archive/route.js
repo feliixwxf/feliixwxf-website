@@ -10,6 +10,7 @@ import {
 } from "../../_lib/supabase";
 import {
   createSignedArchiveUrl,
+  createWatermarkedClientImage,
   downloadClientGalleryStorageObject,
   getClientGalleryArchivePath,
   uploadClientGalleryStorageObject,
@@ -38,10 +39,8 @@ function sanitizeFileName(value, fallback = "bild") {
   return cleaned || fallback;
 }
 
-function getExtension(image, index) {
-  const source = image.filename || image.path || image.url || "";
-  const match = String(source).match(/\.([a-zA-Z0-9]{2,5})(?:\?|$)/);
-  return match ? match[1].toLowerCase() : `jpg`;
+function getExtension() {
+  return "jpg";
 }
 
 function makeUniqueName(image, index, usedNames) {
@@ -448,9 +447,11 @@ export async function POST(request) {
       );
     }
 
+    const watermarkedData = await createWatermarkedClientImage(data, "feliix.wxf");
+
     entries.push({
       name: makeUniqueName(image, index, usedNames),
-      data,
+      data: watermarkedData || data,
     });
   }
 
