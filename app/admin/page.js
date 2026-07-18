@@ -6,7 +6,9 @@ import {
   ArrowDown,
   ArrowUp,
   Bug,
+  CalendarDays,
   CheckCircle2,
+  ClipboardList,
   CircleHelp,
   Clock,
   Copy,
@@ -14,6 +16,7 @@ import {
   ExternalLink,
   EyeOff,
   Eye,
+  FileText,
   GripVertical,
   Heart,
   Image as ImageIcon,
@@ -450,6 +453,43 @@ const DEFAULT_CLIENT_GALLERY_FORM = {
   downloads_enabled: false,
 };
 
+const DEFAULT_DOCUMENT_FORM = {
+  id: "",
+  type: "contract",
+  title: "Shooting-Vertrag",
+  client_name: "",
+  client_email: "",
+  amount: "",
+  status: "draft",
+  event_date: "",
+  content:
+    "Shooting-Vertrag\n\nFotograf: Felix Wolff / feliix.wxf\nKunde: \nShooting: \nDatum: \nOrt: \n\nLeistung:\n- Planung und Durchführung des Shootings\n- Auswahl und Bearbeitung der vereinbarten Bilder\n- Digitale Bereitstellung über eine Kundengalerie\n\nNutzungsrechte:\nDie Bilder dürfen privat genutzt werden. Veröffentlichung auf Social Media ist nach Absprache möglich. Kommerzielle Nutzung nur mit ausdrücklicher Zustimmung.\n\nZahlung:\nBetrag: \nFälligkeit: \n\nUnterschriften:\nFotograf: ____________________\nKunde: ____________________",
+};
+
+const DEFAULT_APPOINTMENT_FORM = {
+  id: "",
+  title: "",
+  client_name: "",
+  client_email: "",
+  phone: "",
+  location: "",
+  starts_at: "",
+  ends_at: "",
+  status: "planned",
+  notes: "",
+};
+
+const DEFAULT_WAITLIST_FORM = {
+  id: "",
+  name: "",
+  email: "",
+  phone: "",
+  interest: "",
+  desired_period: "",
+  status: "open",
+  notes: "",
+};
+
 function renderStars(value) {
   return [1, 2, 3, 4, 5].map((star) => {
     const filled = Number(value) >= star;
@@ -475,6 +515,25 @@ function formatDate(value) {
   if (!value) return "Ohne Datum";
 
   return new Date(value).toLocaleString("de-DE");
+}
+
+function formatDateInput(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function formatCurrency(value) {
+  if (value === null || value === undefined || value === "") return "";
+
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(Number(value));
 }
 
 function createImageDrafts(items) {
@@ -641,6 +700,17 @@ export default function AdminPage() {
   const [contactInquiriesLoadError, setContactInquiriesLoadError] =
     useState("");
   const [contactInquiryFilter, setContactInquiryFilter] = useState("new");
+  const [adminDocuments, setAdminDocuments] = useState([]);
+  const [adminAppointments, setAdminAppointments] = useState([]);
+  const [adminWaitlist, setAdminWaitlist] = useState([]);
+  const [contractsLoadError, setContractsLoadError] = useState("");
+  const [activeContractsPanel, setActiveContractsPanel] = useState("documents");
+  const [documentForm, setDocumentForm] = useState(DEFAULT_DOCUMENT_FORM);
+  const [appointmentForm, setAppointmentForm] = useState(
+    DEFAULT_APPOINTMENT_FORM
+  );
+  const [waitlistForm, setWaitlistForm] = useState(DEFAULT_WAITLIST_FORM);
+  const [contractsSaving, setContractsSaving] = useState(false);
   const [customerAccountLoading, setCustomerAccountLoading] = useState(false);
   const [customerAccountSearched, setCustomerAccountSearched] = useState(false);
   const [selectedCustomerAccount, setSelectedCustomerAccount] = useState(null);
@@ -811,6 +881,13 @@ export default function AdminPage() {
       icon: Mail,
     },
     {
+      value: "contracts",
+      label: "Verträge & Termine",
+      description: "PDF, Kalender, Warteliste",
+      count: adminAppointments.length,
+      icon: CalendarDays,
+    },
+    {
       value: "texts",
       label: "Texte",
       description: "Website-Texte",
@@ -851,7 +928,7 @@ export default function AdminPage() {
   const tabGroups = [
     {
       title: "Alltag",
-      values: ["dashboard", "inquiries", "clients", "reviews"],
+      values: ["dashboard", "inquiries", "clients", "contracts", "reviews"],
     },
     {
       title: "Website",
@@ -1425,6 +1502,145 @@ export default function AdminPage() {
     });
   };
 
+  const loadContractsSchedule = async () => {
+    setContractsLoadError("");
+
+    const response = await fetch("/api/admin/contracts-schedule", {
+      cache: "no-store",
+    }).catch(() => null);
+    const data = await response?.json().catch(() => ({}));
+
+    if (!response?.ok) {
+      setAdminDocuments([]);
+      setAdminAppointments([]);
+      setAdminWaitlist([]);
+      setContractsLoadError(
+        `${data?.error || "Verträge & Termine konnten nicht geladen werden."}${
+          data?.details ? ` Details: ${data.details}` : ""
+        }`
+      );
+      return;
+    }
+
+    setAdminDocuments(data.documents || []);
+    setAdminAppointments(data.appointments || []);
+    setAdminWaitlist(data.waitlist || []);
+  };
+
+  const saveContractsResource = async (
+    resource,
+    form,
+    resetForm,
+    successText
+  ) => {
+    setContractsSaving(true);
+
+    const response = await fetch("/api/admin/contracts-schedule", {
+      method: form.id ? "PATCH" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resource, ...form }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    setContractsSaving(false);
+
+    if (!response.ok) {
+      showMessage(
+        `${data.error || "Eintrag konnte nicht gespeichert werden."}${
+          data.details ? ` Details: ${data.details}` : ""
+        }`,
+        "error"
+      );
+      return;
+    }
+
+    await loadContractsSchedule();
+    resetForm();
+    showMessage(successText, "success");
+  };
+
+  const deleteContractsResource = (resource, item, title) => {
+    requestConfirmation({
+      title,
+      description:
+        "Dieser Eintrag wird dauerhaft aus dem Adminbereich entfernt. Bitte nur löschen, wenn du ihn nicht mehr brauchst.",
+      confirmLabel: "Eintrag löschen",
+      onConfirm: async () => {
+        const response = await fetch("/api/admin/contracts-schedule", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ resource, id: item.id }),
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          showMessage(
+            `${data.error || "Eintrag konnte nicht gelöscht werden."}${
+              data.details ? ` Details: ${data.details}` : ""
+            }`,
+            "error"
+          );
+          return;
+        }
+
+        await loadContractsSchedule();
+        showMessage("Eintrag wurde gelöscht.", "success");
+      },
+    });
+  };
+
+  const printDocument = (documentItem) => {
+    const escapeHtml = (value) =>
+      String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    const printableTitle = escapeHtml(documentItem.title || "Dokument");
+    const amount = documentItem.amount ? formatCurrency(documentItem.amount) : "";
+    const content = escapeHtml(documentItem.content).replace(/\n/g, "<br />");
+
+    const popup = window.open("", "_blank", "width=900,height=1100");
+
+    if (!popup) {
+      showMessage("Druckfenster konnte nicht geöffnet werden.", "error");
+      return;
+    }
+
+    popup.document.write(`
+      <!doctype html>
+      <html lang="de">
+        <head>
+          <meta charset="utf-8" />
+          <title>${printableTitle}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 42px; color: #111; }
+            header { border-bottom: 2px solid #111; padding-bottom: 18px; margin-bottom: 28px; }
+            h1 { margin: 0; font-size: 28px; }
+            .meta { margin-top: 10px; color: #555; line-height: 1.6; }
+            .content { font-size: 14px; line-height: 1.7; }
+            .brand { font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+            @media print { button { display: none; } body { margin: 24mm; } }
+          </style>
+        </head>
+        <body>
+          <button onclick="window.print()" style="margin-bottom:24px;padding:10px 16px;font-weight:700;">Drucken / als PDF speichern</button>
+          <header>
+            <div class="brand">feliix.wxf</div>
+            <h1>${printableTitle}</h1>
+            <div class="meta">
+              ${documentItem.client_name ? `Kunde: ${escapeHtml(documentItem.client_name)}<br />` : ""}
+              ${documentItem.client_email ? `E-Mail: ${escapeHtml(documentItem.client_email)}<br />` : ""}
+              ${documentItem.event_date ? `Datum: ${formatDate(documentItem.event_date)}<br />` : ""}
+              ${amount ? `Betrag: ${amount}<br />` : ""}
+            </div>
+          </header>
+          <main class="content">${content}</main>
+        </body>
+      </html>
+    `);
+    popup.document.close();
+  };
+
   const refreshDashboard = async () => {
     setMessage("");
     await Promise.all([
@@ -1437,6 +1653,7 @@ export default function AdminPage() {
       loadSecurityChecks(),
       loadUserErrors(),
       loadContactInquiries(),
+      loadContractsSchedule(),
     ]);
     showMessage("Admin-Daten wurden neu geladen.", "success");
   };
@@ -1516,6 +1733,7 @@ export default function AdminPage() {
             loadSecurityChecks(),
             loadUserErrors(),
             loadContactInquiries(),
+            loadContractsSchedule(),
           ]);
         }
       })
@@ -1535,6 +1753,16 @@ export default function AdminPage() {
     if (!authenticated || activeTab !== "inquiries") return;
 
     loadContactInquiries();
+  }, [authenticated, activeTab]);
+
+  useEffect(() => {
+    if (!authenticated || activeTab !== "contracts") return;
+
+    const timer = window.setTimeout(() => {
+      loadContractsSchedule();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [authenticated, activeTab]);
 
   const handleLogin = async (event) => {
@@ -6889,6 +7117,763 @@ export default function AdminPage() {
                     </article>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {activeTab === "contracts" && (
+              <div className="mt-8">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
+                      Verträge & Termine
+                    </p>
+                    <h2 className="mt-3 text-2xl font-black sm:text-3xl">
+                      Dokumente, Kalender, Warteliste
+                    </h2>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={loadContractsSchedule}
+                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Neu laden
+                  </button>
+                </div>
+
+                {contractsLoadError && (
+                  <div className="mt-5 rounded-2xl border border-yellow-400/25 bg-yellow-400/10 p-4 text-sm leading-6 text-yellow-100">
+                    {contractsLoadError}
+                  </div>
+                )}
+
+                <div className="mt-6 grid gap-2 sm:grid-cols-3">
+                  {[
+                    {
+                      value: "documents",
+                      label: "Dokumente",
+                      icon: FileText,
+                      count: adminDocuments.length,
+                    },
+                    {
+                      value: "appointments",
+                      label: "Termine",
+                      icon: CalendarDays,
+                      count: adminAppointments.length,
+                    },
+                    {
+                      value: "waitlist",
+                      label: "Warteliste",
+                      icon: ClipboardList,
+                      count: adminWaitlist.length,
+                    },
+                  ].map((panel) => {
+                    const Icon = panel.icon;
+
+                    return (
+                      <button
+                        key={panel.value}
+                        type="button"
+                        onClick={() => setActiveContractsPanel(panel.value)}
+                        className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+                          activeContractsPanel === panel.value
+                            ? "border-white bg-white text-neutral-950"
+                            : "border-white/10 bg-white/[0.07] text-neutral-200 hover:bg-white/10"
+                        }`}
+                      >
+                        <span className="inline-flex items-center gap-3 font-black">
+                          <Icon className="h-5 w-5" />
+                          {panel.label}
+                        </span>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-black ${
+                            activeContractsPanel === panel.value
+                              ? "bg-neutral-950 text-white"
+                              : "bg-white/10 text-neutral-300"
+                          }`}
+                        >
+                          {panel.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {activeContractsPanel === "documents" && (
+                  <div className="mt-6 grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        saveContractsResource(
+                          "documents",
+                          documentForm,
+                          () => setDocumentForm(DEFAULT_DOCUMENT_FORM),
+                          "Dokument wurde gespeichert."
+                        );
+                      }}
+                      className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 sm:p-5"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <h3 className="text-lg font-black">
+                          {documentForm.id ? "Dokument bearbeiten" : "Neue PDF-Vorlage"}
+                        </h3>
+                        {documentForm.id && (
+                          <button
+                            type="button"
+                            onClick={() => setDocumentForm(DEFAULT_DOCUMENT_FORM)}
+                            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold"
+                          >
+                            Neu
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm font-bold">
+                          Art
+                          <select
+                            value={documentForm.type}
+                            onChange={(event) =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                type: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          >
+                            <option value="contract">Vertrag</option>
+                            <option value="offer">Angebot</option>
+                            <option value="invoice">Rechnung</option>
+                          </select>
+                        </label>
+                        <label className="text-sm font-bold">
+                          Status
+                          <select
+                            value={documentForm.status}
+                            onChange={(event) =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                status: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          >
+                            <option value="draft">Entwurf</option>
+                            <option value="sent">Gesendet</option>
+                            <option value="paid">Bezahlt</option>
+                          </select>
+                        </label>
+                        <label className="text-sm font-bold sm:col-span-2">
+                          Titel
+                          <input
+                            value={documentForm.title}
+                            onChange={(event) =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                title: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Kunde
+                          <input
+                            value={documentForm.client_name}
+                            onChange={(event) =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                client_name: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          E-Mail
+                          <input
+                            type="email"
+                            value={documentForm.client_email}
+                            onChange={(event) =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                client_email: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Betrag
+                          <input
+                            inputMode="decimal"
+                            value={documentForm.amount}
+                            onChange={(event) =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                amount: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                            placeholder="z. B. 120"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Datum
+                          <input
+                            type="datetime-local"
+                            value={documentForm.event_date}
+                            onChange={(event) =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                event_date: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold sm:col-span-2">
+                          Inhalt
+                          <textarea
+                            rows="14"
+                            value={documentForm.content}
+                            onChange={(event) =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                content: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 font-mono text-sm text-neutral-950"
+                          />
+                        </label>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={contractsSaving}
+                        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-black text-neutral-950 disabled:opacity-60"
+                      >
+                        <Save className="h-4 w-4" />
+                        {contractsSaving ? "Speichert..." : "Dokument speichern"}
+                      </button>
+                    </form>
+
+                    <div className="grid gap-3">
+                      {adminDocuments.length === 0 && (
+                        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 text-neutral-300">
+                          Noch keine Dokumente.
+                        </div>
+                      )}
+                      {adminDocuments.map((item) => (
+                        <article
+                          key={item.id}
+                          className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4"
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
+                                {item.type} · {item.status}
+                              </p>
+                              <h4 className="mt-2 text-lg font-black">{item.title}</h4>
+                              <p className="mt-2 text-sm text-neutral-400">
+                                {item.client_name || "Ohne Kunde"}
+                                {item.amount ? ` · ${formatCurrency(item.amount)}` : ""}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setDocumentForm({
+                                    id: item.id,
+                                    type: item.type || "contract",
+                                    title: item.title || "",
+                                    client_name: item.client_name || "",
+                                    client_email: item.client_email || "",
+                                    amount: item.amount || "",
+                                    status: item.status || "draft",
+                                    event_date: formatDateInput(item.event_date),
+                                    content: item.content || "",
+                                  })
+                                }
+                                className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold"
+                              >
+                                Bearbeiten
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => printDocument(item)}
+                                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950"
+                              >
+                                <Download className="h-4 w-4" />
+                                PDF/Drucken
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  deleteContractsResource(
+                                    "documents",
+                                    item,
+                                    "Dokument löschen?"
+                                  )
+                                }
+                                className="rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100"
+                              >
+                                Löschen
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeContractsPanel === "appointments" && (
+                  <div className="mt-6 grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        saveContractsResource(
+                          "appointments",
+                          appointmentForm,
+                          () => setAppointmentForm(DEFAULT_APPOINTMENT_FORM),
+                          "Termin wurde gespeichert."
+                        );
+                      }}
+                      className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 sm:p-5"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <h3 className="text-lg font-black">
+                          {appointmentForm.id ? "Termin bearbeiten" : "Termin eintragen"}
+                        </h3>
+                        {appointmentForm.id && (
+                          <button
+                            type="button"
+                            onClick={() => setAppointmentForm(DEFAULT_APPOINTMENT_FORM)}
+                            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold"
+                          >
+                            Neu
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm font-bold sm:col-span-2">
+                          Titel
+                          <input
+                            value={appointmentForm.title}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                title: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                            placeholder="z. B. Portrait Shooting"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Start
+                          <input
+                            type="datetime-local"
+                            value={appointmentForm.starts_at}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                starts_at: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Ende
+                          <input
+                            type="datetime-local"
+                            value={appointmentForm.ends_at}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                ends_at: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Kunde
+                          <input
+                            value={appointmentForm.client_name}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                client_name: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          E-Mail
+                          <input
+                            type="email"
+                            value={appointmentForm.client_email}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                client_email: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Telefon
+                          <input
+                            value={appointmentForm.phone}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                phone: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Status
+                          <select
+                            value={appointmentForm.status}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                status: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          >
+                            <option value="planned">Geplant</option>
+                            <option value="done">Erledigt</option>
+                            <option value="blocked">Blockiert</option>
+                          </select>
+                        </label>
+                        <label className="text-sm font-bold sm:col-span-2">
+                          Ort
+                          <input
+                            value={appointmentForm.location}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                location: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold sm:col-span-2">
+                          Notiz
+                          <textarea
+                            rows="4"
+                            value={appointmentForm.notes}
+                            onChange={(event) =>
+                              setAppointmentForm((current) => ({
+                                ...current,
+                                notes: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={contractsSaving}
+                        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-black text-neutral-950 disabled:opacity-60"
+                      >
+                        <CalendarDays className="h-4 w-4" />
+                        {contractsSaving ? "Speichert..." : "Termin speichern"}
+                      </button>
+                    </form>
+
+                    <div className="grid gap-3">
+                      {adminAppointments.length === 0 && (
+                        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 text-neutral-300">
+                          Noch keine Termine.
+                        </div>
+                      )}
+                      {adminAppointments.map((item) => (
+                        <article
+                          key={item.id}
+                          className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4"
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
+                                {item.status} · {formatDate(item.starts_at)}
+                              </p>
+                              <h4 className="mt-2 text-lg font-black">{item.title}</h4>
+                              <p className="mt-2 text-sm text-neutral-400">
+                                {item.client_name || "Privater Termin"}
+                                {item.location ? ` · ${item.location}` : ""}
+                              </p>
+                              {item.notes && (
+                                <p className="mt-3 rounded-2xl bg-black/20 p-3 text-sm leading-6 text-neutral-300">
+                                  {item.notes}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setAppointmentForm({
+                                    id: item.id,
+                                    title: item.title || "",
+                                    client_name: item.client_name || "",
+                                    client_email: item.client_email || "",
+                                    phone: item.phone || "",
+                                    location: item.location || "",
+                                    starts_at: formatDateInput(item.starts_at),
+                                    ends_at: formatDateInput(item.ends_at),
+                                    status: item.status || "planned",
+                                    notes: item.notes || "",
+                                  })
+                                }
+                                className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold"
+                              >
+                                Bearbeiten
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  deleteContractsResource(
+                                    "appointments",
+                                    item,
+                                    "Termin löschen?"
+                                  )
+                                }
+                                className="rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100"
+                              >
+                                Löschen
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeContractsPanel === "waitlist" && (
+                  <div className="mt-6 grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        saveContractsResource(
+                          "waitlist",
+                          waitlistForm,
+                          () => setWaitlistForm(DEFAULT_WAITLIST_FORM),
+                          "Wartelisten-Eintrag wurde gespeichert."
+                        );
+                      }}
+                      className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 sm:p-5"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <h3 className="text-lg font-black">
+                          {waitlistForm.id ? "Eintrag bearbeiten" : "Interessent eintragen"}
+                        </h3>
+                        {waitlistForm.id && (
+                          <button
+                            type="button"
+                            onClick={() => setWaitlistForm(DEFAULT_WAITLIST_FORM)}
+                            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold"
+                          >
+                            Neu
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm font-bold">
+                          Name
+                          <input
+                            value={waitlistForm.name}
+                            onChange={(event) =>
+                              setWaitlistForm((current) => ({
+                                ...current,
+                                name: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Interesse
+                          <input
+                            value={waitlistForm.interest}
+                            onChange={(event) =>
+                              setWaitlistForm((current) => ({
+                                ...current,
+                                interest: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                            placeholder="Portrait, Hochzeit..."
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          E-Mail
+                          <input
+                            type="email"
+                            value={waitlistForm.email}
+                            onChange={(event) =>
+                              setWaitlistForm((current) => ({
+                                ...current,
+                                email: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Telefon
+                          <input
+                            value={waitlistForm.phone}
+                            onChange={(event) =>
+                              setWaitlistForm((current) => ({
+                                ...current,
+                                phone: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Zeitraum
+                          <input
+                            value={waitlistForm.desired_period}
+                            onChange={(event) =>
+                              setWaitlistForm((current) => ({
+                                ...current,
+                                desired_period: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                            placeholder="z. B. August / Wochenende"
+                          />
+                        </label>
+                        <label className="text-sm font-bold">
+                          Status
+                          <select
+                            value={waitlistForm.status}
+                            onChange={(event) =>
+                              setWaitlistForm((current) => ({
+                                ...current,
+                                status: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          >
+                            <option value="open">Offen</option>
+                            <option value="contacted">Kontaktiert</option>
+                            <option value="booked">Gebucht</option>
+                          </select>
+                        </label>
+                        <label className="text-sm font-bold sm:col-span-2">
+                          Notiz
+                          <textarea
+                            rows="4"
+                            value={waitlistForm.notes}
+                            onChange={(event) =>
+                              setWaitlistForm((current) => ({
+                                ...current,
+                                notes: event.target.value,
+                              }))
+                            }
+                            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/90 px-4 py-3 text-neutral-950"
+                          />
+                        </label>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={contractsSaving}
+                        className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-400 px-5 py-3 text-sm font-black text-neutral-950 disabled:opacity-60"
+                      >
+                        <Plus className="h-4 w-4" />
+                        {contractsSaving ? "Speichert..." : "Eintrag speichern"}
+                      </button>
+                    </form>
+
+                    <div className="grid gap-3">
+                      {adminWaitlist.length === 0 && (
+                        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 text-neutral-300">
+                          Noch keine Warteliste.
+                        </div>
+                      )}
+                      {adminWaitlist.map((item) => (
+                        <article
+                          key={item.id}
+                          className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4"
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <p className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
+                                {item.status} · {formatDate(item.created_at)}
+                              </p>
+                              <h4 className="mt-2 text-lg font-black">{item.name}</h4>
+                              <p className="mt-2 text-sm text-neutral-400">
+                                {item.interest || "Ohne Angabe"}
+                                {item.desired_period ? ` · ${item.desired_period}` : ""}
+                              </p>
+                              {item.notes && (
+                                <p className="mt-3 rounded-2xl bg-black/20 p-3 text-sm leading-6 text-neutral-300">
+                                  {item.notes}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setWaitlistForm({
+                                    id: item.id,
+                                    name: item.name || "",
+                                    email: item.email || "",
+                                    phone: item.phone || "",
+                                    interest: item.interest || "",
+                                    desired_period: item.desired_period || "",
+                                    status: item.status || "open",
+                                    notes: item.notes || "",
+                                  })
+                                }
+                                className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold"
+                              >
+                                Bearbeiten
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  deleteContractsResource(
+                                    "waitlist",
+                                    item,
+                                    "Wartelisten-Eintrag löschen?"
+                                  )
+                                }
+                                className="rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100"
+                              >
+                                Löschen
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
