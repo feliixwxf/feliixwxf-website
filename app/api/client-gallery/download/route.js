@@ -7,6 +7,7 @@ import {
 import {
   createWatermarkedClientImage,
   downloadClientGalleryStorageObject,
+  isDownloadWatermarkEnabled,
 } from "../../_lib/storage";
 
 export const runtime = "nodejs";
@@ -28,6 +29,11 @@ function sanitizeFilename(value, fallback = "feliixwxf-bild") {
     .slice(0, 90);
 
   return cleaned || fallback;
+}
+
+function getExtension(value, fallback = "jpg") {
+  const match = String(value || "").match(/\.([a-zA-Z0-9]{2,5})(?:\?|$)/);
+  return match ? match[1].toLowerCase() : fallback;
 }
 
 export async function GET(request) {
@@ -124,12 +130,19 @@ export async function GET(request) {
     );
   }
 
-  const watermarked = await createWatermarkedClientImage(original, "feliix.wxf");
-  const filename = `${sanitizeFilename(image.filename || image.path)}-feliixwxf.jpg`;
+  const watermarkEnabled = await isDownloadWatermarkEnabled();
+  const body = watermarkEnabled
+    ? await createWatermarkedClientImage(original, "feliix.wxf")
+    : original;
+  const baseName = sanitizeFilename(image.filename || image.path);
+  const extension = watermarkEnabled
+    ? "jpg"
+    : getExtension(image.filename || image.path || image.url);
+  const filename = `${baseName}${watermarkEnabled ? "-feliixwxf" : ""}.${extension}`;
 
-  return new NextResponse(watermarked, {
+  return new NextResponse(body, {
     headers: {
-      "Content-Type": "image/jpeg",
+      "Content-Type": watermarkEnabled ? "image/jpeg" : "application/octet-stream",
       "Content-Disposition": `attachment; filename="${filename}"`,
       "Cache-Control": "private, no-store",
     },

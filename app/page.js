@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Camera,
+  Download,
   Phone,
   Star,
   Menu,
@@ -134,6 +135,7 @@ const DEFAULT_SITE_SETTINGS = {
   instagram_label: "@feliix.wxf",
   form_action: "https://formspree.io/f/xqennvyy",
   maintenance_mode: "false",
+  download_watermark_enabled: "false",
 };
 
 function InstagramIcon({ className = "h-5 w-5" }) {
@@ -687,6 +689,9 @@ export default function FeliixWxfPhotography() {
       [image.category]: [
         ...(groups[image.category] || []),
         {
+          id: image.id || "",
+          path: image.path || "",
+          title: image.title || "",
           url: image.url,
           width: image.width || null,
           height: image.height || null,
@@ -704,6 +709,10 @@ export default function FeliixWxfPhotography() {
   const activePortfolioImages = activeGallery
     ? visibleGalleryImages[activeGallery] || []
     : [];
+  const getPortfolioDownloadUrl = (image) =>
+    image?.id
+      ? `/api/portfolio-images/download?image=${encodeURIComponent(image.id)}`
+      : "";
 
   const closePortfolioImage = () => {
     setSelectedPortfolioImage(null);
@@ -1096,6 +1105,18 @@ export default function FeliixWxfPhotography() {
                   }`}
                 />
               </button>
+
+              {selectedPortfolioImage?.id && (
+                <a
+                  href={getPortfolioDownloadUrl(selectedPortfolioImage)}
+                  download
+                  className="fixed bottom-16 left-1/2 z-20 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-yellow-400 px-5 py-3 text-sm font-black text-neutral-950 shadow-xl transition hover:-translate-y-0.5"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <Download className="h-4 w-4" />
+                  Bild herunterladen
+                </a>
+              )}
 
               <div className="pointer-events-none fixed bottom-5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/65 px-4 py-2 text-center text-xs font-semibold text-white shadow-lg">
                 {portfolioImageZoomed

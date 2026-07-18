@@ -114,6 +114,28 @@ export async function downloadClientGalleryStorageObject(path, fallbackUrl = "")
   return Buffer.from(await response.arrayBuffer());
 }
 
+export async function downloadPortfolioStorageObject(path, fallbackUrl = "") {
+  if (!supabaseBaseUrl || !path) return null;
+
+  let response = await fetch(
+    `${supabaseBaseUrl}/storage/v1/object/${storageBucket}/${encodeStoragePath(
+      path
+    )}`,
+    {
+      headers: supabaseServiceHeaders,
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok && fallbackUrl) {
+    response = await fetch(fallbackUrl, { cache: "no-store" });
+  }
+
+  if (!response.ok) return null;
+
+  return Buffer.from(await response.arrayBuffer());
+}
+
 function escapeSvgText(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -169,6 +191,27 @@ export async function createWatermarkedClientImage(buffer, label = "feliix.wxf")
     .composite([{ input: watermark, blend: "over" }])
     .jpeg({ quality: 94, mozjpeg: true })
     .toBuffer();
+}
+
+export async function isDownloadWatermarkEnabled() {
+  if (!supabaseBaseUrl) return false;
+
+  try {
+    const response = await fetch(
+      `${supabaseBaseUrl}/rest/v1/site_settings?select=value&key=eq.download_watermark_enabled&limit=1`,
+      {
+        headers: supabaseServiceHeaders,
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) return false;
+
+    const [setting] = await response.json();
+    return String(setting?.value || "") === "true";
+  } catch {
+    return false;
+  }
 }
 
 export async function uploadClientGalleryStorageObject(

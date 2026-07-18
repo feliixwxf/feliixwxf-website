@@ -13,6 +13,7 @@ import {
   createWatermarkedClientImage,
   downloadClientGalleryStorageObject,
   getClientGalleryArchivePath,
+  isDownloadWatermarkEnabled,
   uploadClientGalleryStorageObject,
 } from "../../../_lib/storage";
 
@@ -39,12 +40,16 @@ function sanitizeFileName(value, fallback = "bild") {
   return cleaned || fallback;
 }
 
-function getExtension() {
-  return "jpg";
+function getExtension(image, watermarkEnabled = false) {
+  if (watermarkEnabled) return "jpg";
+
+  const source = image.filename || image.path || image.url || "";
+  const match = String(source).match(/\.([a-zA-Z0-9]{2,5})(?:\?|$)/);
+  return match ? match[1].toLowerCase() : "jpg";
 }
 
-function makeUniqueName(image, index, usedNames) {
-  const extension = getExtension(image, index);
+function makeUniqueName(image, index, usedNames, watermarkEnabled = false) {
+  const extension = getExtension(image, watermarkEnabled);
   const baseName = sanitizeFileName(image.filename || `bild-${index + 1}`);
   let name = `${String(index + 1).padStart(2, "0")}-${baseName}.${extension}`;
   let suffix = 2;
@@ -433,6 +438,7 @@ export async function POST(request) {
 
   const usedNames = new Set();
   const entries = [];
+  const watermarkEnabled = await isDownloadWatermarkEnabled();
 
   for (const [index, image] of images.entries()) {
     const data = await downloadClientGalleryStorageObject(image.path, image.url);
@@ -447,10 +453,12 @@ export async function POST(request) {
       );
     }
 
-    const watermarkedData = await createWatermarkedClientImage(data, "feliix.wxf");
+    const watermarkedData = watermarkEnabled
+      ? await createWatermarkedClientImage(data, "feliix.wxf")
+      : null;
 
     entries.push({
-      name: makeUniqueName(image, index, usedNames),
+      name: makeUniqueName(image, index, usedNames, watermarkEnabled),
       data: watermarkedData || data,
     });
   }

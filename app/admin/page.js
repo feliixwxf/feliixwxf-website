@@ -291,6 +291,7 @@ const DEFAULT_SITE_SETTINGS = {
   instagram_label: "@feliix.wxf",
   form_action: "https://formspree.io/f/xqennvyy",
   maintenance_mode: "false",
+  download_watermark_enabled: "false",
 };
 
 function parseArchivedPortfolioKeys(value) {
@@ -2639,6 +2640,47 @@ export default function AdminPage() {
       portfolio_archived_keys: nextSettings.portfolio_archived_keys,
     }));
     showMessage("Portfolio-Archiv wurde gespeichert.", "success");
+    setPortfolioVisibilitySaving(false);
+  };
+
+  const saveDownloadWatermarkSettings = async () => {
+    setPortfolioVisibilitySaving(true);
+    setMessage("");
+
+    const response = await fetch("/api/admin/site-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        settings: {
+          download_watermark_enabled:
+            settingsDraft.download_watermark_enabled || "false",
+        },
+      }),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      showMessage(
+        data.error || "Download-Wasserzeichen konnte nicht gespeichert werden.",
+        "error"
+      );
+      setPortfolioVisibilitySaving(false);
+      return;
+    }
+
+    const nextSettings = {
+      ...siteSettings,
+      ...(data.settings || {}),
+      download_watermark_enabled:
+        settingsDraft.download_watermark_enabled || "false",
+    };
+
+    setSiteSettings(nextSettings);
+    setSettingsDraft((current) => ({
+      ...current,
+      download_watermark_enabled: nextSettings.download_watermark_enabled,
+    }));
+    showMessage("Download-Wasserzeichen wurde gespeichert.", "success");
     setPortfolioVisibilitySaving(false);
   };
 
@@ -6037,6 +6079,61 @@ export default function AdminPage() {
                           </button>
                         );
                       })}
+                    </div>
+                  </section>
+
+                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-4 sm:p-6">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <p className="text-sm uppercase tracking-[0.24em] text-neutral-500">
+                          Downloads
+                        </p>
+                        <h3 className="mt-2 text-2xl font-black">
+                          Wasserzeichen
+                        </h3>
+                      </div>
+
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            updateSettingsDraft(
+                              "download_watermark_enabled",
+                              String(settingsDraft.download_watermark_enabled) ===
+                                "true"
+                                ? "false"
+                                : "true"
+                            )
+                          }
+                          className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-3 text-sm font-black transition ${
+                            String(settingsDraft.download_watermark_enabled) ===
+                            "true"
+                              ? "border-emerald-300/40 bg-emerald-400 text-neutral-950"
+                              : "border-white/10 bg-black/25 text-neutral-300 hover:bg-white/10"
+                          }`}
+                        >
+                          {String(settingsDraft.download_watermark_enabled) ===
+                          "true" ? (
+                            <Eye className="h-4 w-4" />
+                          ) : (
+                            <EyeOff className="h-4 w-4" />
+                          )}
+                          {String(settingsDraft.download_watermark_enabled) ===
+                          "true"
+                            ? "Wasserzeichen an"
+                            : "Wasserzeichen aus"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={saveDownloadWatermarkSettings}
+                          disabled={portfolioVisibilitySaving}
+                          className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Save className="h-4 w-4" />
+                          Speichern
+                        </button>
+                      </div>
                     </div>
                   </section>
 

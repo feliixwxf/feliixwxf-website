@@ -31,6 +31,7 @@ const SETTING_KEYS = new Set([
   "instagram_label",
   "form_action",
   "maintenance_mode",
+  "download_watermark_enabled",
 ]);
 
 function unauthorized() {
