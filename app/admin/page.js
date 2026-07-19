@@ -1704,7 +1704,7 @@ export default function AdminPage() {
     });
   };
 
-  const printDocument = (documentItem) => {
+  const getPrintableDocumentHtml = (documentItem, showPrintBar = true) => {
     const escapeHtml = (value) =>
       String(value || "")
         .replace(/&/g, "&amp;")
@@ -1811,14 +1811,7 @@ export default function AdminPage() {
     const amount = documentItem.amount ? formatCurrency(documentItem.amount) : "";
     const content = formatPrintableContent(documentItem.content);
 
-    const popup = window.open("", "_blank", "width=900,height=1100");
-
-    if (!popup) {
-      showMessage("Druckfenster konnte nicht geöffnet werden.", "error");
-      return;
-    }
-
-    popup.document.write(`
+    return `
       <!doctype html>
       <html lang="de">
         <head>
@@ -2020,9 +2013,13 @@ export default function AdminPage() {
           </style>
         </head>
         <body>
-          <div class="print-bar">
-            <button onclick="window.print()">Drucken / als PDF speichern</button>
-          </div>
+          ${
+            showPrintBar
+              ? `<div class="print-bar">
+                  <button onclick="window.print()">Drucken / als PDF speichern</button>
+                </div>`
+              : ""
+          }
           <div class="document-page">
             <header>
               <div>
@@ -2051,7 +2048,18 @@ export default function AdminPage() {
           </div>
         </body>
       </html>
-    `);
+    `;
+  };
+
+  const printDocument = (documentItem) => {
+    const popup = window.open("", "_blank", "width=900,height=1100");
+
+    if (!popup) {
+      showMessage("Druckfenster konnte nicht geöffnet werden.", "error");
+      return;
+    }
+
+    popup.document.write(getPrintableDocumentHtml(documentItem, true));
     popup.document.close();
   };
 
@@ -7790,7 +7798,35 @@ export default function AdminPage() {
                       </button>
                     </form>
 
-                    <div className="grid gap-3">
+                    <div className="grid gap-4">
+                      <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                              Vorschau
+                            </p>
+                            <h3 className="mt-1 text-lg font-black">
+                              Aktuelles Dokument
+                            </h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => printDocument(documentForm)}
+                            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950"
+                          >
+                            <Download className="h-4 w-4" />
+                            Entwurf als PDF
+                          </button>
+                        </div>
+                        <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-neutral-200">
+                          <iframe
+                            title="PDF Vorschau"
+                            srcDoc={getPrintableDocumentHtml(documentForm, false)}
+                            className="h-[620px] w-full bg-white"
+                          />
+                        </div>
+                      </div>
+
                       {adminDocuments.length === 0 && (
                         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 text-neutral-300">
                           Noch keine Dokumente.
