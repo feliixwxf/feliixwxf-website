@@ -5131,16 +5131,16 @@ export default function AdminPage() {
             )}
 
             {activeTab === "clients" && (
-              <div className="mt-8">
+              <div className="mt-5 min-w-0 sm:mt-8">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                       Kunden
                     </p>
                     <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Kundenbereich
                     </h2>
-                    <p className="mt-3 max-w-2xl text-neutral-300">
+                    <p className="mt-3 hidden max-w-2xl text-neutral-300 sm:block">
                       Galerien, Codes, Uploads und Kundensuche klar getrennt.
                     </p>
                   </div>
@@ -5178,7 +5178,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-5 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-3 xl:grid-cols-4">
                   {[
                     {
                       label: "Galerien",
@@ -5203,23 +5203,23 @@ export default function AdminPage() {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-[1.3rem] border border-white/10 bg-white/[0.08] p-4"
+                      className="rounded-[1.1rem] border border-white/10 bg-white/[0.08] p-3 sm:rounded-[1.3rem] sm:p-4"
                     >
-                      <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                      <p className="text-[0.65rem] font-black uppercase tracking-[0.16em] text-neutral-500 sm:text-xs sm:tracking-[0.22em]">
                         {item.label}
                       </p>
-                      <p className="mt-2 text-2xl font-black sm:text-3xl text-white">
+                      <p className="mt-2 text-xl font-black text-white sm:text-3xl">
                         {item.value}
                       </p>
-                      <p className="mt-1 text-sm text-neutral-400">
+                      <p className="mt-1 text-xs text-neutral-400 sm:text-sm">
                         {item.helper}
                       </p>
                     </div>
                   ))}
                 </div>
 
-                <section className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_1.15fr]">
-                  <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+                <section className="mt-5 grid min-w-0 gap-4 sm:mt-6 xl:grid-cols-[minmax(0,1fr)_1.15fr]">
+                  <div className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.08] p-4 sm:rounded-[1.5rem] sm:p-5">
                     <div className="flex items-start gap-3">
                       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-neutral-950">
                         <Search className="h-5 w-5" />
@@ -5312,7 +5312,7 @@ export default function AdminPage() {
                     )}
                   </div>
 
-                  <article className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+                  <article className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.08] p-4 sm:rounded-[1.5rem] sm:p-5">
                     {!selectedCustomerAccount ? (
                       <div className="flex h-full min-h-44 flex-col justify-center rounded-2xl border border-dashed border-white/10 bg-black/20 p-4 sm:p-6 text-neutral-400">
                         <UserRound className="h-8 w-8" />
@@ -5373,8 +5373,8 @@ export default function AdminPage() {
                           </span>
                         </div>
 
-                        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3 sm:p-4">
                             <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
                               Erstellt
                             </p>
@@ -5382,7 +5382,7 @@ export default function AdminPage() {
                               {formatDate(selectedCustomerAccount.created_at)}
                             </p>
                           </div>
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3 sm:p-4">
                             <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
                               Zuletzt aktiv
                             </p>
@@ -5392,7 +5392,7 @@ export default function AdminPage() {
                                 : "Noch nie"}
                             </p>
                           </div>
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3 sm:p-4">
                             <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">
                               Galerien
                             </p>
@@ -5539,8 +5539,8 @@ export default function AdminPage() {
                 </form>
                 )}
 
-                <div className="mt-8 grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+                <div className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[0.85fr_1.15fr] xl:gap-6">
+                  <section className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.08] p-4 sm:rounded-[1.5rem] sm:p-5">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <h3 className="text-xl font-black">Galerien</h3>
@@ -5693,7 +5693,7 @@ export default function AdminPage() {
                     </div>
                   </section>
 
-                  <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-5">
+                  <section className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.08] p-4 sm:rounded-[1.5rem] sm:p-5">
                     {!activeClientGallery ? (
                       <div className="rounded-2xl border border-white/10 bg-black/20 p-4 sm:p-6 text-neutral-300">
                         Erstelle links zuerst eine Kundengalerie.
@@ -5740,11 +5740,11 @@ export default function AdminPage() {
                               </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-2 lg:justify-end">
+                            <div className="grid gap-2 sm:flex sm:flex-wrap lg:justify-end">
                               <button
                                 type="button"
                                 onClick={() => setActiveClientPanel("share")}
-                                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:w-fit"
                               >
                                 <QrCode className="h-4 w-4" />
                                 Teilen
@@ -5752,7 +5752,7 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => setActiveClientPanel("upload")}
-                                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15"
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold transition hover:bg-white/15 sm:w-fit"
                               >
                                 <Upload className="h-4 w-4" />
                                 Bilder hochladen
@@ -5824,8 +5824,8 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-1.5">
-                          <div className="flex min-w-max gap-1 xl:grid xl:min-w-0 xl:grid-cols-5">
+                        <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-1.5 sm:overflow-x-auto">
+                          <div className="grid grid-cols-2 gap-1 sm:flex sm:min-w-max xl:grid xl:min-w-0 xl:grid-cols-5">
                             {clientDetailPanels.map((panel) => {
                               const Icon = panel.icon;
                               const active = activeClientPanel === panel.value;
@@ -5835,7 +5835,7 @@ export default function AdminPage() {
                                   key={panel.value}
                                   type="button"
                                   onClick={() => setActiveClientPanel(panel.value)}
-                                  className={`inline-flex min-w-32 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-black transition xl:min-w-0 ${
+                                  className={`inline-flex min-w-0 items-center justify-center gap-2 rounded-xl px-2.5 py-2.5 text-xs font-black transition sm:min-w-32 sm:px-3 sm:text-sm xl:min-w-0 ${
                                     active
                                       ? "bg-white text-neutral-950"
                                       : "text-neutral-300 hover:bg-white/10 hover:text-white"
