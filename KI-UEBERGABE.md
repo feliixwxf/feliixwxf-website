@@ -1,12 +1,12 @@
 # feliix.wxf Website - KI-Übergabe
 
-Stand: 03.07.2026
+Stand: 19.07.2026
 
 Diese Datei ist für eine andere Coding-KI oder einen Entwickler gedacht, damit das Projekt ohne langes Einlesen weitergeführt werden kann.
 
 ## Kurzüberblick
 
-Website für `feliix.wxf` Fotografie mit öffentlicher Website, Adminbereich, Kundenkonto, Kundengalerien, Portfolio-Verwaltung und Bewertungsworkflow.
+Website für `feliix.wxf` Fotografie mit öffentlicher Website, Adminbereich, Kundenkonto, Kundengalerien, Portfolio-Verwaltung, Bewertungsworkflow, Verträgen/Terminen und lokalen SEO-Seiten.
 
 Tech Stack:
 - Next.js `16.2.6`
@@ -27,6 +27,7 @@ Wichtige Bereiche:
 - Kundenkonto: `/konto`
 - Kundengalerie per Code: `/kunden`
 - Adminbereich: `/admin`
+- lokale SEO-Seiten: `/fotograf-hildburghausen`, `/fotograf-eisfeld`
 
 ## Wichtige Befehle
 
@@ -111,6 +112,9 @@ SQL-Dateien im Projekt:
 - `supabase-site-assets.sql`
 - `supabase-site-settings.sql`
 - `supabase-client-galleries.sql`
+- `supabase-contact-inquiries.sql`
+- `supabase-contracts-schedule.sql`
+- `supabase-user-error-logs.sql`
 - `supabase-security-hardening.sql`
 - `SUPABASE_EMAIL_TEMPLATES.md`
 
@@ -122,8 +126,13 @@ Wichtige Tabellen:
 - `client_galleries`
 - `client_gallery_images`
 - `client_favorites`
-- `customer_users`
-- `customer_sessions`
+- Supabase Auth Users für Kundenkonten
+- `admin_documents`
+- `admin_appointments`
+- `admin_waitlist`
+- `admin_activity_logs`
+- `user_error_logs`
+- `contact_inquiries`
 
 Storage:
 - Öffentlicher Bucket `portfolio`
@@ -181,6 +190,9 @@ Funktionen:
 - Konto löschen
 - Light/Dark Mode im Konto
 - Kundenkonto ist mobil stärker in Abschnitte gegliedert, damit Profil, Sicherheit und Galerien nicht gequetscht wirken.
+- Kundenkonto wurde optisch vereinfacht: kompakter Profilbereich, Sicherheitsbereich, Galerieübersicht und Download-Dateien getrennt.
+- Bei Registrierung ist der Benutzername Pflichtfeld; Telefonnummer ist optional und später änderbar.
+- Wenn der Nutzer eingeloggt ist, zeigt die Website-Navigation den Benutzernamen statt nur "Konto".
 
 Konto löschen:
 - löscht Kundenkonto, Session, Profilbild, Favoriten und Galerie-Verknüpfungen
@@ -224,6 +236,8 @@ Funktionen:
 - ZIP-Archive liegen ebenfalls im privaten Bucket und werden nur über kurz gültige signierte Links heruntergeladen
 - ZIP-Download erscheint im Kundenkonto bei abgeschlossenen Galerien und zusätzlich auf `/kunden`, wenn ein Archiv vorhanden ist
 - Kundenbereich und Kundenkonto zeigen Bilder aus privaten Galerien über serverseitig signierte Links.
+- Galerie-ZIPs können mit Wasserzeichen erzeugt werden, wenn die Download-Wasserzeichen-Einstellung aktiv ist.
+- Kundengalerien haben Abschlussstatus, Favoritenprüfung, interne Notiz, Kundendaten und Archivdaten.
 
 Wichtig zu alten Kundengalerie-Bildern:
 - Bilder, die vor der privaten Bucket-Umstellung hochgeladen wurden, können noch im öffentlichen `portfolio`-Bucket liegen.
@@ -253,6 +267,8 @@ Hauptbereiche:
 - Titelbilder
 - Website-Texte
 - Kontakt/Datenschutz
+- Verträge & Termine
+- Nutzerfehler/Protokoll
 - Einstellungen/Schnellzugriff
 
 Admin kann:
@@ -272,6 +288,11 @@ Admin kann:
 - Kundendaten wie E-Mail, Benutzername, Telefonnummer, Profilbild, Erstelldatum und letzte Aktivität einsehen
 - Kontoerstellungen im Protokoll sehen, inklusive Benutzername und E-Mail
 - Wartungsmodus aktivieren/deaktivieren. Kontaktformular bleibt im Wartungsmodus erreichbar.
+- professionelle A4-Vertragsvorlage bearbeiten, als PDF/Print-Vorschau öffnen und ausdrucken
+- Termine, Warteliste und Vertragsdokumente im Admin verwalten
+- Nutzerfehler-Meldungen ansehen und löschen
+- Aktivitätsverlauf bereinigen
+- Website-QR-Code für Visitenkarten herunterladen
 
 Sicherheitsdetails:
 - Admin-Login nutzt HTTP-only Session-Cookie
@@ -289,6 +310,28 @@ Sicherheitsdetails:
   - Kundensuche und Kundenprofil getrennt
   - Galerieverwaltung darunter
   - mobile Buttons laufen untereinander statt gequetscht nebeneinander
+- Admin Mobile wurde mehrfach gehärtet:
+  - Hauptcontainer verhindern seitliches Abschneiden
+  - Kundenbereich ist kompakter und auf Handy gestapelt
+  - Galerie-Detail-Reiter sind mobil als 2-Spalten-Menü statt abgeschnittener Leiste
+  - PDF-Vorschau in Verträge & Termine ist auf kleinen Displays kleiner und responsiver
+
+## Verträge & Termine
+
+Im Admin gibt es einen Bereich für Vertragsdokumente und Terminverwaltung.
+
+Vorhanden:
+- bearbeitbare A4-Vertragsvorlage mit feliix.wxf Logo
+- Druck-/PDF-Vorschau über HTML-Dokument
+- Terminabsage/Verschiebung innerhalb der letzten 14 Tage ist in der Vorlage berücksichtigt
+- Termine mit Datum, Uhrzeit, Kunde, Kontakt und Status
+- kompakter Terminüberblick im Admin
+- Wartelisten-/Notizstruktur über Supabase
+
+Wichtige Dateien:
+- `app/admin/page.js`
+- `app/api/admin/contracts-schedule/route.js`
+- `supabase-contracts-schedule.sql`
 
 ## Portfolio
 
@@ -306,6 +349,9 @@ Wichtig:
 - Portfolio-Uploads unterstützen mehrere Dateien.
 - Upload-Vorschau zeigt Bildformat und Größe, damit Bilder besser passend vorbereitet werden können.
 - Alte KI-/Platzhalterbilder wurden aus den sichtbaren Standardgalerien entfernt; eigene Bilder bleiben erhalten.
+- Portrait und Nature können über Admin/Site-Settings archiviert werden, ohne die Grundstruktur zu löschen.
+- Portfolio-Ansicht unterstützt größere Bildansicht; hochkant geöffnete Bilder werden zentriert.
+- Portfolio-Download kann optional ein mittiges feliix.wxf Wasserzeichen einblenden.
 
 Wichtige Dateien:
 - `app/api/portfolio-images/route.js`
@@ -323,12 +369,14 @@ Admin kann ändern:
 - Kontaktinfos
 - Formspree-Link des Kontaktformulars
 - Datenschutz- und Impressumstexte innerhalb der Website
+- Wartungsmodus-Inhalt über Einstellungen
 
 Kontakt:
 - Telefonnummer ist klickbar (`tel:`), damit Mobilgeräte direkt anrufen können.
 - E-Mail ist klickbar (`mailto:`), damit die Mail-App mit Felix als Empfänger öffnet.
 - Telefon- und Mail-Icons sind farbig hervorgehoben.
 - Kontaktformular zeigt nach erfolgreichem Versand eine sichtbare Erfolgsmeldung.
+- Kontaktformular bleibt auch im Wartungsmodus erreichbar.
 
 Wichtige Dateien:
 - `app/api/site-assets/route.js`
@@ -343,6 +391,7 @@ Wichtige Dateien:
 Aktueller Stand:
 - Datenschutz-Hinweise sind auf der Website vorhanden.
 - Impressum enthält Name, Anschrift, E-Mail und Telefonnummer.
+- Datenschutzerklärung enthält Hinweise zu Vercel, Supabase, Formspree, Kundenkonto, Kundengalerien, Bewertungen, Session-Cookies, lokalen Speicherungen, Rechtsgrundlagen, Speicherdauer und Betroffenenrechten.
 - Kontoerstellung verlangt einen Datenschutz-Haken.
 - Konto kann gelöscht werden.
 - Beim Löschen bleiben Bewertungen bestehen, aber ohne Konto-Verknüpfung.
@@ -354,16 +403,63 @@ Aktueller Stand:
 - Kundenkonto-Löschung ist im Konto klarer getrennt vom restlichen Profilbereich.
 - Sicherheitsbereich im Kundenkonto enthält Passwort- und Löschfunktionen ohne große Zusatzfenster.
 - Für Supabase, Vercel und Formspree sollten AVV/Auftragsverarbeitungsverträge im jeweiligen Anbieter-Konto geprüft und abgeschlossen werden.
+- Supabase Auth E-Mail-Vorlagen sind in `SUPABASE_EMAIL_TEMPLATES.md` vorbereitet.
+- `AUFBEWAHRUNG_LOESCHKONZEPT.md` beschreibt Lösch- und Aufbewahrungslogik.
 
 Noch sinnvoll zu prüfen:
 - Impressum und Datenschutzerklärung rechtlich final prüfen lassen.
 - Supabase-E-Mail-Texte anpassen.
 - Backup- und Löschfristen regelmäßig anhand von `AUFBEWAHRUNG_LOESCHKONZEPT.md` prüfen.
 - Alte Kundengalerie-Bilder aus dem früheren öffentlichen Bucket migrieren oder neu hochladen.
+- Bei echten Kundendaten regelmäßig Export/Backup und Löschwünsche manuell prüfen.
+
+## SEO und lokale Auffindbarkeit
+
+Vorhanden:
+- globale Metadata in `app/layout.js`
+- OpenGraph/Twitter-Bild auf Logo gesetzt
+- JSON-LD für Website, LocalBusiness/ProfessionalService und FAQ
+- Sitemap mit Startseite, Hildburghausen, Eisfeld, Impressum und Datenschutz
+- Robots sperrt `/admin`, `/api`, `/konto`, `/kunden`
+- lokale SEO-Seiten:
+  - `/fotograf-hildburghausen`
+  - `/fotograf-eisfeld`
+- Leistungen vor Ort: Portraits, Hochzeiten, Car Photography, Events
+- interne Links zurück zur Startseite, Kontakt und Bewertungen
+
+Noch sinnvoll:
+- Google Search Console nach Indexierung prüfen.
+- Google Unternehmensprofil aktuell halten.
+- Echte eigene Bilder mit passenden Alt-Texten weiter ausbauen.
+- Keine Keyword-Spam-Texte einbauen; die Seiten sollen natürlich bleiben.
+
+## Nutzerfehler und Support
+
+Vorhanden:
+- Besucher können bei sichtbaren Fehlern eine Fehlermeldung an Felix senden.
+- Meldungen landen in `user_error_logs`.
+- Admin kann Nutzerfehler im Adminbereich einsehen und löschen.
+- API ist über `app/api/user-errors/route.js` und `app/api/admin/user-errors/route.js` angebunden.
+
+Wichtige Datei:
+- `supabase-user-error-logs.sql`
+
+## Drucksachen und Übergabe-Artefakte
+
+Im Projekt liegen lokale Design-/Übergabe-Artefakte, die nicht direkt zur App gehören und nicht automatisch deployed werden müssen:
+- QR-Karte/HTML/SVG/PDF
+- Bewertungskarte/PDF
+- Visitenkarten-Dateien
+- Poster/Prompt-Dateien
+- ZIP-Übergaben
+
+Diese Dateien sind teils untracked oder lokal geändert. Nicht versehentlich mit App-Code vermischen, wenn nur Website-Code geändert wird.
 
 ## Letzter technischer Stand
 
 Letzte größere Änderungen:
+- Admin Mobile Layout wurde für allgemeine Admin-Container, PDF-Vorschau und Kundenbereich verbessert.
+- Verträge & Termine wurden ergänzt und die PDF-Vorschau stabilisiert, damit Eingabeänderungen weniger sprunghaft wirken.
 - Hochzeiten wurden in lokale SEO-Metadaten, Keywords, OpenGraph/Twitter und sichtbaren SEO-Satz ergänzt.
 - Kontakt-CTA wurde stärker formuliert und zeigt nach Versand eine Kamera-Erfolgsmeldung.
 - Bewertungsdurchschnitt zeigt Anzahl, Durchschnitt und halbe Sterne sinnvoll an.
@@ -378,6 +474,21 @@ Letzte größere Änderungen:
 - Kontaktkarten auf der Website sind klickbar für Telefon und E-Mail.
 - Portfolio-Uploads können mehrere Dateien verarbeiten und zeigen Dateigröße/Bildformat.
 - Sichtbare KI-/Platzhalterbilder wurden entfernt, ohne die bestehende Kategorie-Struktur umzubauen.
+- Website-Logo/Favicon und OpenGraph-Bild sind auf feliix.wxf Logo/Kamera umgestellt.
+- Wartungsmodus ist vorhanden; Kontaktformular bleibt nutzbar.
+- Nutzerfehler-Protokoll ist vorhanden.
+
+## Wirklich offene, relevante Punkte
+
+Nicht doppelt planen, diese Dinge sind schon vorhanden: Kundenkonto, QR-Codes, ZIP-Archiv, Wasserzeichen, Wartungsmodus, Fehlerprotokoll, Admin-Suche nach Kunden, Verträge/Termine, lokale SEO-Seiten.
+
+Sinnvolle nächste Verbesserungen:
+1. Admin auf echtem Handy testen und nur konkrete abgeschnittene Stellen gezielt nachziehen.
+2. Rechtliche Texte final prüfen lassen, besonders Datenschutz/Impressum/AVV.
+3. Alte lokale Artefakte und untracked Design-Dateien aus dem Repo-Verzeichnis aufräumen oder bewusst archivieren.
+4. README vom Standard-Next.js-Text auf eine echte Projektbeschreibung aktualisieren.
+5. Google Search Console und Google Unternehmensprofil weiter beobachten.
+6. Bei echten Kundenprojekten Backup-/Löschroutine praktisch einhalten.
 - Admin-Abschluss erzeugt jetzt ein ZIP-Archiv aus Kundengalerie-Bildern.
 - Kunden können ZIP-Archive abgeschlossener Galerien im Konto oder direkt über `/kunden` herunterladen.
 - ZIPs werden privat in Supabase Storage gespeichert und pro Abruf signiert.
