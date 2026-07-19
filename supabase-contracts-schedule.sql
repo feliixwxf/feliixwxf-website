@@ -75,12 +75,149 @@ on public.admin_appointments (starts_at asc);
 create index if not exists admin_waitlist_created_at_idx
 on public.admin_waitlist (created_at desc);
 
+update public.admin_documents
+set
+  content = $$FOTO-SHOOTING VEREINBARUNG
+
+Zwischen
+Felix Wolff / feliix.wxf
+Zum Großenbach 1
+98673 Eisfeld
+E-Mail: felixwolff411@gmail.com
+Telefon: +49 15259105754
+
+und
+Kunde: [Name des Kunden]
+E-Mail: [E-Mail des Kunden]
+Telefon: [Telefon optional]
+
+1. Gegenstand der Vereinbarung
+Der Fotograf übernimmt die fotografische Begleitung bzw. Durchführung des folgenden Shootings:
+Shooting-Art: [Portrait / Car / Hochzeit / Event / Sonstiges]
+Datum: [Datum]
+Ort: [Ort]
+Dauer / Umfang: [z. B. 1 Stunde / halber Tag / nach Absprache]
+
+2. Leistungsumfang
+Der Leistungsumfang umfasst:
+- Planung und Abstimmung des Shootings
+- Durchführung des Shootings vor Ort
+- Auswahl und professionelle Bearbeitung der vereinbarten Bilder
+- Digitale Bereitstellung über eine geschützte Kundengalerie
+- Downloadfreigabe nach Vereinbarung
+
+Anzahl der finalen Bilder: [Anzahl oder nach Absprache]
+Lieferzeit: [z. B. 7-14 Werktage nach Shooting]
+
+3. Vergütung
+Vereinbarter Betrag: [Betrag]
+Zahlungsart: [Bar / Überweisung / nach Absprache]
+Fälligkeit: [z. B. am Shootingtag / nach Rechnungsstellung]
+
+4. Nutzungsrechte
+Der Kunde erhält die Nutzungsrechte für private Zwecke.
+Eine Veröffentlichung auf Social Media ist erlaubt, sofern feliix.wxf genannt wird oder etwas anderes vereinbart wurde.
+Eine kommerzielle Nutzung, Weitergabe an Dritte oder Bearbeitung der Bilder ist nur nach vorheriger schriftlicher Zustimmung erlaubt.
+
+5. Portfolio-Nutzung
+Der Fotograf darf ausgewählte Bilder nur dann für Portfolio, Website oder Social Media verwenden, wenn der Kunde dies ausdrücklich erlaubt.
+
+Zustimmung Portfolio-Nutzung:
+[ ] Ja
+[ ] Nein
+
+6. Terminabsage und Verschiebung
+Sollte ein Termin nicht stattfinden können, informieren sich beide Parteien so früh wie möglich.
+Ein Ersatztermin wird nach Verfügbarkeit abgestimmt.
+
+7. Datenschutz
+Personenbezogene Daten werden ausschließlich zur Abwicklung des Shootings, zur Kommunikation und zur Bereitstellung der Bilder verarbeitet.
+Weitere Informationen stehen in der Datenschutzerklärung unter:
+https://www.feliixwxf.de/datenschutz
+
+8. Sonstige Vereinbarungen
+[Platz für individuelle Hinweise, Sonderwünsche oder Absprachen]
+
+Ort, Datum: ______________________________
+
+Unterschrift Fotograf: ______________________________
+
+Unterschrift Kunde: ______________________________$$,
+  updated_at = now()
+where title = 'Shooting-Vertrag Vorlage'
+  and type = 'contract';
+
 insert into public.admin_documents (type, title, status, content)
 select
   'contract',
   'Shooting-Vertrag Vorlage',
   'draft',
-  'Shooting-Vertrag\n\nFotograf: Felix Wolff / feliix.wxf\nKunde: [Name]\nShooting: [Art des Shootings]\nDatum: [Datum]\nOrt: [Ort]\n\nLeistung:\n- Planung und Durchführung des Shootings\n- Auswahl und Bearbeitung der vereinbarten Bilder\n- Digitale Bereitstellung über eine Kundengalerie\n\nNutzungsrechte:\nDie Bilder dürfen privat genutzt werden. Veröffentlichung auf Social Media ist nach Absprache möglich. Kommerzielle Nutzung nur mit ausdrücklicher Zustimmung.\n\nZahlung:\nBetrag: [Betrag]\nFälligkeit: [Fälligkeit]\n\nUnterschriften:\nFotograf: ____________________\nKunde: ____________________'
+  $$FOTO-SHOOTING VEREINBARUNG
+
+Zwischen
+Felix Wolff / feliix.wxf
+Zum Großenbach 1
+98673 Eisfeld
+E-Mail: felixwolff411@gmail.com
+Telefon: +49 15259105754
+
+und
+Kunde: [Name des Kunden]
+E-Mail: [E-Mail des Kunden]
+Telefon: [Telefon optional]
+
+1. Gegenstand der Vereinbarung
+Der Fotograf übernimmt die fotografische Begleitung bzw. Durchführung des folgenden Shootings:
+Shooting-Art: [Portrait / Car / Hochzeit / Event / Sonstiges]
+Datum: [Datum]
+Ort: [Ort]
+Dauer / Umfang: [z. B. 1 Stunde / halber Tag / nach Absprache]
+
+2. Leistungsumfang
+Der Leistungsumfang umfasst:
+- Planung und Abstimmung des Shootings
+- Durchführung des Shootings vor Ort
+- Auswahl und professionelle Bearbeitung der vereinbarten Bilder
+- Digitale Bereitstellung über eine geschützte Kundengalerie
+- Downloadfreigabe nach Vereinbarung
+
+Anzahl der finalen Bilder: [Anzahl oder nach Absprache]
+Lieferzeit: [z. B. 7-14 Werktage nach Shooting]
+
+3. Vergütung
+Vereinbarter Betrag: [Betrag]
+Zahlungsart: [Bar / Überweisung / nach Absprache]
+Fälligkeit: [z. B. am Shootingtag / nach Rechnungsstellung]
+
+4. Nutzungsrechte
+Der Kunde erhält die Nutzungsrechte für private Zwecke.
+Eine Veröffentlichung auf Social Media ist erlaubt, sofern feliix.wxf genannt wird oder etwas anderes vereinbart wurde.
+Eine kommerzielle Nutzung, Weitergabe an Dritte oder Bearbeitung der Bilder ist nur nach vorheriger schriftlicher Zustimmung erlaubt.
+
+5. Portfolio-Nutzung
+Der Fotograf darf ausgewählte Bilder nur dann für Portfolio, Website oder Social Media verwenden, wenn der Kunde dies ausdrücklich erlaubt.
+
+Zustimmung Portfolio-Nutzung:
+[ ] Ja
+[ ] Nein
+
+6. Terminabsage und Verschiebung
+Sollte ein Termin nicht stattfinden können, informieren sich beide Parteien so früh wie möglich.
+Ein Ersatztermin wird nach Verfügbarkeit abgestimmt.
+
+7. Datenschutz
+Personenbezogene Daten werden ausschließlich zur Abwicklung des Shootings, zur Kommunikation und zur Bereitstellung der Bilder verarbeitet.
+Weitere Informationen stehen in der Datenschutzerklärung unter:
+https://www.feliixwxf.de/datenschutz
+
+8. Sonstige Vereinbarungen
+[Platz für individuelle Hinweise, Sonderwünsche oder Absprachen]
+
+Ort, Datum: ______________________________
+
+Unterschrift Fotograf: ______________________________
+
+Unterschrift Kunde: ______________________________$$
 where not exists (
   select 1
   from public.admin_documents

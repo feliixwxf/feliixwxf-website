@@ -453,6 +453,73 @@ const DEFAULT_CLIENT_GALLERY_FORM = {
   downloads_enabled: false,
 };
 
+const PROFESSIONAL_CONTRACT_TEMPLATE = `FOTO-SHOOTING VEREINBARUNG
+
+Zwischen
+Felix Wolff / feliix.wxf
+Zum Großenbach 1
+98673 Eisfeld
+E-Mail: felixwolff411@gmail.com
+Telefon: +49 15259105754
+
+und
+Kunde: [Name des Kunden]
+E-Mail: [E-Mail des Kunden]
+Telefon: [Telefon optional]
+
+1. Gegenstand der Vereinbarung
+Der Fotograf übernimmt die fotografische Begleitung bzw. Durchführung des folgenden Shootings:
+Shooting-Art: [Portrait / Car / Hochzeit / Event / Sonstiges]
+Datum: [Datum]
+Ort: [Ort]
+Dauer / Umfang: [z. B. 1 Stunde / halber Tag / nach Absprache]
+
+2. Leistungsumfang
+Der Leistungsumfang umfasst:
+- Planung und Abstimmung des Shootings
+- Durchführung des Shootings vor Ort
+- Auswahl und professionelle Bearbeitung der vereinbarten Bilder
+- Digitale Bereitstellung über eine geschützte Kundengalerie
+- Downloadfreigabe nach Vereinbarung
+
+Anzahl der finalen Bilder: [Anzahl oder nach Absprache]
+Lieferzeit: [z. B. 7-14 Werktage nach Shooting]
+
+3. Vergütung
+Vereinbarter Betrag: [Betrag]
+Zahlungsart: [Bar / Überweisung / nach Absprache]
+Fälligkeit: [z. B. am Shootingtag / nach Rechnungsstellung]
+
+4. Nutzungsrechte
+Der Kunde erhält die Nutzungsrechte für private Zwecke.
+Eine Veröffentlichung auf Social Media ist erlaubt, sofern feliix.wxf genannt wird oder etwas anderes vereinbart wurde.
+Eine kommerzielle Nutzung, Weitergabe an Dritte oder Bearbeitung der Bilder ist nur nach vorheriger schriftlicher Zustimmung erlaubt.
+
+5. Portfolio-Nutzung
+Der Fotograf darf ausgewählte Bilder nur dann für Portfolio, Website oder Social Media verwenden, wenn der Kunde dies ausdrücklich erlaubt.
+
+Zustimmung Portfolio-Nutzung:
+[ ] Ja
+[ ] Nein
+
+6. Terminabsage und Verschiebung
+Sollte ein Termin nicht stattfinden können, informieren sich beide Parteien so früh wie möglich.
+Ein Ersatztermin wird nach Verfügbarkeit abgestimmt.
+
+7. Datenschutz
+Personenbezogene Daten werden ausschließlich zur Abwicklung des Shootings, zur Kommunikation und zur Bereitstellung der Bilder verarbeitet.
+Weitere Informationen stehen in der Datenschutzerklärung unter:
+https://www.feliixwxf.de/datenschutz
+
+8. Sonstige Vereinbarungen
+[Platz für individuelle Hinweise, Sonderwünsche oder Absprachen]
+
+Ort, Datum: ______________________________
+
+Unterschrift Fotograf: ______________________________
+
+Unterschrift Kunde: ______________________________`;
+
 const DEFAULT_DOCUMENT_FORM = {
   id: "",
   type: "contract",
@@ -462,8 +529,7 @@ const DEFAULT_DOCUMENT_FORM = {
   amount: "",
   status: "draft",
   event_date: "",
-  content:
-    "Shooting-Vertrag\n\nFotograf: Felix Wolff / feliix.wxf\nKunde: \nShooting: \nDatum: \nOrt: \n\nLeistung:\n- Planung und Durchführung des Shootings\n- Auswahl und Bearbeitung der vereinbarten Bilder\n- Digitale Bereitstellung über eine Kundengalerie\n\nNutzungsrechte:\nDie Bilder dürfen privat genutzt werden. Veröffentlichung auf Social Media ist nach Absprache möglich. Kommerzielle Nutzung nur mit ausdrücklicher Zustimmung.\n\nZahlung:\nBetrag: \nFälligkeit: \n\nUnterschriften:\nFotograf: ____________________\nKunde: ____________________",
+  content: PROFESSIONAL_CONTRACT_TEMPLATE,
 };
 
 const DEFAULT_APPOINTMENT_FORM = {
@@ -1613,28 +1679,132 @@ export default function AdminPage() {
           <meta charset="utf-8" />
           <title>${printableTitle}</title>
           <style>
-            body { font-family: Arial, sans-serif; margin: 42px; color: #111; }
-            header { border-bottom: 2px solid #111; padding-bottom: 18px; margin-bottom: 28px; }
-            h1 { margin: 0; font-size: 28px; }
-            .meta { margin-top: 10px; color: #555; line-height: 1.6; }
-            .content { font-size: 14px; line-height: 1.7; }
-            .brand { font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
-            @media print { button { display: none; } body { margin: 24mm; } }
+            @page { size: A4; margin: 20mm; }
+            * { box-sizing: border-box; }
+            body {
+              margin: 0;
+              background: #e5e5e5;
+              color: #111;
+              font-family: Arial, Helvetica, sans-serif;
+            }
+            .page {
+              min-height: 297mm;
+              width: 210mm;
+              margin: 24px auto;
+              background: #fff;
+              padding: 22mm 20mm;
+              box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
+            }
+            .print-bar {
+              position: sticky;
+              top: 0;
+              display: flex;
+              justify-content: center;
+              padding: 14px;
+              background: rgba(17, 17, 17, 0.88);
+              backdrop-filter: blur(10px);
+            }
+            .print-bar button {
+              border: 0;
+              border-radius: 999px;
+              background: #facc15;
+              color: #111;
+              cursor: pointer;
+              font-weight: 800;
+              padding: 12px 18px;
+            }
+            header {
+              display: flex;
+              justify-content: space-between;
+              gap: 24px;
+              border-bottom: 2px solid #111;
+              padding-bottom: 18px;
+              margin-bottom: 26px;
+            }
+            h1 {
+              margin: 10px 0 0;
+              font-size: 28px;
+              letter-spacing: -0.01em;
+            }
+            .brand {
+              font-size: 13px;
+              font-weight: 900;
+              letter-spacing: 0.16em;
+              text-transform: uppercase;
+            }
+            .subline {
+              margin-top: 8px;
+              color: #555;
+              font-size: 12px;
+              line-height: 1.5;
+            }
+            .meta {
+              min-width: 190px;
+              border-left: 1px solid #d4d4d4;
+              padding-left: 18px;
+              color: #333;
+              font-size: 12px;
+              line-height: 1.7;
+              text-align: left;
+            }
+            .meta strong {
+              color: #111;
+              display: block;
+              font-size: 11px;
+              letter-spacing: 0.12em;
+              margin-bottom: 6px;
+              text-transform: uppercase;
+            }
+            .content {
+              color: #1f2937;
+              font-size: 13px;
+              line-height: 1.72;
+            }
+            footer {
+              border-top: 1px solid #d4d4d4;
+              color: #666;
+              font-size: 10px;
+              line-height: 1.5;
+              margin-top: 30px;
+              padding-top: 12px;
+            }
+            @media print {
+              body { background: #fff; }
+              .print-bar { display: none; }
+              .page {
+                box-shadow: none;
+                margin: 0;
+                min-height: auto;
+                padding: 0;
+                width: auto;
+              }
+            }
           </style>
         </head>
         <body>
-          <button onclick="window.print()" style="margin-bottom:24px;padding:10px 16px;font-weight:700;">Drucken / als PDF speichern</button>
-          <header>
-            <div class="brand">feliix.wxf</div>
-            <h1>${printableTitle}</h1>
-            <div class="meta">
-              ${documentItem.client_name ? `Kunde: ${escapeHtml(documentItem.client_name)}<br />` : ""}
-              ${documentItem.client_email ? `E-Mail: ${escapeHtml(documentItem.client_email)}<br />` : ""}
-              ${documentItem.event_date ? `Datum: ${formatDate(documentItem.event_date)}<br />` : ""}
-              ${amount ? `Betrag: ${amount}<br />` : ""}
-            </div>
-          </header>
-          <main class="content">${content}</main>
+          <div class="print-bar">
+            <button onclick="window.print()">Drucken / als PDF speichern</button>
+          </div>
+          <div class="page">
+            <header>
+              <div>
+                <div class="brand">feliix.wxf photography</div>
+                <h1>${printableTitle}</h1>
+                <div class="subline">Fotografie, Bildbearbeitung und digitale Kundengalerien</div>
+              </div>
+              <div class="meta">
+                <strong>Dokument</strong>
+                ${documentItem.client_name ? `Kunde: ${escapeHtml(documentItem.client_name)}<br />` : ""}
+                ${documentItem.client_email ? `E-Mail: ${escapeHtml(documentItem.client_email)}<br />` : ""}
+                ${documentItem.event_date ? `Datum: ${formatDate(documentItem.event_date)}<br />` : ""}
+                ${amount ? `Betrag: ${amount}<br />` : ""}
+              </div>
+            </header>
+            <main class="content">${content}</main>
+            <footer>
+              Felix Wolff / feliix.wxf · Zum Großenbach 1 · 98673 Eisfeld · felixwolff411@gmail.com · +49 15259105754
+            </footer>
+          </div>
         </body>
       </html>
     `);
@@ -7214,19 +7384,36 @@ export default function AdminPage() {
                       }}
                       className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4 sm:p-5"
                     >
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <h3 className="text-lg font-black">
                           {documentForm.id ? "Dokument bearbeiten" : "Neue PDF-Vorlage"}
                         </h3>
-                        {documentForm.id && (
+                        <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => setDocumentForm(DEFAULT_DOCUMENT_FORM)}
-                            className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold"
+                            onClick={() =>
+                              setDocumentForm((current) => ({
+                                ...current,
+                                type: "contract",
+                                title: current.title || "Shooting-Vertrag",
+                                content: PROFESSIONAL_CONTRACT_TEMPLATE,
+                              }))
+                            }
+                            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white px-3 py-1.5 text-xs font-black text-neutral-950 transition hover:bg-yellow-300"
                           >
-                            Neu
+                            <FileText className="h-3.5 w-3.5" />
+                            Profi-Vorlage
                           </button>
-                        )}
+                          {documentForm.id && (
+                            <button
+                              type="button"
+                              onClick={() => setDocumentForm(DEFAULT_DOCUMENT_FORM)}
+                              className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold"
+                            >
+                              Neu
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       <div className="mt-5 grid gap-3 sm:grid-cols-2">
