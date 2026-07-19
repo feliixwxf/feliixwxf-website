@@ -1713,6 +1713,7 @@ export default function AdminPage() {
     const formatPrintableContent = (value) => {
       const lines = String(value || "").split("\n");
       const signatureLines = [];
+      let datePlaceLine = "";
       let html = "";
       let sectionOpen = false;
 
@@ -1731,10 +1732,12 @@ export default function AdminPage() {
           return;
         }
 
-        if (
-          /^Ort,\s*Datum/i.test(trimmed) ||
-          /^Unterschrift\s+/i.test(trimmed)
-        ) {
+        if (/^Ort,\s*Datum/i.test(trimmed)) {
+          datePlaceLine = trimmed.replace(/:_+/g, "").replace(/:$/g, "");
+          return;
+        }
+
+        if (/^Unterschrift\s+/i.test(trimmed)) {
           signatureLines.push(trimmed.replace(/:_+/g, "").replace(/:$/g, ""));
           return;
         }
@@ -1789,11 +1792,16 @@ export default function AdminPage() {
 
       if (signatureLines.length > 0) {
         html += '<section class="signatures">';
+        if (datePlaceLine) {
+          html += `<p class="signature-date">${escapeHtml(datePlaceLine)}: ______________________________</p>`;
+        }
+        html += '<div class="signature-grid">';
         signatureLines.forEach((line) => {
           html += `<div class="signature-box"><div class="signature-line"></div><p>${escapeHtml(
             line
           )}</p></div>`;
         });
+        html += "</div>";
         html += "</section>";
       }
 
@@ -1965,11 +1973,19 @@ export default function AdminPage() {
             }
             .signatures {
               break-inside: avoid;
-              display: grid;
-              gap: 16px;
-              grid-template-columns: repeat(3, 1fr);
               margin-top: 26px;
               page-break-inside: avoid;
+            }
+            .signature-date {
+              color: #333;
+              font-size: 11px;
+              font-weight: 700;
+              margin: 0 0 24px;
+            }
+            .signature-grid {
+              display: grid;
+              gap: 18px;
+              grid-template-columns: repeat(2, 1fr);
             }
             .signature-line {
               border-bottom: 1.5px solid #111;
