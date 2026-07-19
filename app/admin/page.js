@@ -821,6 +821,9 @@ export default function AdminPage() {
   const [contractsLoadError, setContractsLoadError] = useState("");
   const [activeContractsPanel, setActiveContractsPanel] = useState("documents");
   const [documentForm, setDocumentForm] = useState(DEFAULT_DOCUMENT_FORM);
+  const [documentPreviewForm, setDocumentPreviewForm] = useState(
+    DEFAULT_DOCUMENT_FORM
+  );
   const [appointmentForm, setAppointmentForm] = useState(
     DEFAULT_APPOINTMENT_FORM
   );
@@ -7630,7 +7633,10 @@ export default function AdminPage() {
                         saveContractsResource(
                           "documents",
                           documentForm,
-                          () => setDocumentForm(DEFAULT_DOCUMENT_FORM),
+                          () => {
+                            setDocumentForm(DEFAULT_DOCUMENT_FORM);
+                            setDocumentPreviewForm(DEFAULT_DOCUMENT_FORM);
+                          },
                           "Dokument wurde gespeichert."
                         );
                       }}
@@ -7643,14 +7649,16 @@ export default function AdminPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="button"
-                            onClick={() =>
-                              setDocumentForm((current) => ({
-                                ...current,
+                            onClick={() => {
+                              const nextDocument = {
+                                ...documentForm,
                                 type: "contract",
-                                title: current.title || "Shooting-Vertrag",
+                                title: documentForm.title || "Shooting-Vertrag",
                                 content: PROFESSIONAL_CONTRACT_TEMPLATE,
-                              }))
-                            }
+                              };
+                              setDocumentForm(nextDocument);
+                              setDocumentPreviewForm(nextDocument);
+                            }}
                             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white px-3 py-1.5 text-xs font-black text-neutral-950 transition hover:bg-yellow-300"
                           >
                             <FileText className="h-3.5 w-3.5" />
@@ -7659,7 +7667,10 @@ export default function AdminPage() {
                           {documentForm.id && (
                             <button
                               type="button"
-                              onClick={() => setDocumentForm(DEFAULT_DOCUMENT_FORM)}
+                              onClick={() => {
+                                setDocumentForm(DEFAULT_DOCUMENT_FORM);
+                                setDocumentPreviewForm(DEFAULT_DOCUMENT_FORM);
+                              }}
                               className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold"
                             >
                               Neu
@@ -7809,19 +7820,32 @@ export default function AdminPage() {
                               Aktuelles Dokument
                             </h3>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => printDocument(documentForm)}
-                            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950"
-                          >
-                            <Download className="h-4 w-4" />
-                            Entwurf als PDF
-                          </button>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setDocumentPreviewForm(documentForm)}
+                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/15"
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                              Vorschau aktualisieren
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => printDocument(documentForm)}
+                              className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950"
+                            >
+                              <Download className="h-4 w-4" />
+                              Entwurf als PDF
+                            </button>
+                          </div>
                         </div>
                         <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-neutral-200">
                           <iframe
                             title="PDF Vorschau"
-                            srcDoc={getPrintableDocumentHtml(documentForm, false)}
+                            srcDoc={getPrintableDocumentHtml(
+                              documentPreviewForm,
+                              false
+                            )}
                             className="h-[620px] w-full bg-white"
                           />
                         </div>
@@ -7851,8 +7875,8 @@ export default function AdminPage() {
                             <div className="flex flex-wrap gap-2">
                               <button
                                 type="button"
-                                onClick={() =>
-                                  setDocumentForm({
+                                onClick={() => {
+                                  const nextDocument = {
                                     id: item.id,
                                     type: item.type || "contract",
                                     title: item.title || "",
@@ -7862,8 +7886,10 @@ export default function AdminPage() {
                                     status: item.status || "draft",
                                     event_date: formatDateInput(item.event_date),
                                     content: item.content || "",
-                                  })
-                                }
+                                  };
+                                  setDocumentForm(nextDocument);
+                                  setDocumentPreviewForm(nextDocument);
+                                }}
                                 className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold"
                               >
                                 Bearbeiten
