@@ -1710,9 +1710,98 @@ export default function AdminPage() {
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
+    const formatPrintableContent = (value) => {
+      const lines = String(value || "").split("\n");
+      const signatureLines = [];
+      let html = "";
+      let sectionOpen = false;
+
+      const closeSection = () => {
+        if (sectionOpen) {
+          html += "</section>";
+          sectionOpen = false;
+        }
+      };
+
+      lines.forEach((line) => {
+        const trimmed = line.trim();
+
+        if (!trimmed) {
+          if (sectionOpen) html += '<div class="spacer"></div>';
+          return;
+        }
+
+        if (
+          /^Ort,\s*Datum/i.test(trimmed) ||
+          /^Unterschrift\s+/i.test(trimmed)
+        ) {
+          signatureLines.push(trimmed.replace(/:_+/g, "").replace(/:$/g, ""));
+          return;
+        }
+
+        if (/^\d+\.\s/.test(trimmed)) {
+          closeSection();
+          html += `<section class="section"><h2>${escapeHtml(trimmed)}</h2>`;
+          sectionOpen = true;
+          return;
+        }
+
+        if (/^\[\s?\]\s/.test(trimmed)) {
+          if (!sectionOpen) {
+            html += '<section class="section">';
+            sectionOpen = true;
+          }
+          html += `<p class="checkbox-row"><span class="checkbox"></span>${escapeHtml(
+            trimmed.replace(/^\[\s?\]\s/, "")
+          )}</p>`;
+          return;
+        }
+
+        if (/^-\s/.test(trimmed)) {
+          if (!sectionOpen) {
+            html += '<section class="section">';
+            sectionOpen = true;
+          }
+          html += `<p class="bullet"><span></span>${escapeHtml(
+            trimmed.replace(/^-\s/, "")
+          )}</p>`;
+          return;
+        }
+
+        if (/^(Zwischen|und|Zustimmung Portfolio-Nutzung:)$/i.test(trimmed)) {
+          if (!sectionOpen) {
+            html += '<section class="section">';
+            sectionOpen = true;
+          }
+          html += `<p class="label-line">${escapeHtml(trimmed)}</p>`;
+          return;
+        }
+
+        if (!sectionOpen) {
+          html += '<section class="section intro">';
+          sectionOpen = true;
+        }
+
+        html += `<p>${escapeHtml(trimmed)}</p>`;
+      });
+
+      closeSection();
+
+      if (signatureLines.length > 0) {
+        html += '<section class="signatures">';
+        signatureLines.forEach((line) => {
+          html += `<div class="signature-box"><div class="signature-line"></div><p>${escapeHtml(
+            line
+          )}</p></div>`;
+        });
+        html += "</section>";
+      }
+
+      return html;
+    };
     const printableTitle = escapeHtml(documentItem.title || "Dokument");
     const amount = documentItem.amount ? formatCurrency(documentItem.amount) : "";
-    const content = escapeHtml(documentItem.content).replace(/\n/g, "<br />");
+    const content = formatPrintableContent(documentItem.content);
 
     const popup = window.open("", "_blank", "width=900,height=1100");
 
@@ -1741,7 +1830,7 @@ export default function AdminPage() {
               width: 210mm;
               margin: 24px auto;
               background: #fff;
-              padding: 18mm;
+              padding: 16mm 18mm 14mm;
               box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
             }
             .print-bar {
@@ -1767,8 +1856,8 @@ export default function AdminPage() {
               justify-content: space-between;
               gap: 24px;
               border-bottom: 2px solid #111;
-              padding-bottom: 18px;
-              margin-bottom: 26px;
+              padding-bottom: 14px;
+              margin-bottom: 20px;
             }
             .brand-row {
               align-items: center;
@@ -1777,19 +1866,19 @@ export default function AdminPage() {
             }
             .logo {
               border: 1px solid #ddd;
-              border-radius: 14px;
-              height: 48px;
+              border-radius: 12px;
+              height: 40px;
               object-fit: contain;
-              padding: 6px;
-              width: 48px;
+              padding: 5px;
+              width: 40px;
             }
             h1 {
               margin: 10px 0 0;
-              font-size: 28px;
+              font-size: 24px;
               letter-spacing: -0.01em;
             }
             .brand {
-              font-size: 13px;
+              font-size: 12px;
               font-weight: 900;
               letter-spacing: 0.16em;
               text-transform: uppercase;
@@ -1819,16 +1908,87 @@ export default function AdminPage() {
             }
             .content {
               color: #1f2937;
-              font-size: 13px;
-              line-height: 1.72;
+              font-size: 12.5px;
+              line-height: 1.58;
+            }
+            .section {
+              break-inside: avoid;
+              page-break-inside: avoid;
+              margin: 0 0 14px;
+            }
+            .section h2 {
+              break-after: avoid;
+              border-bottom: 1px solid #e5e7eb;
+              color: #111;
+              font-size: 14px;
+              letter-spacing: 0.02em;
+              margin: 0 0 7px;
+              padding-bottom: 4px;
+            }
+            .section p {
+              margin: 0 0 5px;
+            }
+            .intro p {
+              margin-bottom: 3px;
+            }
+            .label-line {
+              color: #111;
+              font-weight: 800;
+              margin-top: 8px !important;
+            }
+            .bullet {
+              display: flex;
+              gap: 8px;
+            }
+            .bullet span {
+              background: #111;
+              border-radius: 999px;
+              flex: 0 0 auto;
+              height: 4px;
+              margin-top: 8px;
+              width: 4px;
+            }
+            .checkbox-row {
+              align-items: center;
+              display: flex;
+              gap: 8px;
+            }
+            .checkbox {
+              border: 1.5px solid #111;
+              display: inline-block;
+              flex: 0 0 auto;
+              height: 12px;
+              width: 12px;
+            }
+            .spacer {
+              height: 5px;
+            }
+            .signatures {
+              break-inside: avoid;
+              display: grid;
+              gap: 16px;
+              grid-template-columns: repeat(3, 1fr);
+              margin-top: 26px;
+              page-break-inside: avoid;
+            }
+            .signature-line {
+              border-bottom: 1.5px solid #111;
+              height: 28px;
+              margin-bottom: 8px;
+            }
+            .signature-box p {
+              color: #333;
+              font-size: 11px;
+              font-weight: 700;
+              margin: 0;
             }
             footer {
               border-top: 1px solid #d4d4d4;
               color: #666;
-              font-size: 10px;
+              font-size: 9.5px;
               line-height: 1.5;
-              margin-top: 30px;
-              padding-top: 12px;
+              margin-top: 22px;
+              padding-top: 10px;
             }
             @media print {
               body { background: #fff; }
@@ -1837,7 +1997,7 @@ export default function AdminPage() {
                 box-shadow: none;
                 margin: 0;
                 min-height: 297mm;
-                padding: 18mm;
+                padding: 16mm 18mm 14mm;
                 width: 210mm;
               }
             }
@@ -1869,7 +2029,8 @@ export default function AdminPage() {
             </header>
             <main class="content">${content}</main>
             <footer>
-              Felix Wolff / feliix.wxf · Zum Großenbach 1 · 98673 Eisfeld · felixwolff411@gmail.com · +49 15259105754
+              Felix Wolff / feliix.wxf · Zum Großenbach 1 · 98673 Eisfeld · felixwolff411@gmail.com · +49 15259105754<br />
+              Hinweis: Diese Vorlage dient als organisatorische Vereinbarung und ersetzt keine Rechtsberatung.
             </footer>
           </div>
         </body>
