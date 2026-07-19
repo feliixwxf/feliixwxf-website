@@ -129,6 +129,7 @@ Zustimmung Portfolio-Nutzung:
 6. Terminabsage und Verschiebung
 Sollte ein Termin nicht stattfinden können, informieren sich beide Parteien so früh wie möglich.
 Ein Ersatztermin wird nach Verfügbarkeit abgestimmt.
+Bei Absage oder Verschiebung innerhalb der letzten 14 Tage vor dem vereinbarten Termin besteht, soweit gesetzlich zulässig, kein Anspruch auf Rückerstattung bereits geleisteter Zahlungen.
 
 7. Datenschutz
 Personenbezogene Daten werden ausschließlich zur Abwicklung des Shootings, zur Kommunikation und zur Bereitstellung der Bilder verarbeitet.
@@ -204,6 +205,7 @@ Zustimmung Portfolio-Nutzung:
 6. Terminabsage und Verschiebung
 Sollte ein Termin nicht stattfinden können, informieren sich beide Parteien so früh wie möglich.
 Ein Ersatztermin wird nach Verfügbarkeit abgestimmt.
+Bei Absage oder Verschiebung innerhalb der letzten 14 Tage vor dem vereinbarten Termin besteht, soweit gesetzlich zulässig, kein Anspruch auf Rückerstattung bereits geleisteter Zahlungen.
 
 7. Datenschutz
 Personenbezogene Daten werden ausschließlich zur Abwicklung des Shootings, zur Kommunikation und zur Bereitstellung der Bilder verarbeitet.

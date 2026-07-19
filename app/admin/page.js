@@ -505,6 +505,7 @@ Zustimmung Portfolio-Nutzung:
 6. Terminabsage und Verschiebung
 Sollte ein Termin nicht stattfinden können, informieren sich beide Parteien so früh wie möglich.
 Ein Ersatztermin wird nach Verfügbarkeit abgestimmt.
+Bei Absage oder Verschiebung innerhalb der letzten 14 Tage vor dem vereinbarten Termin besteht, soweit gesetzlich zulässig, kein Anspruch auf Rückerstattung bereits geleisteter Zahlungen.
 
 7. Datenschutz
 Personenbezogene Daten werden ausschließlich zur Abwicklung des Shootings, zur Kommunikation und zur Bereitstellung der Bilder verarbeitet.
@@ -591,6 +592,54 @@ function formatDateInput(value) {
 
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function formatAppointmentDay(value) {
+  if (!value) return "Ohne Datum";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Ohne Datum";
+
+  return date.toLocaleDateString("de-DE", {
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+  });
+}
+
+function formatAppointmentTime(value) {
+  if (!value) return "--:--";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--:--";
+
+  return date.toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function getAppointmentCountdown(value) {
+  if (!value) return "Zeit offen";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Zeit offen";
+
+  const diff = date.getTime() - Date.now();
+  const abs = Math.abs(diff);
+  const minutes = Math.round(abs / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (diff < 0) {
+    if (minutes < 90) return "gerade vorbei";
+    if (hours < 24) return `vor ${hours} Std.`;
+    return `vor ${days} Tag${days === 1 ? "" : "en"}`;
+  }
+
+  if (minutes < 60) return `in ${Math.max(1, minutes)} Min.`;
+  if (hours < 24) return `in ${hours} Std.`;
+  return `in ${days} Tag${days === 1 ? "" : "en"}`;
 }
 
 function formatCurrency(value) {
@@ -1679,7 +1728,7 @@ export default function AdminPage() {
           <meta charset="utf-8" />
           <title>${printableTitle}</title>
           <style>
-            @page { size: A4; margin: 20mm; }
+            @page { size: A4; margin: 0; }
             * { box-sizing: border-box; }
             body {
               margin: 0;
@@ -1687,12 +1736,12 @@ export default function AdminPage() {
               color: #111;
               font-family: Arial, Helvetica, sans-serif;
             }
-            .page {
+            .document-page {
               min-height: 297mm;
               width: 210mm;
               margin: 24px auto;
               background: #fff;
-              padding: 22mm 20mm;
+              padding: 18mm;
               box-shadow: 0 20px 70px rgba(0, 0, 0, 0.18);
             }
             .print-bar {
@@ -1720,6 +1769,19 @@ export default function AdminPage() {
               border-bottom: 2px solid #111;
               padding-bottom: 18px;
               margin-bottom: 26px;
+            }
+            .brand-row {
+              align-items: center;
+              display: flex;
+              gap: 12px;
+            }
+            .logo {
+              border: 1px solid #ddd;
+              border-radius: 14px;
+              height: 48px;
+              object-fit: contain;
+              padding: 6px;
+              width: 48px;
             }
             h1 {
               margin: 10px 0 0;
@@ -1771,12 +1833,12 @@ export default function AdminPage() {
             @media print {
               body { background: #fff; }
               .print-bar { display: none; }
-              .page {
+              .document-page {
                 box-shadow: none;
                 margin: 0;
-                min-height: auto;
-                padding: 0;
-                width: auto;
+                min-height: 297mm;
+                padding: 18mm;
+                width: 210mm;
               }
             }
           </style>
@@ -1785,12 +1847,17 @@ export default function AdminPage() {
           <div class="print-bar">
             <button onclick="window.print()">Drucken / als PDF speichern</button>
           </div>
-          <div class="page">
+          <div class="document-page">
             <header>
               <div>
-                <div class="brand">feliix.wxf photography</div>
+                <div class="brand-row">
+                  <img class="logo" src="/icon.png" alt="feliix.wxf Logo" />
+                  <div>
+                    <div class="brand">feliix.wxf photography</div>
+                    <div class="subline">Fotografie, Bildbearbeitung und digitale Kundengalerien</div>
+                  </div>
+                </div>
                 <h1>${printableTitle}</h1>
-                <div class="subline">Fotografie, Bildbearbeitung und digitale Kundengalerien</div>
               </div>
               <div class="meta">
                 <strong>Dokument</strong>
@@ -7791,65 +7858,131 @@ export default function AdminPage() {
                           Noch keine Termine.
                         </div>
                       )}
-                      {adminAppointments.map((item) => (
-                        <article
-                          key={item.id}
-                          className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-4"
-                        >
-                          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <p className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">
-                                {item.status} · {formatDate(item.starts_at)}
-                              </p>
-                              <h4 className="mt-2 text-lg font-black">{item.title}</h4>
-                              <p className="mt-2 text-sm text-neutral-400">
-                                {item.client_name || "Privater Termin"}
-                                {item.location ? ` · ${item.location}` : ""}
-                              </p>
-                              {item.notes && (
-                                <p className="mt-3 rounded-2xl bg-black/20 p-3 text-sm leading-6 text-neutral-300">
-                                  {item.notes}
-                                </p>
-                              )}
+                      {adminAppointments.map((item) => {
+                        const statusStyles = {
+                          planned: "border-emerald-300/30 bg-emerald-400/10 text-emerald-100",
+                          done: "border-sky-300/30 bg-sky-400/10 text-sky-100",
+                          blocked: "border-red-300/30 bg-red-400/10 text-red-100",
+                        };
+                        const statusLabel = {
+                          planned: "Geplant",
+                          done: "Erledigt",
+                          blocked: "Blockiert",
+                        };
+
+                        return (
+                          <article
+                            key={item.id}
+                            className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.06]"
+                          >
+                            <div className="grid gap-0 sm:grid-cols-[140px_1fr]">
+                              <div className="flex flex-row items-center justify-between gap-3 border-b border-white/10 bg-black/30 p-4 sm:flex-col sm:items-start sm:border-b-0 sm:border-r">
+                                <div>
+                                  <p className="text-xs font-black uppercase tracking-[0.18em] text-neutral-500">
+                                    {formatAppointmentDay(item.starts_at)}
+                                  </p>
+                                  <p className="mt-1 text-3xl font-black leading-none text-white">
+                                    {formatAppointmentTime(item.starts_at)}
+                                  </p>
+                                  {item.ends_at && (
+                                    <p className="mt-1 text-xs font-bold text-neutral-500">
+                                      bis {formatAppointmentTime(item.ends_at)}
+                                    </p>
+                                  )}
+                                </div>
+                                <span className="inline-flex items-center gap-1.5 rounded-full border border-yellow-300/25 bg-yellow-300/10 px-3 py-1 text-xs font-black text-yellow-100">
+                                  <Clock className="h-3.5 w-3.5" />
+                                  {getAppointmentCountdown(item.starts_at)}
+                                </span>
+                              </div>
+
+                              <div className="p-4">
+                                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                  <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span
+                                        className={`rounded-full border px-3 py-1 text-xs font-black ${
+                                          statusStyles[item.status] || statusStyles.planned
+                                        }`}
+                                      >
+                                        {statusLabel[item.status] || "Geplant"}
+                                      </span>
+                                      <span className="text-xs font-bold text-neutral-500">
+                                        {formatDate(item.starts_at)}
+                                      </span>
+                                    </div>
+
+                                    <h4 className="mt-3 text-xl font-black">{item.title}</h4>
+                                    <p className="mt-2 text-sm font-bold text-neutral-300">
+                                      {item.client_name || "Privater Termin"}
+                                    </p>
+
+                                    <div className="mt-3 grid gap-2 text-sm text-neutral-400 sm:grid-cols-2">
+                                      {item.location && (
+                                        <span className="rounded-2xl bg-black/20 px-3 py-2">
+                                          Ort: {item.location}
+                                        </span>
+                                      )}
+                                      {item.client_email && (
+                                        <span className="rounded-2xl bg-black/20 px-3 py-2">
+                                          Mail: {item.client_email}
+                                        </span>
+                                      )}
+                                      {item.phone && (
+                                        <span className="rounded-2xl bg-black/20 px-3 py-2">
+                                          Tel: {item.phone}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {item.notes && (
+                                      <p className="mt-3 rounded-2xl bg-black/20 p-3 text-sm leading-6 text-neutral-300">
+                                        {item.notes}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  <div className="flex flex-wrap gap-2 lg:justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setAppointmentForm({
+                                          id: item.id,
+                                          title: item.title || "",
+                                          client_name: item.client_name || "",
+                                          client_email: item.client_email || "",
+                                          phone: item.phone || "",
+                                          location: item.location || "",
+                                          starts_at: formatDateInput(item.starts_at),
+                                          ends_at: formatDateInput(item.ends_at),
+                                          status: item.status || "planned",
+                                          notes: item.notes || "",
+                                        })
+                                      }
+                                      className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold"
+                                    >
+                                      Bearbeiten
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        deleteContractsResource(
+                                          "appointments",
+                                          item,
+                                          "Termin löschen?"
+                                        )
+                                      }
+                                      className="rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100"
+                                    >
+                                      Löschen
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setAppointmentForm({
-                                    id: item.id,
-                                    title: item.title || "",
-                                    client_name: item.client_name || "",
-                                    client_email: item.client_email || "",
-                                    phone: item.phone || "",
-                                    location: item.location || "",
-                                    starts_at: formatDateInput(item.starts_at),
-                                    ends_at: formatDateInput(item.ends_at),
-                                    status: item.status || "planned",
-                                    notes: item.notes || "",
-                                  })
-                                }
-                                className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold"
-                              >
-                                Bearbeiten
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  deleteContractsResource(
-                                    "appointments",
-                                    item,
-                                    "Termin löschen?"
-                                  )
-                                }
-                                className="rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-bold text-red-100"
-                              >
-                                Löschen
-                              </button>
-                            </div>
-                          </div>
-                        </article>
-                      ))}
+                          </article>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
