@@ -2013,6 +2013,39 @@ export default function AdminPage() {
                 width: 210mm;
               }
             }
+            ${
+              !showPrintBar
+                ? `
+                  body {
+                    background: #d4d4d4;
+                    overflow-x: hidden;
+                    padding: 10px;
+                  }
+                  .document-page {
+                    margin: 0 auto;
+                    min-height: auto;
+                    padding: 18px;
+                    width: 100%;
+                  }
+                  header {
+                    gap: 14px;
+                  }
+                  .logo {
+                    height: 34px;
+                    width: 34px;
+                  }
+                  h1 {
+                    font-size: 20px;
+                  }
+                  .meta {
+                    min-width: 0;
+                  }
+                  .signature-grid {
+                    grid-template-columns: 1fr;
+                  }
+                `
+                : ""
+            }
           </style>
         </head>
         <body>
@@ -3874,11 +3907,11 @@ export default function AdminPage() {
 
   return (
     <main
-      className={`min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_26%),linear-gradient(135deg,#070707,#111113,#1f2023)] px-3 py-4 text-white sm:px-5 sm:py-6 ${
+      className={`min-h-screen w-full overflow-x-hidden bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_26%),linear-gradient(135deg,#070707,#111113,#1f2023)] px-3 py-4 text-white sm:px-5 sm:py-6 ${
         authenticated ? "xl:h-screen xl:overflow-hidden" : ""
       }`}
     >
-      <div className="mx-auto flex max-w-[1600px] flex-col xl:h-full">
+      <div className="mx-auto flex w-full min-w-0 max-w-[1600px] flex-col xl:h-full">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-4 shadow-xl backdrop-blur-xl sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -3978,7 +4011,7 @@ export default function AdminPage() {
             </button>
           </form>
         ) : (
-          <section className="mt-4 grid gap-3 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)]">
+          <section className="mt-4 grid w-full min-w-0 gap-3 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)]">
             <aside className="hidden xl:block xl:min-h-0 xl:overflow-y-auto xl:pr-1">
               <nav className="rounded-[1.25rem] border border-white/10 bg-black/25 p-2">
                 <div className="grid grid-cols-3 gap-1.5 p-1.5">
@@ -4074,7 +4107,7 @@ export default function AdminPage() {
               </nav>
             </aside>
 
-            <div className="min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.045] p-3 shadow-xl backdrop-blur-xl sm:rounded-[1.5rem] sm:p-4 md:p-5 xl:min-h-0 xl:overflow-y-auto">
+            <div className="w-full min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.045] p-3 shadow-xl backdrop-blur-xl sm:rounded-[1.5rem] sm:p-4 md:p-5 xl:min-h-0 xl:overflow-y-auto">
               <div className="mb-4 xl:hidden">
                 {activeTab === "dashboard" ? (
                   <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
@@ -7846,7 +7879,7 @@ export default function AdminPage() {
                               documentPreviewForm,
                               false
                             )}
-                            className="h-[620px] w-full bg-white"
+                            className="h-[430px] w-full bg-white sm:h-[620px]"
                           />
                         </div>
                       </div>
