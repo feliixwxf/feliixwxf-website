@@ -259,47 +259,6 @@ async function cropImageFile(file, options) {
   });
 }
 
-async function getPortfolioCropPreset(files) {
-  const firstImageFile = files.find((file) => file?.type?.startsWith("image/"));
-
-  if (!firstImageFile) {
-    return {
-      aspectWidth: 3,
-      aspectHeight: 4,
-      outputWidth: 1800,
-      outputHeight: 2400,
-    };
-  }
-
-  try {
-    const image = await loadImageFromFile(firstImageFile);
-    const width = image.naturalWidth || image.width;
-    const height = image.naturalHeight || image.height;
-    const isLandscape = width >= height;
-
-    return isLandscape
-      ? {
-          aspectWidth: 4,
-          aspectHeight: 3,
-          outputWidth: 2400,
-          outputHeight: 1800,
-        }
-      : {
-          aspectWidth: 3,
-          aspectHeight: 4,
-          outputWidth: 1800,
-          outputHeight: 2400,
-        };
-  } catch {
-    return {
-      aspectWidth: 3,
-      aspectHeight: 4,
-      outputWidth: 1800,
-      outputHeight: 2400,
-    };
-  }
-}
-
 const SITE_ASSET_LABELS = Object.fromEntries(
   SITE_ASSET_GROUPS.flatMap((group) =>
     group.assets.map((asset) => [asset.key, asset.label])
@@ -4715,22 +4674,21 @@ export default function AdminPage() {
                       type="file"
                       accept="image/*"
                       multiple
-                      onChange={async (event) => {
+                      onChange={(event) => {
                         const selectedFiles = Array.from(
                           event.target.files || []
                         );
-                        const cropPreset =
-                          await getPortfolioCropPreset(selectedFiles);
 
-                        openCropSession(selectedFiles, {
-                          target: "portfolio",
-                          title: "Portfolio-Bilder zuschneiden",
-                          description:
-                            "Passe das Bild an. Querformat bleibt quer, Hochformat bleibt hochkant. Danach bleibt die Upload-Komprimierung aktiv.",
-                          ...cropPreset,
-                        });
+                        setImageFiles(selectedFiles);
+                        setImageFile(selectedFiles[0] || null);
+                        setImagePreviewSize(null);
                         event.target.value = "";
-                        setMessage("");
+                        showMessage(
+                          selectedFiles.length === 1
+                            ? "Bild ausgewählt. Die Kachel-Vorschau schneidet nur optisch zu, gespeichert wird das komplette Bild."
+                            : `${selectedFiles.length} Bilder ausgewählt. Gespeichert werden die kompletten Bilder.`,
+                          "info"
+                        );
                       }}
                       className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 file:mr-4 file:rounded-full file:border-0 file:bg-neutral-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
                     />
@@ -4750,7 +4708,7 @@ export default function AdminPage() {
                       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_230px] lg:items-start">
                         <div>
                           <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
-                            Portfolio-Zuschnitt
+                            Kachel-Vorschau
                           </p>
                           <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]">
                             <img
