@@ -4486,7 +4486,7 @@ export default function AdminPage() {
                       <ShieldCheck className="h-6 w-6 text-neutral-400" />
                     </div>
 
-                    <div className="mt-5 space-y-3">
+                    <div className={`${compactMode ? "mt-4 space-y-2" : "mt-5 space-y-3"}`}>
                       {[
                         {
                           done: images.length > 0,
@@ -5671,16 +5671,18 @@ export default function AdminPage() {
                             key={gallery.id}
                             type="button"
                             onClick={() => setActiveClientGalleryId(gallery.id)}
-                            className={`w-full rounded-2xl border p-4 text-left transition hover:bg-white/10 ${
+                            className={`w-full rounded-2xl border text-left transition hover:bg-white/10 ${
+                              compactMode ? "p-3" : "p-4"
+                            } ${
                               activeClientGallery?.id === gallery.id
                                 ? "border-yellow-400/70 bg-yellow-400/10"
                                 : "border-white/10 bg-black/20"
                             }`}
                           >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <h4 className="font-black">{gallery.title}</h4>
+                            <div className="flex items-center justify-between gap-2">
+                              <h4 className="min-w-0 truncate font-black">{gallery.title}</h4>
                               <span
-                                className={`rounded-full px-3 py-1 text-xs font-black ${
+                                className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
                                   CLIENT_GALLERY_STATUSES[
                                     getClientGalleryStatus(gallery)
                                   ].badge
@@ -5693,21 +5695,23 @@ export default function AdminPage() {
                                 }
                               </span>
                             </div>
-                          <p className="mt-2 text-sm text-neutral-400">
+                          <p className={`${compactMode ? "mt-1 truncate text-xs" : "mt-2 text-sm"} text-neutral-400`}>
                             {gallery.client_name || "Ohne Kundennamen"}
                           </p>
-                          {gallery.client_email && (
+                          {gallery.client_email && !compactMode && (
                             <p className="mt-1 break-all text-xs text-neutral-500">
                               {gallery.client_email}
                             </p>
                           )}
-                          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                          <div className={`${compactMode ? "mt-2" : "mt-3"} flex flex-wrap gap-2 text-xs`}>
                               <span className="max-w-full break-all rounded-full bg-white/10 px-3 py-1 font-bold text-neutral-200">
                                 Code: {gallery.access_code}
                               </span>
                               <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
                                 {gallery.image_count || 0} Bilder
                               </span>
+                              {!compactMode && (
+                                <>
                               <span className="rounded-full bg-white/10 px-3 py-1 text-neutral-300">
                                 {gallery.favorite_count || 0} Favoriten
                               </span>
@@ -5721,6 +5725,8 @@ export default function AdminPage() {
                               >
                                 {accountState.label}
                               </span>
+                                </>
+                              )}
                               {gallery.favorite_last_at && (
                                 <span className="rounded-full bg-yellow-400/10 px-3 py-1 text-yellow-100">
                                   Zuletzt: {formatDate(gallery.favorite_last_at)}
@@ -7466,7 +7472,7 @@ export default function AdminPage() {
                   ))}
                 </div>
 
-                <div className="mt-6 grid gap-4">
+                <div className={`${compactMode ? "mt-4 gap-2" : "mt-6 gap-4"} grid`}>
                   {visibleReviews.length === 0 && (
                     <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-neutral-300">
                       In dieser Ansicht gibt es gerade keine Bewertungen.
@@ -7476,10 +7482,16 @@ export default function AdminPage() {
                   {visibleReviews.map((review) => (
                     <article
                       key={review.id}
-                      className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 backdrop-blur-md"
+                      className={`border border-white/10 bg-white/[0.08] backdrop-blur-md ${
+                        compactMode
+                          ? "rounded-2xl p-3"
+                          : "rounded-[1.5rem] p-4 sm:p-6"
+                      }`}
                     >
-                      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                        <div>
+                      <div className={`flex flex-col gap-4 md:flex-row md:items-start md:justify-between ${
+                        compactMode ? "md:items-center" : ""
+                      }`}>
+                        <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-3">
                             <div className="flex gap-1">
                               {renderStars(review.stars)}
@@ -7504,7 +7516,7 @@ export default function AdminPage() {
                             )}
                           </div>
                           <div className="mt-4 flex items-center gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10">
+                            <div className={`${compactMode ? "h-9 w-9" : "h-11 w-11"} flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10`}>
                               {review.avatar_url ? (
                                 <img
                                   src={review.avatar_url}
@@ -7515,13 +7527,14 @@ export default function AdminPage() {
                                 <Users className="h-5 w-5 text-neutral-400" />
                               )}
                             </div>
-                            <h3 className="text-xl font-black">
+                            <h3 className={`${compactMode ? "text-base" : "text-xl"} min-w-0 truncate font-black`}>
                               {review.name}
                             </h3>
                           </div>
-                          <p className="mt-3 leading-7 text-neutral-300">
+                          <p className={`${compactMode ? "mt-2 line-clamp-2 text-sm leading-6" : "mt-3 leading-7"} break-words text-neutral-300`}>
                             "{review.text}"
                           </p>
+                          {!compactMode && (
                           <div className="mt-5 rounded-2xl border border-white/10 bg-black/15 p-3">
                             <p className="text-xs font-bold uppercase tracking-[0.22em] text-neutral-500">
                               Avatar
@@ -7565,19 +7578,66 @@ export default function AdminPage() {
                               ))}
                             </div>
                           </div>
+                          )}
+                          {!compactMode && (
                           <p className="mt-4 text-xs uppercase tracking-[0.22em] text-neutral-500">
                             {formatDate(review.created_at)}
                           </p>
+                          )}
                           {review.account_deleted_at && (
-                            <p className="mt-2 text-xs leading-5 text-neutral-500">
+                            <p className={`${compactMode ? "mt-2 line-clamp-1" : "mt-2"} text-xs leading-5 text-neutral-500`}>
                               Kundenkonto gelöscht am{" "}
                               {formatDate(review.account_deleted_at)}.
+                              {!compactMode && (
+                                <>
                               Bewertung bleibt erhalten und kann bei Bedarf
                               manuell gelöscht werden.
+                                </>
+                              )}
                             </p>
                           )}
                         </div>
 
+                        {compactMode ? (
+                          <details className="relative shrink-0 md:min-w-36">
+                            <summary className="list-none rounded-full border border-white/10 bg-white/10 px-4 py-2 text-center text-sm font-black transition hover:bg-white/15 [&::-webkit-details-marker]:hidden">
+                              Aktionen
+                            </summary>
+                            <div className="mt-2 grid gap-2 rounded-2xl border border-white/10 bg-neutral-950 p-2 shadow-2xl md:absolute md:right-0 md:z-20 md:w-44">
+                              {review.is_approved ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewApproval(review, false)}
+                                  disabled={busyId === review.id}
+                                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-yellow-400/30 bg-yellow-500/10 px-3 py-2 text-sm font-bold text-yellow-100 transition hover:bg-yellow-500/20 disabled:opacity-60"
+                                >
+                                  <EyeOff className="h-4 w-4" />
+                                  Ausblenden
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewApproval(review, true)}
+                                  disabled={busyId === review.id}
+                                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm font-bold text-emerald-100 transition hover:bg-emerald-500/20 disabled:opacity-60"
+                                >
+                                  <CheckCircle2 className="h-4 w-4" />
+                                  Freigeben
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => deleteReview(review)}
+                                disabled={busyId === review.id}
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm font-bold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Löschen
+                              </button>
+                            </div>
+                          </details>
+                        ) : (
                         <div className="flex flex-wrap gap-2 md:justify-end">
                           {review.is_approved ? (
                             <button
@@ -7611,6 +7671,7 @@ export default function AdminPage() {
                             Löschen
                           </button>
                         </div>
+                        )}
                       </div>
                     </article>
                   ))}
@@ -8794,7 +8855,7 @@ export default function AdminPage() {
             )}
 
             {activeTab === "user-errors" && (
-              <div className="mt-8">
+              <div className={`${adminSectionTop} min-w-0 overflow-hidden`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
@@ -8808,14 +8869,14 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={loadUserErrors}
-                    className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit"
                   >
                     <RefreshCw className="h-4 w-4" />
                     Neu laden
                   </button>
                 </div>
 
-                <div className="mt-6 grid gap-4">
+                <div className={`${compactMode ? "mt-4 gap-2" : "mt-6 gap-4"} grid min-w-0`}>
                   {userErrorsLoadError && (
                     <div className="rounded-[1.5rem] border border-red-400/25 bg-red-500/10 p-4 sm:p-6 text-red-100">
                       <p className="text-sm font-black uppercase tracking-[0.22em]">
@@ -8836,13 +8897,15 @@ export default function AdminPage() {
                   {userErrors.map((errorLog) => (
                     <article
                       key={errorLog.id}
-                      className={`rounded-[1.5rem] border p-5 ${
+                      className={`${compactMode ? "rounded-2xl p-3" : "rounded-[1.5rem] p-4 sm:p-5"} min-w-0 max-w-full overflow-hidden border ${
                         errorLog.is_resolved
                           ? "border-white/10 bg-white/[0.05] opacity-70"
                           : "border-red-400/20 bg-red-500/10"
                       }`}
                     >
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className={`flex min-w-0 flex-col gap-4 lg:flex-row lg:justify-between ${
+                        compactMode ? "lg:items-center" : "lg:items-start"
+                      }`}>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span
@@ -8857,35 +8920,37 @@ export default function AdminPage() {
                             <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-bold text-neutral-300">
                               {errorLog.type || "client"}
                             </span>
+                            {!compactMode && (
                             <span className="text-sm text-neutral-500">
                               {formatDate(errorLog.created_at)}
                             </span>
+                            )}
                           </div>
 
-                          <h3 className="mt-4 text-xl font-black">
+                          <h3 className={`${compactMode ? "mt-2 text-base" : "mt-4 text-xl"} min-w-0 truncate font-black`}>
                             {errorLog.source || errorLog.page || "Website"}
                           </h3>
-                          <p className="mt-2 break-words leading-7 text-neutral-200">
+                          <p className={`${compactMode ? "line-clamp-2 text-sm leading-6" : "leading-7"} mt-2 min-w-0 max-w-full break-words text-neutral-200`}>
                             {errorLog.message}
                           </p>
-                          {errorLog.page && (
+                          {errorLog.page && !compactMode && (
                             <p className="mt-3 text-sm text-neutral-400">
                               Seite: {errorLog.page}
                             </p>
                           )}
 
-                          {(errorLog.stack || errorLog.user_agent) && (
-                            <details className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                          {(errorLog.stack || errorLog.user_agent) && !compactMode && (
+                            <details className="mt-4 min-w-0 max-w-full overflow-hidden rounded-2xl border border-white/10 bg-black/20 p-4">
                               <summary className="cursor-pointer text-sm font-bold text-neutral-300">
                                 Details anzeigen
                               </summary>
                               {errorLog.stack && (
-                                <pre className="mt-3 max-h-52 overflow-auto whitespace-pre-wrap break-words rounded-xl bg-black/30 p-3 text-xs leading-5 text-neutral-400">
+                                <pre className="mt-3 max-h-52 max-w-full overflow-auto whitespace-pre-wrap break-words rounded-xl bg-black/30 p-3 text-xs leading-5 text-neutral-400">
                                   {errorLog.stack}
                                 </pre>
                               )}
                               {errorLog.user_agent && (
-                                <p className="mt-3 break-words text-xs leading-5 text-neutral-500">
+                                <p className="mt-3 max-w-full break-all text-xs leading-5 text-neutral-500">
                                   {errorLog.user_agent}
                                 </p>
                               )}
@@ -8893,7 +8958,42 @@ export default function AdminPage() {
                           )}
                         </div>
 
-                        <div className="flex shrink-0 flex-wrap gap-2">
+                        {compactMode ? (
+                          <details className="relative shrink-0 lg:min-w-36">
+                            <summary className="list-none rounded-full border border-white/10 bg-white/10 px-4 py-2 text-center text-sm font-black transition hover:bg-white/15 [&::-webkit-details-marker]:hidden">
+                              Aktionen
+                            </summary>
+                            <div className="mt-2 grid gap-2 rounded-2xl border border-white/10 bg-neutral-950 p-2 shadow-2xl lg:absolute lg:right-0 lg:z-20 lg:w-44">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setUserErrorResolved(
+                                    errorLog,
+                                    !errorLog.is_resolved
+                                  )
+                                }
+                                className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-black transition ${
+                                  errorLog.is_resolved
+                                    ? "border border-white/10 bg-white/10 text-white hover:bg-white/15"
+                                    : "bg-white text-neutral-950 hover:bg-white/90"
+                                }`}
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                                {errorLog.is_resolved ? "Öffnen" : "Erledigt"}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => deleteUserError(errorLog)}
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm font-black text-red-100 transition hover:bg-red-500/20"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Löschen
+                              </button>
+                            </div>
+                          </details>
+                        ) : (
+                        <div className="flex w-full min-w-0 shrink-0 flex-wrap gap-2 lg:w-auto lg:max-w-44 lg:flex-col">
                           <button
                             type="button"
                             onClick={() =>
@@ -8902,7 +9002,7 @@ export default function AdminPage() {
                                 !errorLog.is_resolved
                               )
                             }
-                            className={`inline-flex w-fit items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${
+                            className={`inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-black transition ${
                               errorLog.is_resolved
                                 ? "border border-white/10 bg-white/10 text-white hover:bg-white/15"
                                 : "bg-white text-neutral-950 hover:-translate-y-0.5 hover:shadow-xl"
@@ -8915,12 +9015,13 @@ export default function AdminPage() {
                           <button
                             type="button"
                             onClick={() => deleteUserError(errorLog)}
-                            className="inline-flex w-fit items-center gap-2 rounded-full border border-red-400/20 bg-red-500/10 px-4 py-2 text-sm font-black text-red-100 transition hover:bg-red-500/20"
+                            className="inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-full border border-red-400/20 bg-red-500/10 px-4 py-2 text-sm font-black text-red-100 transition hover:bg-red-500/20"
                           >
                             <Trash2 className="h-4 w-4" />
                             Löschen
                           </button>
                         </div>
+                        )}
                       </div>
                     </article>
                   ))}
