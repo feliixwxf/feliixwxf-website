@@ -47,10 +47,10 @@ const DEFAULT_SITE_ASSETS = {
   hero_after: { url: "" },
   hero_before: { url: "" },
   cover_car: { url: "/images/hyundaititel.jpg" },
-  cover_portrait: { url: "/images/fw.jpg" },
+  cover_portrait: { url: "" },
   cover_nature: { url: "/images/startpoint.jpg" },
   cover_event: { url: "/images/abititel.jpg" },
-  info_image: { url: "/images/fw.jpg" },
+  info_image: { url: "" },
 };
 
 function cleanHeroAssetFallbacks(assets) {
@@ -662,14 +662,12 @@ export default function FeliixWxfPhotography() {
 
   const galleryImages = {
     car: uniqueImageList([
-      "/images/fw.jpg",
       "/images/ju.jpg",
       "/images/bus.jpg",
       "/images/porsche.jpg",
       "/images/bw.jpg",
       "/images/audi.jpg",
       "/images/goldcar.jpg",
-      siteAssets.cover_portrait?.url || DEFAULT_SITE_ASSETS.cover_portrait.url,
     ]),
     portrait: [],
     nature: [],
