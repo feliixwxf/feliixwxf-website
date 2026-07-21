@@ -259,6 +259,47 @@ async function cropImageFile(file, options) {
   });
 }
 
+async function getPortfolioCropPreset(files) {
+  const firstImageFile = files.find((file) => file?.type?.startsWith("image/"));
+
+  if (!firstImageFile) {
+    return {
+      aspectWidth: 3,
+      aspectHeight: 4,
+      outputWidth: 1800,
+      outputHeight: 2400,
+    };
+  }
+
+  try {
+    const image = await loadImageFromFile(firstImageFile);
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    const isLandscape = width >= height;
+
+    return isLandscape
+      ? {
+          aspectWidth: 4,
+          aspectHeight: 3,
+          outputWidth: 2400,
+          outputHeight: 1800,
+        }
+      : {
+          aspectWidth: 3,
+          aspectHeight: 4,
+          outputWidth: 1800,
+          outputHeight: 2400,
+        };
+  } catch {
+    return {
+      aspectWidth: 3,
+      aspectHeight: 4,
+      outputWidth: 1800,
+      outputHeight: 2400,
+    };
+  }
+}
+
 const SITE_ASSET_LABELS = Object.fromEntries(
   SITE_ASSET_GROUPS.flatMap((group) =>
     group.assets.map((asset) => [asset.key, asset.label])
@@ -4674,19 +4715,19 @@ export default function AdminPage() {
                       type="file"
                       accept="image/*"
                       multiple
-                      onChange={(event) => {
+                      onChange={async (event) => {
                         const selectedFiles = Array.from(
                           event.target.files || []
                         );
+                        const cropPreset =
+                          await getPortfolioCropPreset(selectedFiles);
+
                         openCropSession(selectedFiles, {
                           target: "portfolio",
                           title: "Portfolio-Bilder zuschneiden",
                           description:
-                            "Passe das Bild an die Portfolio-Kachel an. Danach bleibt die bestehende Upload-Komprimierung aktiv.",
-                          aspectWidth: 3,
-                          aspectHeight: 4,
-                          outputWidth: 1800,
-                          outputHeight: 2400,
+                            "Passe das Bild an. Querformat bleibt quer, Hochformat bleibt hochkant. Danach bleibt die Upload-Komprimierung aktiv.",
+                          ...cropPreset,
                         });
                         event.target.value = "";
                         setMessage("");
@@ -4715,7 +4756,12 @@ export default function AdminPage() {
                             <img
                               src={imagePreview}
                               alt="Vorschau im Portfolio-Zuschnitt"
-                              className="aspect-[3/4] w-full object-cover"
+                              className={`w-full object-cover ${
+                                imagePreviewSize?.width >=
+                                imagePreviewSize?.height
+                                  ? "aspect-[4/3]"
+                                  : "aspect-[3/4]"
+                              }`}
                             />
                           </div>
                         </div>
@@ -4724,7 +4770,14 @@ export default function AdminPage() {
                           <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                             Komplettes Bild
                           </p>
-                          <div className="mt-3 flex aspect-[3/4] items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06]">
+                          <div
+                            className={`mt-3 flex items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] ${
+                              imagePreviewSize?.width >=
+                              imagePreviewSize?.height
+                                ? "aspect-[4/3]"
+                                : "aspect-[3/4]"
+                            }`}
+                          >
                             <img
                               src={imagePreview}
                               alt="Vorschau des kompletten Bildes"
