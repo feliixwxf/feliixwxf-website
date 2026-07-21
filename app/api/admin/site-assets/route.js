@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { isAdminAuthenticated } from "../_lib/auth";
 import {
   hasSupabaseConfig,
@@ -16,18 +17,51 @@ const ASSET_KEYS = new Set([
   "cover_event",
   "info_image",
 ]);
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 30 * 1024 * 1024;
+const COMPRESSED_ASSET_QUALITY = 88;
+const SITE_ASSET_SIZES = {
+  hero_before: { width: 1400, height: 1750 },
+  hero_after: { width: 1400, height: 1750 },
+  cover_car: { width: 1200, height: 1600 },
+  cover_portrait: { width: 1200, height: 1600 },
+  cover_nature: { width: 1200, height: 1600 },
+  cover_event: { width: 1200, height: 1600 },
+  info_image: { width: 1200, height: 1500 },
+};
 
 function unauthorized() {
   return NextResponse.json({ error: "Nicht eingeloggt." }, { status: 401 });
 }
 
 function safeFileName(name) {
-  const extension = name.includes(".") ? name.split(".").pop() : "jpg";
+  const baseName = name.includes(".")
+    ? name.split(".").slice(0, -1).join(".")
+    : name;
+  const cleanedBaseName =
+    baseName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "titelbild";
 
   return `${Date.now()}-${Math.random()
     .toString(36)
-    .slice(2)}.${String(extension || "jpg").toLowerCase()}`;
+    .slice(2)}-${cleanedBaseName}.webp`;
+}
+
+async function compressSiteAsset(file, key) {
+  const input = Buffer.from(await file.arrayBuffer());
+  const size = SITE_ASSET_SIZES[key] || { width: 1400, height: 1800 };
+
+  return sharp(input, { failOn: "none" })
+    .rotate()
+    .resize({
+      ...size,
+      fit: "cover",
+      withoutEnlargement: true,
+    })
+    .webp({ quality: COMPRESSED_ASSET_QUALITY })
+    .toBuffer();
 }
 
 function withVersion(asset) {
@@ -130,13 +164,26 @@ export async function POST(request) {
 
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json(
-      { error: "Das Bild darf maximal 10 MB gross sein." },
+      { error: "Das Bild darf maximal 30 MB gross sein." },
       { status: 400 }
     );
   }
 
   const path = `site-assets/${key}/${safeFileName(file.name)}`;
-  const bytes = await file.arrayBuffer();
+  let processedImage;
+
+  try {
+    processedImage = await compressSiteAsset(file, key);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error:
+          "Titelbild konnte nicht komprimiert werden. Bitte JPG, PNG oder WebP verwenden.",
+        details: error.message,
+      },
+      { status: 400 }
+    );
+  }
 
   const uploadResponse = await fetch(
     `${supabaseRestUrl}/storage/v1/object/${storageBucket}/${path}`,
@@ -146,10 +193,10 @@ export async function POST(request) {
         apikey: supabaseServiceHeaders.apikey,
         Authorization: supabaseServiceHeaders.Authorization,
         "Cache-Control": "31536000",
-        "Content-Type": file.type || "image/jpeg",
+        "Content-Type": "image/webp",
         "x-upsert": "false",
       },
-      body: bytes,
+      body: processedImage,
     }
   );
 
