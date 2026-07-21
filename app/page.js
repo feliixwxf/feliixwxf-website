@@ -472,7 +472,7 @@ export default function FeliixWxfPhotography() {
       })
       .catch(() => {});
 
-    fetch("/api/site-settings")
+    fetch("/api/site-settings", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (data?.settings) {
