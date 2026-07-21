@@ -43,44 +43,8 @@ const REVIEW_AVATARS = Array.from({ length: 12 }, (_, index) => ({
   url: `/images/review-avatars/avatar-${index + 1}.svg`,
 }));
 
-const DEFAULT_SITE_ASSETS = {
-  hero_after: { url: "" },
-  hero_before: { url: "" },
-  cover_car: { url: "/images/hyundaititel.jpg" },
-  cover_portrait: { url: "" },
-  cover_nature: { url: "/images/startpoint.jpg" },
-  cover_event: { url: "/images/abititel.jpg" },
-  info_image: { url: "" },
-};
-
-function cleanHeroAssetFallbacks(assets) {
-  return {
-    ...assets,
-    hero_after:
-      assets.hero_after?.url === "/images/nacher.jpg"
-        ? { ...assets.hero_after, url: "" }
-        : assets.hero_after,
-    hero_before:
-      assets.hero_before?.url === "/images/vorher.jpg"
-        ? { ...assets.hero_before, url: "" }
-        : assets.hero_before,
-  };
-}
-
-function loadCachedSiteAssets() {
-  if (typeof window === "undefined") return DEFAULT_SITE_ASSETS;
-
-  try {
-    const cachedAssets = window.localStorage.getItem("feliix-site-assets");
-    if (!cachedAssets) return DEFAULT_SITE_ASSETS;
-
-    return cleanHeroAssetFallbacks({
-      ...DEFAULT_SITE_ASSETS,
-      ...JSON.parse(cachedAssets),
-    });
-  } catch {
-    return DEFAULT_SITE_ASSETS;
-  }
+function siteAssetImageUrl(key) {
+  return `/api/site-assets/image/${key}`;
 }
 
 const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "portrait,nature";
@@ -387,7 +351,6 @@ export default function FeliixWxfPhotography() {
   const [contactMessage, setContactMessage] = useState("");
   const [contactSent, setContactSent] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
-  const [siteAssets, setSiteAssets] = useState(loadCachedSiteAssets);
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
   const [siteSettingsLoaded, setSiteSettingsLoaded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -448,29 +411,6 @@ export default function FeliixWxfPhotography() {
         })
         .catch(() => {});
     };
-
-    fetch("/api/site-assets", { cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data) => {
-        if (data?.assets) {
-          setSiteAssets((current) => {
-            const nextAssets = cleanHeroAssetFallbacks({
-              ...current,
-              ...data.assets,
-            });
-
-            try {
-              localStorage.setItem(
-                "feliix-site-assets",
-                JSON.stringify(nextAssets)
-              );
-            } catch {}
-
-            return nextAssets;
-          });
-        }
-      })
-      .catch(() => {});
 
     fetch("/api/site-settings", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
@@ -626,31 +566,22 @@ export default function FeliixWxfPhotography() {
     {
       title: "Car",
       key: "car",
-      image: isPlaceholderImageUrl(siteAssets.cover_car?.url)
-        ? DEFAULT_SITE_ASSETS.cover_car.url
-        : siteAssets.cover_car?.url || DEFAULT_SITE_ASSETS.cover_car.url,
+      image: siteAssetImageUrl("cover_car"),
     },
     {
       title: "Portrait",
       key: "portrait",
-      image: isPlaceholderImageUrl(siteAssets.cover_portrait?.url)
-        ? DEFAULT_SITE_ASSETS.cover_portrait.url
-        : siteAssets.cover_portrait?.url ||
-          DEFAULT_SITE_ASSETS.cover_portrait.url,
+      image: siteAssetImageUrl("cover_portrait"),
     },
     {
       title: "Nature & Street",
       key: "nature",
-      image: isPlaceholderImageUrl(siteAssets.cover_nature?.url)
-        ? DEFAULT_SITE_ASSETS.cover_nature.url
-        : siteAssets.cover_nature?.url || DEFAULT_SITE_ASSETS.cover_nature.url,
+      image: siteAssetImageUrl("cover_nature"),
     },
     {
       title: "Event",
       key: "event",
-      image: isPlaceholderImageUrl(siteAssets.cover_event?.url)
-        ? DEFAULT_SITE_ASSETS.cover_event.url
-        : siteAssets.cover_event?.url || DEFAULT_SITE_ASSETS.cover_event.url,
+      image: siteAssetImageUrl("cover_event"),
     },
   ];
   const archivedPortfolioKeys = parseArchivedPortfolioKeys(
@@ -675,7 +606,7 @@ export default function FeliixWxfPhotography() {
       "/images/zeugnis.jpg",
       "/images/ski.jpg",
       "/images/startpoint.jpg",
-      siteAssets.cover_nature?.url || DEFAULT_SITE_ASSETS.cover_nature.url,
+      siteAssetImageUrl("cover_nature"),
     ]),
   };
 
@@ -1275,38 +1206,34 @@ export default function FeliixWxfPhotography() {
                 }}
                 className="relative aspect-[4/5] touch-none select-none overflow-hidden rounded-[1.5rem]"
               >
-                {siteAssets.hero_after?.url && (
-                  <img
-                    src={siteAssets.hero_after.url}
-                    alt="Nachher"
-                    draggable="false"
-                    loading="eager"
-                    decoding="async"
-                    fetchPriority="high"
-                    width="1200"
-                    height="1500"
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                )}
+                <img
+                  src={siteAssetImageUrl("hero_after")}
+                  alt="Nachher"
+                  draggable="false"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                  width="1200"
+                  height="1500"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
 
                 <div
                   ref={beforeRef}
                   className="absolute inset-0 overflow-hidden"
                   style={{ clipPath: "inset(0 50% 0 0)" }}
                 >
-                  {siteAssets.hero_before?.url && (
-                    <img
-                      src={siteAssets.hero_before.url}
-                      alt="Vorher"
-                      draggable="false"
-                      loading="eager"
-                      decoding="async"
-                      fetchPriority="high"
-                      width="1200"
-                      height="1500"
-                      className="h-full w-full object-cover"
-                    />
-                  )}
+                  <img
+                    src={siteAssetImageUrl("hero_before")}
+                    alt="Vorher"
+                    draggable="false"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                    width="1200"
+                    height="1500"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
 
                 <div
