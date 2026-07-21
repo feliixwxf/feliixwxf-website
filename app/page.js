@@ -638,10 +638,26 @@ export default function FeliixWxfPhotography() {
   const activePortfolioImages = activeGallery
     ? visibleGalleryImages[activeGallery] || []
     : [];
-  const getPortfolioDownloadUrl = (image) =>
-    image?.id
-      ? `/api/portfolio-images/download?image=${encodeURIComponent(image.id)}`
-      : "";
+  const getPortfolioDownloadUrl = (image) => {
+    const normalizedImage = normalizePortfolioImage(image);
+
+    if (normalizedImage.id) {
+      return `/api/portfolio-images/download?image=${encodeURIComponent(
+        normalizedImage.id
+      )}`;
+    }
+
+    if (
+      normalizedImage.url?.startsWith("/images/") ||
+      normalizedImage.url?.startsWith("/api/site-assets/image/")
+    ) {
+      return `/api/portfolio-images/download?src=${encodeURIComponent(
+        normalizedImage.url
+      )}`;
+    }
+
+    return "";
+  };
 
   const closePortfolioImage = () => {
     setSelectedPortfolioImage(null);
@@ -1029,7 +1045,7 @@ export default function FeliixWxfPhotography() {
                 />
               </button>
 
-              {selectedPortfolioImage?.id && (
+              {getPortfolioDownloadUrl(selectedPortfolioImage) && (
                 <a
                   href={getPortfolioDownloadUrl(selectedPortfolioImage)}
                   download

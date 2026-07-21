@@ -152,35 +152,35 @@ export async function createWatermarkedClientImage(buffer, label = "feliix.wxf")
   const width = metadata.width || 1600;
   const height = metadata.height || 1200;
   const shortestSide = Math.min(width, height);
-  const fontSize = Math.max(42, Math.round(shortestSide * 0.085));
-  const strokeWidth = Math.max(2, Math.round(fontSize * 0.04));
+  const fontSize = Math.max(44, Math.round(shortestSide * 0.07));
+  const strokeWidth = Math.max(2, Math.round(fontSize * 0.035));
   const safeLabel = escapeSvgText(label || "feliix.wxf");
 
   const watermark = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-      <defs>
-        <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="${Math.max(2, Math.round(fontSize * 0.06))}" stdDeviation="${Math.max(
-            4,
-            Math.round(fontSize * 0.08)
-          )}" flood-color="#000000" flood-opacity="0.34"/>
-        </filter>
-      </defs>
-      <g transform="translate(${width / 2} ${height / 2}) rotate(-18)" filter="url(#softShadow)">
+      <g transform="translate(${width / 2} ${height / 2}) rotate(-18)">
+        <rect
+          x="${-fontSize * 4.2}"
+          y="${-fontSize * 0.9}"
+          width="${fontSize * 8.4}"
+          height="${fontSize * 1.8}"
+          rx="${fontSize * 0.28}"
+          fill="#000000"
+          fill-opacity="0.16"
+        />
         <text
           x="0"
           y="0"
           text-anchor="middle"
           dominant-baseline="middle"
-          font-family="Arial, Helvetica, sans-serif"
+          font-family="sans-serif"
           font-size="${fontSize}"
           font-weight="900"
-          letter-spacing="${Math.round(fontSize * 0.12)}"
           fill="#ffffff"
-          fill-opacity="0.28"
-          stroke="#111111"
+          fill-opacity="0.42"
+          stroke="#000000"
           stroke-width="${strokeWidth}"
-          stroke-opacity="0.18"
+          stroke-opacity="0.28"
           paint-order="stroke"
         >${safeLabel}</text>
       </g>
