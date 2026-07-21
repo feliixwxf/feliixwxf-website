@@ -856,6 +856,7 @@ export default function AdminPage() {
   const [siteAssetFiles, setSiteAssetFiles] = useState({});
   const [siteAssetPreviews, setSiteAssetPreviews] = useState({});
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [compactMode, setCompactMode] = useState(false);
   const [reviewFilter, setReviewFilter] = useState("pending");
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
@@ -1299,6 +1300,16 @@ export default function AdminPage() {
       : messageType === "error"
         ? "border-red-400/30 bg-red-500/10 text-red-100"
         : "border-yellow-400/30 bg-yellow-400/10 text-yellow-100";
+  const adminShellGap = compactMode ? "gap-2" : "gap-3";
+  const adminPanelPadding = compactMode
+    ? "p-3 sm:p-3"
+    : "p-3 sm:p-4 md:p-5";
+  const adminSectionTop = compactMode ? "mt-4" : "mt-8";
+  const adminCardPadding = compactMode ? "p-3 sm:p-4" : "p-4 sm:p-6";
+  const adminRounded = compactMode ? "rounded-[1.05rem]" : "rounded-[1.5rem]";
+  const adminCardIconSize = compactMode ? "h-10 w-10" : "h-12 w-12";
+  const adminCardTitleSpacing = compactMode ? "mt-3" : "mt-5";
+  const compactToggleLabel = compactMode ? "Kompakt an" : "Komfort";
 
   const loadReviews = async () => {
     setMessage("");
@@ -2118,7 +2129,15 @@ export default function AdminPage() {
 
   useEffect(() => {
     setPublicOrigin(window.location.origin);
+    setCompactMode(localStorage.getItem("feliix-admin-compact-mode") === "true");
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "feliix-admin-compact-mode",
+      compactMode ? "true" : "false"
+    );
+  }, [compactMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -3928,10 +3947,23 @@ export default function AdminPage() {
             </div>
 
             {authenticated && (
-              <div className="flex flex-wrap gap-2">
+              <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setCompactMode((current) => !current)}
+                  className={`inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit ${
+                    compactMode
+                      ? "border-yellow-400/30 bg-yellow-400/15 text-yellow-100"
+                      : "border-white/10 bg-white/10"
+                  }`}
+                  aria-pressed={compactMode}
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  {compactToggleLabel}
+                </button>
                 <button
                   onClick={refreshDashboard}
-                  className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit"
                 >
                   <RefreshCw className="h-4 w-4" />
                   Neu laden
@@ -3940,14 +3972,14 @@ export default function AdminPage() {
                   href="/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit"
                 >
                   <ExternalLink className="h-4 w-4" />
                   Live
                 </a>
                 <button
                   onClick={handleLogout}
-                  className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold transition hover:bg-white/15 sm:w-fit"
                 >
                   <LogOut className="h-4 w-4" />
                   Ausloggen
@@ -4011,9 +4043,9 @@ export default function AdminPage() {
             </button>
           </form>
         ) : (
-          <section className="mt-4 grid w-full min-w-0 gap-3 xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)]">
+          <section className={`mt-4 grid w-full min-w-0 ${adminShellGap} xl:min-h-0 xl:flex-1 xl:overflow-hidden xl:grid-cols-[220px_minmax(0,1fr)]`}>
             <aside className="hidden xl:block xl:min-h-0 xl:overflow-y-auto xl:pr-1">
-              <nav className="rounded-[1.25rem] border border-white/10 bg-black/25 p-2">
+              <nav className={`rounded-[1.25rem] border border-white/10 bg-black/25 ${compactMode ? "p-1.5" : "p-2"}`}>
                 <div className="grid grid-cols-3 gap-1.5 p-1.5">
                   {[
                     {
@@ -4067,7 +4099,9 @@ export default function AdminPage() {
                             key={tab.value}
                             type="button"
                             onClick={() => setActiveTab(tab.value)}
-                            className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left transition ${
+                            className={`flex w-full items-center gap-2.5 rounded-xl px-3 text-left transition ${
+                              compactMode ? "py-2" : "py-2.5"
+                            } ${
                               activeTab === tab.value
                                 ? "bg-white text-neutral-950"
                                 : "text-neutral-300 hover:bg-white/10 hover:text-white"
@@ -4107,10 +4141,10 @@ export default function AdminPage() {
               </nav>
             </aside>
 
-            <div className="w-full min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.045] p-3 shadow-xl backdrop-blur-xl sm:rounded-[1.5rem] sm:p-4 md:p-5 xl:min-h-0 xl:overflow-y-auto">
+            <div className={`w-full min-w-0 rounded-[1.25rem] border border-white/10 bg-white/[0.045] ${adminPanelPadding} shadow-xl backdrop-blur-xl sm:rounded-[1.5rem] xl:min-h-0 xl:overflow-y-auto`}>
               <div className="mb-4 xl:hidden">
                 {activeTab === "dashboard" ? (
-                  <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
+                  <div className={`rounded-[1.25rem] border border-white/10 bg-black/20 ${compactMode ? "p-3" : "p-4"}`}>
                     <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                       Admin Menü
                     </p>
@@ -4120,7 +4154,7 @@ export default function AdminPage() {
                           <p className="mb-2 px-1 text-[0.68rem] font-black uppercase tracking-[0.2em] text-neutral-600">
                             {group.title}
                           </p>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className={`grid grid-cols-2 ${compactMode ? "gap-1.5" : "gap-2"}`}>
                             {group.tabs
                               .filter((tab) => tab.value !== "dashboard")
                               .map((tab) => {
@@ -4136,7 +4170,11 @@ export default function AdminPage() {
                                         setReviewFilter("pending");
                                       }
                                     }}
-                                    className="flex min-h-20 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.07] p-3 text-left transition active:scale-[0.99]"
+                                    className={`flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.07] text-left transition active:scale-[0.99] ${
+                                      compactMode
+                                        ? "min-h-16 p-2.5"
+                                        : "min-h-20 p-3"
+                                    }`}
                                   >
                                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
                                       <Icon className="h-5 w-5" />
@@ -4201,22 +4239,22 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className="mt-8 hidden gap-4 sm:grid md:grid-cols-2 xl:grid-cols-5">
+                <div className={`${compactMode ? "mt-5 gap-3" : "mt-8 gap-4"} hidden sm:grid md:grid-cols-2 xl:grid-cols-5`}>
                   <button
                     type="button"
                     onClick={() => {
                       setActiveTab("reviews");
                       setReviewFilter("pending");
                     }}
-                    className="rounded-[1.5rem] border border-yellow-400/20 bg-yellow-400/10 p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-yellow-400/15"
+                    className={`${adminRounded} border border-yellow-400/20 bg-yellow-400/10 ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-yellow-400/15`}
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-400/15">
+                    <div className={`${compactMode ? "h-10 w-10" : "h-12 w-12"} flex items-center justify-center rounded-full bg-yellow-400/15`}>
                       <Clock className="h-5 w-5 text-yellow-100" />
                     </div>
-                    <p className="mt-5 text-2xl font-black sm:text-3xl">
+                    <p className={`${compactMode ? "mt-3 text-2xl" : "mt-5 text-2xl sm:text-3xl"} font-black`}>
                       {pendingReviews.length}
                     </p>
-                    <h3 className="mt-2 text-lg font-black">
+                    <h3 className={`${compactMode ? "mt-1 text-base" : "mt-2 text-lg"} font-black`}>
                       Offene Bewertungen
                     </h3>
                   </button>
@@ -4224,13 +4262,13 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("portfolio")}
-                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className={`${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                    <div className={`${compactMode ? "h-10 w-10" : "h-12 w-12"} flex items-center justify-center rounded-full bg-white/10`}>
                       <Images className="h-5 w-5" />
                     </div>
-                    <p className="mt-5 text-2xl font-black sm:text-3xl">{images.length}</p>
-                    <h3 className="mt-2 text-lg font-black">
+                    <p className={`${compactMode ? "mt-3 text-2xl" : "mt-5 text-2xl sm:text-3xl"} font-black`}>{images.length}</p>
+                    <h3 className={`${compactMode ? "mt-1 text-base" : "mt-2 text-lg"} font-black`}>
                       Galerie-Bilder
                     </h3>
                   </button>
@@ -4238,30 +4276,30 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("covers")}
-                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className={`${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                    <div className={`${compactMode ? "h-10 w-10" : "h-12 w-12"} flex items-center justify-center rounded-full bg-white/10`}>
                       <ImageIcon className="h-5 w-5" />
                     </div>
-                    <p className="mt-5 text-2xl font-black sm:text-3xl">
+                    <p className={`${compactMode ? "mt-3 text-2xl" : "mt-5 text-2xl sm:text-3xl"} font-black`}>
                       {SITE_ASSET_GROUPS.flatMap((group) => group.assets).length -
                         missingCoverAssets.length}
                     </p>
-                    <h3 className="mt-2 text-lg font-black">Titelbilder</h3>
+                    <h3 className={`${compactMode ? "mt-1 text-base" : "mt-2 text-lg"} font-black`}>Titelbilder</h3>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setActiveTab("clients")}
-                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className={`${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                    <div className={`${compactMode ? "h-10 w-10" : "h-12 w-12"} flex items-center justify-center rounded-full bg-white/10`}>
                       <Users className="h-5 w-5" />
                     </div>
-                    <p className="mt-5 text-2xl font-black sm:text-3xl">
+                    <p className={`${compactMode ? "mt-3 text-2xl" : "mt-5 text-2xl sm:text-3xl"} font-black`}>
                       {clientGalleries.length}
                     </p>
-                    <h3 className="mt-2 text-lg font-black">
+                    <h3 className={`${compactMode ? "mt-1 text-base" : "mt-2 text-lg"} font-black`}>
                       Kundengalerien
                     </h3>
                   </button>
@@ -4269,15 +4307,15 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("contact")}
-                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className={`${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+                    <div className={`${compactMode ? "h-10 w-10" : "h-12 w-12"} flex items-center justify-center rounded-full bg-white/10`}>
                       <Mail className="h-5 w-5" />
                     </div>
-                    <p className="mt-5 text-lg font-black">
+                    <p className={`${compactMode ? "mt-3 text-base" : "mt-5 text-lg"} break-words font-black`}>
                       {siteSettings.contact_email}
                     </p>
-                    <h3 className="mt-2 text-lg font-black">Kontaktinfos</h3>
+                    <h3 className={`${compactMode ? "mt-1 text-base" : "mt-2 text-lg"} font-black`}>Kontaktinfos</h3>
                   </button>
                 </div>
 
@@ -4489,7 +4527,7 @@ export default function AdminPage() {
                   </section>
                 </div>
 
-                <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-black/20 p-4 sm:p-6">
+                <div className={`${compactMode ? "mt-5" : "mt-8"} ${adminRounded} border border-white/10 bg-black/20 ${adminCardPadding}`}>
                   <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] xl:items-center">
                     <div className="min-w-0">
                       <h3 className="text-xl font-black">Schnellzugriff</h3>
@@ -5131,7 +5169,7 @@ export default function AdminPage() {
             )}
 
             {activeTab === "clients" && (
-              <div className="mt-5 min-w-0 sm:mt-8">
+              <div className={`${compactMode ? "mt-4" : "mt-5 sm:mt-8"} min-w-0`}>
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                   <div className="min-w-0">
                     <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
@@ -5140,9 +5178,11 @@ export default function AdminPage() {
                     <h2 className="mt-3 text-2xl font-black sm:text-3xl">
                       Kundenbereich
                     </h2>
+                    {!compactMode && (
                     <p className="mt-3 hidden max-w-2xl text-neutral-300 sm:block">
                       Galerien, Codes, Uploads und Kundensuche klar getrennt.
                     </p>
+                    )}
                   </div>
 
                   <div className="grid gap-2 sm:flex sm:flex-wrap">
@@ -8470,25 +8510,45 @@ export default function AdminPage() {
             )}
 
             {activeTab === "settings" && (
-              <div className="mt-8">
+              <div className={adminSectionTop}>
                 <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
                   Einstellungen
                 </p>
                 <h2 className="mt-3 text-2xl font-black sm:text-3xl">Schnellzugriff</h2>
 
-                <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div className={`${compactMode ? "mt-4 gap-3" : "mt-6 gap-4"} grid md:grid-cols-2 xl:grid-cols-3`}>
+                  <button
+                    type="button"
+                    onClick={() => setCompactMode((current) => !current)}
+                    className={`group ${adminRounded} border ${adminCardPadding} text-left transition hover:-translate-y-1 ${
+                      compactMode
+                        ? "border-yellow-400/25 bg-yellow-400/10 text-yellow-50 hover:bg-yellow-400/15"
+                        : "border-white/10 bg-white/[0.08] hover:bg-white/[0.12]"
+                    }`}
+                  >
+                    <span className={`${adminCardIconSize} flex items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15`}>
+                      <LayoutDashboard className="h-5 w-5" />
+                    </span>
+                    <span className={`${adminCardTitleSpacing} block text-lg font-black sm:text-xl`}>
+                      Kompaktmodus
+                    </span>
+                    <span className="mt-2 block text-sm opacity-75">
+                      {compactMode ? "Aktiv" : "Mehr Platz auf Handy"}
+                    </span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={toggleMaintenanceMode}
                     disabled={maintenanceSaving}
-                    className={`group rounded-[1.5rem] border p-4 sm:p-6 text-left transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    className={`group ${adminRounded} border ${adminCardPadding} text-left transition hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-60 ${
                       String(siteSettings.maintenance_mode) === "true"
                         ? "border-yellow-400/25 bg-yellow-400/10 text-yellow-50 hover:bg-yellow-400/15"
                         : "border-emerald-400/20 bg-emerald-400/10 text-emerald-50 hover:bg-emerald-400/15"
                     }`}
                   >
                     <span
-                      className={`flex h-12 w-12 items-center justify-center rounded-full transition ${
+                      className={`${adminCardIconSize} flex items-center justify-center rounded-full transition ${
                         String(siteSettings.maintenance_mode) === "true"
                           ? "bg-yellow-400/15"
                           : "bg-emerald-400/15"
@@ -8502,7 +8562,7 @@ export default function AdminPage() {
                         }`}
                       />
                     </span>
-                    <span className="mt-5 block text-xl font-black">
+                    <span className={`${adminCardTitleSpacing} block text-lg font-black sm:text-xl`}>
                       Wartungsmodus
                     </span>
                     <span className="mt-2 block text-sm opacity-75">
@@ -8517,12 +8577,12 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={refreshDashboard}
-                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className={`group ${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                    <span className={`${adminCardIconSize} flex items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15`}>
                       <RefreshCw className="h-5 w-5" />
                     </span>
-                    <span className="mt-5 block text-xl font-black">
+                    <span className={`${adminCardTitleSpacing} block text-lg font-black sm:text-xl`}>
                       Daten neu laden
                     </span>
                   </button>
@@ -8531,12 +8591,12 @@ export default function AdminPage() {
                     href="/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className={`group ${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                    <span className={`${adminCardIconSize} flex items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15`}>
                       <ExternalLink className="h-5 w-5" />
                     </span>
-                    <span className="mt-5 block text-xl font-black">
+                    <span className={`${adminCardTitleSpacing} block text-lg font-black sm:text-xl`}>
                       Website öffnen
                     </span>
                   </a>
@@ -8544,12 +8604,12 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("clients")}
-                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className={`group ${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                    <span className={`${adminCardIconSize} flex items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15`}>
                       <Users className="h-5 w-5" />
                     </span>
-                    <span className="mt-5 block text-xl font-black">
+                    <span className={`${adminCardTitleSpacing} block text-lg font-black sm:text-xl`}>
                       Kunden öffnen
                     </span>
                   </button>
@@ -8557,12 +8617,12 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("reviews")}
-                    className="group rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 text-left transition hover:-translate-y-1 hover:bg-white/[0.12]"
+                    className={`group ${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                    <span className={`${adminCardIconSize} flex items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/15`}>
                       <MessageSquare className="h-5 w-5" />
                     </span>
-                    <span className="mt-5 block text-xl font-black">
+                    <span className={`${adminCardTitleSpacing} block text-lg font-black sm:text-xl`}>
                       Bewertungen prüfen
                     </span>
                     <span className="mt-2 block text-sm text-neutral-400">
@@ -8574,12 +8634,12 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="group rounded-[1.5rem] border border-red-400/20 bg-red-500/10 p-4 sm:p-6 text-left text-red-50 transition hover:-translate-y-1 hover:bg-red-500/15"
+                    className={`group ${adminRounded} border border-red-400/20 bg-red-500/10 ${adminCardPadding} text-left text-red-50 transition hover:-translate-y-1 hover:bg-red-500/15`}
                   >
-                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/15 transition group-hover:bg-red-500/20">
+                    <span className={`${adminCardIconSize} flex items-center justify-center rounded-full bg-red-500/15 transition group-hover:bg-red-500/20`}>
                       <LogOut className="h-5 w-5" />
                     </span>
-                    <span className="mt-5 block text-xl font-black">
+                    <span className={`${adminCardTitleSpacing} block text-lg font-black sm:text-xl`}>
                       Ausloggen
                     </span>
                   </button>
