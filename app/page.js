@@ -47,7 +47,7 @@ function siteAssetImageUrl(key) {
   return `/api/site-assets/image/${key}`;
 }
 
-const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "";
+const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "nature";
 
 const LOCAL_SEO_SERVICES = [
   {

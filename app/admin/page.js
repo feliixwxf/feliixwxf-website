@@ -266,7 +266,7 @@ const SITE_ASSET_LABELS = Object.fromEntries(
 );
 
 const BUSINESS_CARD_URL = "https://www.feliixwxf.de";
-const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "";
+const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "nature";
 
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
