@@ -1377,8 +1377,8 @@ export default function FeliixWxfPhotography() {
           </div>
         </Section>
 
-        <Section id="portfolio" className="px-5 py-20">
-          <div className="mx-auto max-w-6xl">
+        <Section id="portfolio" className="px-5 py-24">
+          <div className="mx-auto max-w-7xl">
             <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
               {siteSettings.portfolio_eyebrow}
             </p>
@@ -1386,14 +1386,14 @@ export default function FeliixWxfPhotography() {
               {siteSettings.portfolio_heading}
             </h2>
 
-            <div className="mt-10 grid gap-5 md:grid-cols-2">
+            <div className="mt-12 grid gap-6 md:grid-cols-2">
               {visiblePortfolioItems.map((item) => (
                 <Card
                   key={item.key}
                   onClick={() => setActiveGallery(item.key)}
-                  className={`cursor-pointer overflow-hidden rounded-[1.5rem] border ${glass} ${hoverLift}`}
+                  className={`cursor-pointer overflow-hidden rounded-[2rem] border ${glass} ${hoverLift}`}
                 >
-                  <div className="aspect-[4/3] overflow-hidden">
+                  <div className="aspect-[3/4] overflow-hidden">
                     <img
                       src={item.image}
                       alt={item.title}
@@ -1402,9 +1402,9 @@ export default function FeliixWxfPhotography() {
                       className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.04]"
                     />
                   </div>
-                  <CardContent className="p-4">
-                    <h3 className="text-lg font-bold">{item.title}</h3>
-                    <p className={`mt-1 text-sm ${muted}`}>Galerie öffnen</p>
+                  <CardContent className="p-5">
+                    <h3 className="text-xl font-bold">{item.title}</h3>
+                    <p className={`mt-2 text-sm ${muted}`}>Galerie öffnen</p>
                   </CardContent>
                 </Card>
               ))}
