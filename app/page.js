@@ -1304,7 +1304,7 @@ export default function FeliixWxfPhotography() {
           </div>
         </Section>
 
-        <Section id="portfolio" className="px-5 py-24">
+        <section id="portfolio" className="relative z-0 scroll-mt-28 px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
               {siteSettings.portfolio_eyebrow}
@@ -1313,23 +1313,26 @@ export default function FeliixWxfPhotography() {
               {siteSettings.portfolio_heading}
             </h2>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2">
-              {visiblePortfolioItems.map((item) => (
+            <div className="mt-12 grid auto-rows-fr gap-6 md:grid-cols-2">
+              {visiblePortfolioItems.map((item, index) => (
                 <Card
                   key={item.key}
                   onClick={() => setActiveGallery(item.key)}
-                  className={`cursor-pointer overflow-hidden rounded-[2rem] border ${glass} ${hoverLift}`}
+                  className={`flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] border ${glass} ${hoverLift}`}
                 >
-                  <div className="aspect-[3/4] overflow-hidden">
+                  <div className="aspect-[3/4] shrink-0 overflow-hidden bg-black/20">
                     <img
                       src={item.image}
                       alt={item.title}
-                      loading="lazy"
+                      loading={index < 2 ? "eager" : "lazy"}
                       decoding="async"
-                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.04]"
+                      fetchPriority={index < 2 ? "high" : "auto"}
+                      width="1200"
+                      height="1600"
+                      className="block h-full w-full object-cover transition-transform duration-500 hover:scale-[1.04]"
                     />
                   </div>
-                  <CardContent className="p-5">
+                  <CardContent className="min-h-[92px] p-5">
                     <h3 className="text-xl font-bold">{item.title}</h3>
                     <p className={`mt-2 text-sm ${muted}`}>Galerie öffnen</p>
                   </CardContent>
@@ -1337,7 +1340,7 @@ export default function FeliixWxfPhotography() {
               ))}
             </div>
           </div>
-        </Section>
+        </section>
 
         <Section id="bewertung" className="overflow-hidden px-5 py-24">
           <div className="mx-auto max-w-7xl">
