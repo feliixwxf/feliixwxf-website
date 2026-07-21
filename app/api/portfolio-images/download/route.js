@@ -32,6 +32,14 @@ function normalizeLocalImageSrc(value) {
   if (src.startsWith("/images/") && /\.(jpe?g|png|webp)$/i.test(src)) {
     return src;
   }
+  if (
+    supabaseBaseUrl &&
+    src.startsWith(
+      `${supabaseBaseUrl}/storage/v1/object/public/portfolio/`
+    )
+  ) {
+    return src;
+  }
 
   return "";
 }
@@ -45,6 +53,17 @@ async function loadPortfolioImageBySrc(src, request) {
       const response = await fetch(new URL(safeSrc, request.url), {
         cache: "no-store",
       });
+
+      if (!response.ok) return null;
+      return Buffer.from(await response.arrayBuffer());
+    } catch {
+      return null;
+    }
+  }
+
+  if (safeSrc.startsWith("http")) {
+    try {
+      const response = await fetch(safeSrc, { cache: "no-store" });
 
       if (!response.ok) return null;
       return Buffer.from(await response.arrayBuffer());

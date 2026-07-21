@@ -152,21 +152,23 @@ export async function createWatermarkedClientImage(buffer, label = "feliix.wxf")
   const width = metadata.width || 1600;
   const height = metadata.height || 1200;
   const shortestSide = Math.min(width, height);
-  const fontSize = Math.max(44, Math.round(shortestSide * 0.07));
-  const strokeWidth = Math.max(2, Math.round(fontSize * 0.035));
+  const fontSize = Math.max(52, Math.round(shortestSide * 0.082));
+  const strokeWidth = Math.max(3, Math.round(fontSize * 0.055));
   const safeLabel = escapeSvgText(label || "feliix.wxf");
+  const pillWidth = fontSize * 7.6;
+  const pillHeight = fontSize * 1.85;
 
   const watermark = Buffer.from(`
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
       <g transform="translate(${width / 2} ${height / 2}) rotate(-18)">
         <rect
-          x="${-fontSize * 4.2}"
-          y="${-fontSize * 0.9}"
-          width="${fontSize * 8.4}"
-          height="${fontSize * 1.8}"
-          rx="${fontSize * 0.28}"
+          x="${-pillWidth / 2}"
+          y="${-pillHeight / 2}"
+          width="${pillWidth}"
+          height="${pillHeight}"
+          rx="${fontSize * 0.32}"
           fill="#000000"
-          fill-opacity="0.16"
+          fill-opacity="0.26"
         />
         <text
           x="0"
@@ -177,10 +179,10 @@ export async function createWatermarkedClientImage(buffer, label = "feliix.wxf")
           font-size="${fontSize}"
           font-weight="900"
           fill="#ffffff"
-          fill-opacity="0.42"
+          fill-opacity="0.74"
           stroke="#000000"
           stroke-width="${strokeWidth}"
-          stroke-opacity="0.28"
+          stroke-opacity="0.52"
           paint-order="stroke"
         >${safeLabel}</text>
       </g>

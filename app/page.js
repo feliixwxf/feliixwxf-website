@@ -649,7 +649,8 @@ export default function FeliixWxfPhotography() {
 
     if (
       normalizedImage.url?.startsWith("/images/") ||
-      normalizedImage.url?.startsWith("/api/site-assets/image/")
+      normalizedImage.url?.startsWith("/api/site-assets/image/") ||
+      normalizedImage.url?.includes("/storage/v1/object/public/portfolio/")
     ) {
       return `/api/portfolio-images/download?src=${encodeURIComponent(
         normalizedImage.url
