@@ -12,6 +12,7 @@ import {
   CircleHelp,
   Clock,
   Copy,
+  Crop,
   Download,
   ExternalLink,
   EyeOff,
@@ -862,6 +863,7 @@ export default function AdminPage() {
   const [imageUploading, setImageUploading] = useState(false);
   const [clientGalleryUploading, setClientGalleryUploading] = useState(false);
   const [siteAssetUploadingKey, setSiteAssetUploadingKey] = useState(null);
+  const [siteAssetPreparingKey, setSiteAssetPreparingKey] = useState(null);
   const [portfolioVisibilitySaving, setPortfolioVisibilitySaving] =
     useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
@@ -2510,6 +2512,49 @@ export default function AdminPage() {
           outputWidth: 1800,
           outputHeight: 2400,
         };
+  };
+
+  const relayoutSiteAsset = async (assetKey, assetUrl) => {
+    if (!assetUrl) {
+      showMessage("Für dieses Feld ist noch kein Bild vorhanden.", "error");
+      return;
+    }
+
+    setSiteAssetPreparingKey(assetKey);
+    setMessage("");
+
+    try {
+      const response = await fetch(assetUrl, { cache: "no-store" });
+
+      if (!response.ok) {
+        throw new Error("Aktuelles Bild konnte nicht geladen werden.");
+      }
+
+      const blob = await response.blob();
+      const extension =
+        blob.type === "image/png"
+          ? "png"
+          : blob.type === "image/webp"
+            ? "webp"
+            : "jpg";
+      const file = new File([blob], `${assetKey}-layout.${extension}`, {
+        type: blob.type || "image/jpeg",
+      });
+
+      openCropSession([file], {
+        target: "site-asset",
+        assetKey,
+        ...getSiteAssetCropPreset(assetKey),
+      });
+    } catch (error) {
+      showMessage(
+        error.message ||
+          "Bild konnte nicht für den Zuschnitt vorbereitet werden.",
+        "error"
+      );
+    } finally {
+      setSiteAssetPreparingKey(null);
+    }
   };
 
   const openCropSession = (files, options) => {
@@ -6933,6 +6978,22 @@ export default function AdminPage() {
                                     </button>
                                   )}
                                 </div>
+
+                                {currentAsset?.url && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      relayoutSiteAsset(asset.key, currentAsset.url)
+                                    }
+                                    disabled={siteAssetPreparingKey === asset.key}
+                                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    <Crop className="h-4 w-4" />
+                                    {siteAssetPreparingKey === asset.key
+                                      ? "Wird vorbereitet..."
+                                      : "Aktuelles Bild layouten"}
+                                  </button>
+                                )}
 
                                 <label className="mt-4 block">
                                   <span className="text-sm font-semibold text-neutral-300">
