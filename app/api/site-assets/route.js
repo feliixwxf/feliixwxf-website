@@ -20,7 +20,7 @@ function withVersion(asset) {
 }
 
 const publicCacheHeaders = {
-  "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=86400",
+  "Cache-Control": "no-store, max-age=0",
 };
 
 export async function GET() {
@@ -33,7 +33,7 @@ export async function GET() {
       `${supabaseBaseUrl}/rest/v1/site_assets?select=key,url,path,updated_at`,
       {
         headers: supabaseHeaders,
-        next: { revalidate: 300 },
+        cache: "no-store",
       }
     );
 
