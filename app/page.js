@@ -957,11 +957,7 @@ export default function FeliixWxfPhotography() {
 
         {selectedPortfolioImage && (
           <div
-            className={`fixed inset-0 z-[700] bg-black/85 backdrop-blur-sm ${
-              portfolioImageZoomed
-                ? "overflow-auto p-4"
-                : "flex items-center justify-center overflow-hidden p-4"
-            }`}
+            className="fixed inset-0 z-[700] flex items-center justify-center overflow-hidden bg-black/85 p-4 backdrop-blur-sm"
             onClick={() => {
               closePortfolioImage();
             }}
@@ -970,11 +966,7 @@ export default function FeliixWxfPhotography() {
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.22 }}
-              className={`relative ${
-                portfolioImageZoomed
-                  ? "mx-auto min-h-full w-max"
-                  : "flex max-h-[92vh] w-full max-w-6xl items-center justify-center"
-              }`}
+              className="relative flex max-h-[92vh] w-full max-w-6xl items-center justify-center"
               onClick={(event) => event.stopPropagation()}
             >
               <button
@@ -1017,11 +1009,9 @@ export default function FeliixWxfPhotography() {
               <button
                 type="button"
                 onClick={() => setPortfolioImageZoomed(!portfolioImageZoomed)}
-                className={
-                  portfolioImageZoomed
-                    ? "block"
-                    : "flex w-full items-center justify-center"
-                }
+                className={`flex w-full items-center justify-center overflow-visible ${
+                  portfolioImageZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
+                }`}
                 aria-label={
                   portfolioImageZoomed
                     ? "Bild verkleinern"
@@ -1031,10 +1021,10 @@ export default function FeliixWxfPhotography() {
                 <img
                   src={getPortfolioImageUrl(selectedPortfolioImage)}
                   alt=""
-                  className={`mx-auto rounded-[1.5rem] object-contain shadow-2xl transition-[width,max-height] duration-200 ${
+                  className={`mx-auto max-h-[88vh] w-auto max-w-[calc(100vw-2rem)] rounded-[1.5rem] object-contain shadow-2xl transition-transform duration-200 ${
                     portfolioImageZoomed
-                      ? "max-h-none w-[165vw] max-w-none md:w-[110vw]"
-                      : "max-h-[92vh] w-auto max-w-[calc(100vw-2rem)]"
+                      ? "scale-[1.45] md:scale-[1.25]"
+                      : "scale-100"
                   }`}
                 />
               </button>
