@@ -605,7 +605,6 @@ export default function FeliixWxfPhotography() {
     event: uniqueImageList([
       "/images/zeugnis.jpg",
       "/images/ski.jpg",
-      "/images/startpoint.jpg",
       siteAssetImageUrl("cover_nature"),
     ]),
   };
