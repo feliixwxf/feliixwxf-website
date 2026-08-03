@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 import {
   hasSupabaseConfig,
   supabaseBaseUrl,
   supabaseHeaders,
+  storageBucket,
 } from "../../../_lib/supabase";
-
-export const runtime = "nodejs";
 
 const ASSET_KEYS = new Set([
   "hero_before",
@@ -31,7 +29,6 @@ const CACHE_HEADERS = {
 };
 
 const OPTIMIZED_WIDTHS = new Set([600, 900, 1200]);
-const OPTIMIZED_FORMATS = new Set(["webp", "avif"]);
 
 function redirectTo(request, url, headers = {}) {
   return NextResponse.redirect(new URL(url, request.url), {
@@ -43,36 +40,23 @@ function redirectTo(request, url, headers = {}) {
 function getOptimizedRequest(request) {
   const { searchParams } = new URL(request.url);
   const width = Number(searchParams.get("w") || 0);
-  const format = String(searchParams.get("f") || "webp").toLowerCase();
 
-  if (!OPTIMIZED_WIDTHS.has(width) || !OPTIMIZED_FORMATS.has(format)) {
+  if (!OPTIMIZED_WIDTHS.has(width)) {
     return null;
   }
 
-  return { width, format };
+  return { width };
 }
 
-async function createOptimizedImage(url, { width, format }) {
-  const sourceResponse = await fetch(url, {
-    next: { revalidate: 86400 },
-  });
+function getSupabaseImageTransformUrl(path, { width }) {
+  if (!path) return "";
 
-  if (!sourceResponse.ok) return null;
+  const encodedPath = String(path)
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
 
-  const sourceBuffer = Buffer.from(await sourceResponse.arrayBuffer());
-  let pipeline = sharp(sourceBuffer)
-    .rotate()
-    .resize({
-      width,
-      withoutEnlargement: true,
-    });
-
-  pipeline =
-    format === "avif"
-      ? pipeline.avif({ quality: 58, effort: 4 })
-      : pipeline.webp({ quality: 72, effort: 4 });
-
-  return pipeline.toBuffer();
+  return `${supabaseBaseUrl}/storage/v1/render/image/public/${storageBucket}/${encodedPath}?width=${width}&quality=76&resize=cover`;
 }
 
 export async function GET(request, { params }) {
@@ -90,7 +74,7 @@ export async function GET(request, { params }) {
   }
 
   const response = await fetch(
-    `${supabaseBaseUrl}/rest/v1/site_assets?select=url,updated_at&key=eq.${encodeURIComponent(
+    `${supabaseBaseUrl}/rest/v1/site_assets?select=url,path,updated_at&key=eq.${encodeURIComponent(
       key
     )}&limit=1`,
     {
@@ -117,19 +101,20 @@ export async function GET(request, { params }) {
   const separator = asset.url.includes("?") ? "&" : "?";
   const versionedUrl = `${asset.url}${separator}v=${version}`;
 
-  if (optimizedRequest) {
-    const image = await createOptimizedImage(versionedUrl, optimizedRequest);
+  if (optimizedRequest && asset.path) {
+    const transformedUrl = getSupabaseImageTransformUrl(
+      asset.path,
+      optimizedRequest
+    );
+    const transformedSeparator = transformedUrl.includes("?") ? "&" : "?";
 
-    if (image) {
-      return new NextResponse(image, {
-        headers: {
-          ...CACHE_HEADERS,
-          "Content-Type": `image/${optimizedRequest.format}`,
-          "Content-Length": String(image.length),
-          "Vary": "Accept",
-        },
-      });
-    }
+    return NextResponse.redirect(
+      `${transformedUrl}${transformedSeparator}v=${version}`,
+      {
+        status: 307,
+        headers: CACHE_HEADERS,
+      }
+    );
   }
 
   return NextResponse.redirect(versionedUrl, {
