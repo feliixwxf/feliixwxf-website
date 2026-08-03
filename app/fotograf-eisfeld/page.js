@@ -217,7 +217,7 @@ export default function FotografEisfeldPage() {
               Fotograf in Eisfeld
             </p>
             <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight md:text-6xl">
-              Moderne Fotografie direkt aus Eisfeld.
+              Fotograf in Eisfeld für Portraits, Hochzeiten und Autos
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-neutral-300 md:text-lg">
               feliix.wxf fotografiert in Eisfeld, Hildburghausen und
