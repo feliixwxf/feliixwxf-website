@@ -352,6 +352,7 @@ export default function FeliixWxfPhotography() {
   const [contactMessage, setContactMessage] = useState("");
   const [contactSent, setContactSent] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [portfolioImagesLoaded, setPortfolioImagesLoaded] = useState(false);
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
   const [siteSettingsLoaded, setSiteSettingsLoaded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -408,15 +409,18 @@ export default function FeliixWxfPhotography() {
     };
 
     const loadPortfolioImages = () => {
-      fetch("/api/portfolio-images")
+      return fetch("/api/portfolio-images")
         .then((response) => (response.ok ? response.json() : null))
         .then((data) => {
           if (Array.isArray(data?.images)) {
             setUploadedImages(data.images);
           }
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setPortfolioImagesLoaded(true));
     };
+
+    loadPortfolioImages();
 
     fetch("/api/site-settings", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
@@ -433,7 +437,6 @@ export default function FeliixWxfPhotography() {
     const secondaryLoadTimer = window.setTimeout(() => {
       loadReviews();
       loadAccountSession();
-      loadPortfolioImages();
     }, 650);
 
     const timer = setTimeout(() => setShowPopup(true), 8000);
@@ -710,6 +713,28 @@ export default function FeliixWxfPhotography() {
     setSelectedPortfolioImage(null);
     setSelectedPortfolioImageIndex(null);
     setPortfolioImageZoomed(false);
+
+    if (activeGallery && window.location.search.includes("bild=")) {
+      window.history.replaceState(
+        null,
+        "",
+        `/?galerie=${encodeURIComponent(activeGallery)}`
+      );
+    }
+  };
+
+  const setPortfolioImageUrl = (index, mode = "replace") => {
+    if (!activeGallery) return;
+
+    const nextUrl = `/?galerie=${encodeURIComponent(
+      activeGallery
+    )}&bild=${encodeURIComponent(index)}`;
+
+    if (mode === "push") {
+      window.history.pushState(null, "", nextUrl);
+    } else {
+      window.history.replaceState(null, "", nextUrl);
+    }
   };
 
   const selectPortfolioImageAt = (index) => {
@@ -721,6 +746,7 @@ export default function FeliixWxfPhotography() {
     setSelectedPortfolioImage(activePortfolioImages[nextIndex]);
     setSelectedPortfolioImageIndex(nextIndex);
     setPortfolioImageZoomed(false);
+    setPortfolioImageUrl(nextIndex);
   };
 
   const showPreviousPortfolioImage = () => {
@@ -730,6 +756,30 @@ export default function FeliixWxfPhotography() {
   const showNextPortfolioImage = () => {
     selectPortfolioImageAt((selectedPortfolioImageIndex ?? 0) + 1);
   };
+
+  useEffect(() => {
+    if (!activeGallery || !portfolioImagesLoaded || selectedPortfolioImage) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const imageIndex = Number(params.get("bild"));
+
+    if (
+      Number.isInteger(imageIndex) &&
+      imageIndex >= 0 &&
+      imageIndex < activePortfolioImages.length
+    ) {
+      setSelectedPortfolioImage(activePortfolioImages[imageIndex]);
+      setSelectedPortfolioImageIndex(imageIndex);
+      setPortfolioImageZoomed(false);
+    }
+  }, [
+    activeGallery,
+    portfolioImagesLoaded,
+    selectedPortfolioImage,
+    activePortfolioImages.length,
+  ]);
 
   useEffect(() => {
     if (!selectedPortfolioImage) return undefined;
@@ -984,8 +1034,15 @@ export default function FeliixWxfPhotography() {
             </p>
           </div>
 
-          <div className="mt-10 columns-1 gap-5 sm:columns-2 lg:columns-3">
-            {visibleGalleryImages[activeGallery].map((image, index) => {
+          {!portfolioImagesLoaded ? (
+            <div className={`mt-10 rounded-[2rem] border p-8 text-center ${glass}`}>
+              <p className={`text-sm font-semibold ${muted}`}>
+                Galerie wird geladen...
+              </p>
+            </div>
+          ) : (
+            <div className="mt-10 columns-1 gap-5 sm:columns-2 lg:columns-3">
+              {visibleGalleryImages[activeGallery].map((image, index) => {
               const imageUrl = getPortfolioImageUrl(image);
 
               return (
@@ -996,6 +1053,7 @@ export default function FeliixWxfPhotography() {
                   setSelectedPortfolioImage(image);
                   setSelectedPortfolioImageIndex(index);
                   setPortfolioImageZoomed(false);
+                  setPortfolioImageUrl(index, "push");
                 }}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1011,8 +1069,9 @@ export default function FeliixWxfPhotography() {
                 />
               </motion.button>
               );
-            })}
-          </div>
+              })}
+            </div>
+          )}
         </div>
 
         {selectedPortfolioImage && (
