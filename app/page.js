@@ -74,6 +74,37 @@ const LOCAL_SEO_SERVICES = [
   },
 ];
 
+const HOME_FAQ_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Wo bietet feliix.wxf Fotoshootings an?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "feliix.wxf fotografiert vor allem in Hildburghausen, Eisfeld, Südthüringen und Umgebung. Shootings in angrenzenden Regionen sind nach Absprache möglich.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Welche Shootings kann ich anfragen?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Anfragen sind für Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung möglich.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Wie schnell bekomme ich eine Antwort?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Anfragen werden unverbindlich geprüft und in der Regel zeitnah beantwortet.",
+      },
+    },
+  ],
+};
+
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
   hero_title_line_1: "Bilder mit Charakter.",
@@ -1169,6 +1200,12 @@ export default function FeliixWxfPhotography() {
     <div
       className={`isolate min-h-screen transition-colors duration-300 ${pageStyle}`}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(HOME_FAQ_JSON_LD),
+        }}
+      />
       <header
         className={`fixed top-0 z-[500] w-full border-b backdrop-blur-xl ${
           dark

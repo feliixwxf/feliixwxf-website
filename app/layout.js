@@ -190,37 +190,6 @@ const localBusinessJsonLd = {
   ],
 };
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "Wo bietet feliix.wxf Fotoshootings an?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "feliix.wxf fotografiert vor allem in Hildburghausen, Eisfeld, Südthüringen und Umgebung. Shootings in angrenzenden Regionen sind nach Absprache möglich.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Welche Shootings kann ich anfragen?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Anfragen sind für Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung möglich.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Wie schnell bekomme ich eine Antwort?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Anfragen werden unverbindlich geprüft und in der Regel zeitnah beantwortet.",
-      },
-    },
-  ],
-};
-
 export default function RootLayout({ children }) {
   return (
     <html
@@ -242,12 +211,6 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(localBusinessJsonLd),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqJsonLd),
           }}
         />
       </head>
