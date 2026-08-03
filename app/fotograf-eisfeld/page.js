@@ -4,6 +4,25 @@ import LegalBackButton from "@/components/legal-back-button";
 
 const pageUrl = "https://www.feliixwxf.de/fotograf-eisfeld";
 
+const services = [
+  {
+    title: "Portraits",
+    text: "natürlich, urban oder passend zu deinem Look",
+  },
+  {
+    title: "Hochzeiten",
+    text: "Paarbilder, Momente und kleine Reportagen",
+  },
+  {
+    title: "Car Photography",
+    text: "Fahrzeuge, Details und Social-Media-Content",
+  },
+  {
+    title: "Events",
+    text: "private Feiern und geschäftliche Anlässe",
+  },
+];
+
 export const metadata = {
   title: "Fotograf in Eisfeld für Portraits, Hochzeiten & Autos",
   description:
@@ -260,19 +279,19 @@ export default function FotografEisfeldPage() {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              "Portraitfotografie",
-              "Hochzeitsfotografie",
-              "Car Photography",
-              "Eventfotografie",
-            ].map((service) => (
-              <div
-                key={service}
-                className="rounded-[1.25rem] border border-white/10 bg-white/[0.06] p-4 font-bold"
+          <div className="grid content-start gap-3 sm:grid-cols-2 lg:pt-2">
+            {services.map((service) => (
+              <article
+                key={service.title}
+                className="rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 shadow-sm"
               >
-                {service}
-              </div>
+                <h3 className="text-base font-black leading-tight text-white">
+                  {service.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-neutral-400">
+                  {service.text}
+                </p>
+              </article>
             ))}
           </div>
         </div>
