@@ -53,22 +53,22 @@ const PORTFOLIO_GALLERY_KEYS = new Set(["car", "portrait", "nature", "event"]);
 const LOCAL_SEO_SERVICES = [
   {
     title: "Portraits",
-    text: "Natürliche Portraits in Hildburghausen, Eisfeld und Südthüringen.",
+    text: "Natürliche Portraits in Hildburghausen, Eisfeld und Südthüringen - draußen, urban oder passend zu deinem Look.",
     href: "/fotograf-hildburghausen",
   },
   {
     title: "Hochzeiten",
-    text: "Emotionale Hochzeitsmomente, Reportagen und Paarbilder in Thüringen.",
+    text: "Emotionale Hochzeitsmomente, Paarbilder und kleine Reportagen in Thüringen, Hildburghausen und Umgebung.",
     href: "/fotograf-hildburghausen",
   },
   {
     title: "Car Photography",
-    text: "Dynamische Autofotos, Detailshots und Social-Media-Content für Fahrzeuge.",
+    text: "Dynamische Autofotos, Detailshots und Social-Media-Content für Fahrzeuge in Eisfeld, Südthüringen und Umgebung.",
     href: "/fotograf-eisfeld",
   },
   {
     title: "Events",
-    text: "Unauffällige Eventfotos mit starkem Look für private und geschäftliche Anlässe.",
+    text: "Unauffällige Eventfotos mit starkem Look für private Feiern, Abschlussmomente und geschäftliche Anlässe.",
     href: "/fotograf-eisfeld",
   },
 ];
@@ -78,7 +78,7 @@ const DEFAULT_SITE_SETTINGS = {
   hero_title_line_1: "Bilder mit Charakter.",
   hero_title_line_2: "Bearbeitung mit Stil.",
   hero_intro:
-    "Willkommen bei feliix.wxf. Moderne Fotografie, kreative Bearbeitung und visuelle Inhalte mit starkem Look.",
+    "Willkommen bei feliix.wxf. Moderne Fotografie, kreative Bearbeitung und visuelle Inhalte mit starkem Look in Eisfeld, Hildburghausen und Thüringen.",
   info_eyebrow: "Info",
   info_heading: "Über feliix.wxf",
   info_text:
@@ -1024,6 +1024,7 @@ export default function FeliixWxfPhotography() {
                   alt=""
                   loading="lazy"
                   decoding="async"
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="h-auto w-full rounded-[1.5rem] object-contain transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               </motion.button>
@@ -1349,8 +1350,13 @@ export default function FeliixWxfPhotography() {
               Leistungen vor Ort
             </p>
             <h2 className="mt-4 max-w-3xl text-3xl font-black md:text-4xl">
-              Fotograf für Hildburghausen, Eisfeld und Thüringen.
+              Fotograf für Hildburghausen, Eisfeld und Südthüringen.
             </h2>
+            <p className={`mt-4 max-w-3xl text-base leading-7 ${muted}`}>
+              Portraits, Hochzeiten, Car Photography und Events mit moderner
+              Bildbearbeitung - vor Ort in Hildburghausen, Eisfeld und ganz
+              Thüringen.
+            </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {LOCAL_SEO_SERVICES.map((service) => (
                 <a
@@ -1394,9 +1400,10 @@ export default function FeliixWxfPhotography() {
                       alt={item.title}
                       loading={index < 2 ? "eager" : "lazy"}
                       decoding="async"
-                      fetchPriority={index < 2 ? "high" : "auto"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
                       width="1200"
                       height="1600"
+                      sizes="(min-width: 768px) 50vw, 100vw"
                       className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.025]"
                     />
                   </div>
@@ -1440,16 +1447,28 @@ export default function FeliixWxfPhotography() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setShowAllReviews(true)}
-                  className={`w-fit rounded-full border px-5 py-3 text-sm font-semibold ${
-                    dark
-                      ? "border-white/15 bg-white/10 hover:bg-white/15"
-                      : "border-black/10 bg-white/75 hover:bg-white"
-                  } ${buttonHover}`}
-                >
-                  Alle Bewertungen ansehen
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => setShowAllReviews(true)}
+                    className={`w-fit rounded-full border px-5 py-3 text-sm font-semibold ${
+                      dark
+                        ? "border-white/15 bg-white/10 hover:bg-white/15"
+                        : "border-black/10 bg-white/75 hover:bg-white"
+                    } ${buttonHover}`}
+                  >
+                    Alle Bewertungen ansehen
+                  </button>
+                  <a
+                    href="#bewertung-schreiben"
+                    className={`w-fit rounded-full border px-5 py-3 text-sm font-black ${
+                      dark
+                        ? "border-yellow-300/30 bg-yellow-300 text-neutral-950 hover:bg-yellow-200"
+                        : "border-yellow-500/30 bg-neutral-950 text-white hover:bg-neutral-800"
+                    } ${buttonHover}`}
+                  >
+                    Bewertung schreiben
+                  </a>
+                </div>
               </div>
             </div>
 

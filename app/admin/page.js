@@ -1056,7 +1056,7 @@ export default function AdminPage() {
       values: ["portfolio", "covers", "texts", "contact"],
     },
     {
-      title: "System",
+      title: "Weitere Tools",
       values: ["settings", "system", "user-errors"],
     },
   ].map((group) => ({
@@ -4128,13 +4128,62 @@ export default function AdminPage() {
                   ))}
                 </div>
 
-                {tabGroups.map((group) => (
+                {tabGroups.map((group) => {
+                  const groupHasActiveTab = group.tabs.some(
+                    (tab) => tab.value === activeTab
+                  );
+                  const isUtilityGroup = group.title === "Weitere Tools";
+
+                  return (
                   <div key={group.title} className="mt-2">
-                    <div className="px-3 py-1.5">
-                      <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
-                        {group.title}
-                      </p>
-                    </div>
+                    {isUtilityGroup ? (
+                      <details open={groupHasActiveTab}>
+                        <summary className="cursor-pointer list-none px-3 py-1.5 text-xs font-black uppercase tracking-[0.22em] text-neutral-500 transition hover:text-neutral-300">
+                          {group.title}
+                        </summary>
+                        <div className="mt-1 grid gap-1">
+                          {group.tabs.map((tab) => {
+                            const Icon = tab.icon;
+
+                            return (
+                              <button
+                                key={tab.value}
+                                type="button"
+                                onClick={() => setActiveTab(tab.value)}
+                                className={`flex w-full items-center gap-2.5 rounded-xl px-3 text-left transition ${
+                                  compactMode ? "py-2" : "py-2.5"
+                                } ${
+                                  activeTab === tab.value
+                                    ? "bg-white text-neutral-950"
+                                    : "text-neutral-300 hover:bg-white/10 hover:text-white"
+                                }`}
+                              >
+                                <span
+                                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                                    activeTab === tab.value
+                                      ? "bg-neutral-950 text-white"
+                                      : "bg-white/10"
+                                  }`}
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className="flex items-center gap-2 font-bold">
+                                    {tab.label}
+                                  </span>
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </details>
+                    ) : (
+                      <>
+                        <div className="px-3 py-1.5">
+                          <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                            {group.title}
+                          </p>
+                        </div>
                     <div className="grid gap-1">
                       {group.tabs.map((tab) => {
                         const Icon = tab.icon;
@@ -4181,8 +4230,11 @@ export default function AdminPage() {
                         );
                       })}
                     </div>
+                      </>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </nav>
             </aside>
 
@@ -4196,6 +4248,47 @@ export default function AdminPage() {
                     <div className="mt-4 grid gap-2">
                       {tabGroups.map((group) => (
                         <div key={group.title}>
+                          {group.title === "Weitere Tools" ? (
+                            <details
+                              open={group.tabs.some(
+                                (tab) => tab.value === activeTab
+                              )}
+                            >
+                              <summary className="mb-2 cursor-pointer list-none px-1 text-[0.68rem] font-black uppercase tracking-[0.2em] text-neutral-600">
+                                {group.title}
+                              </summary>
+                              <div className={`grid grid-cols-2 ${compactMode ? "gap-1.5" : "gap-2"}`}>
+                                {group.tabs
+                                  .filter((tab) => tab.value !== "dashboard")
+                                  .map((tab) => {
+                                    const Icon = tab.icon;
+
+                                    return (
+                                      <button
+                                        key={tab.value}
+                                        type="button"
+                                        onClick={() => setActiveTab(tab.value)}
+                                        className={`flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.07] text-left transition active:scale-[0.99] ${
+                                          compactMode
+                                            ? "min-h-16 p-2.5"
+                                            : "min-h-20 p-3"
+                                        }`}
+                                      >
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                                          <Icon className="h-5 w-5" />
+                                        </span>
+                                        <span className="min-w-0 flex-1">
+                                          <span className="block truncate text-sm font-black">
+                                            {tab.label}
+                                          </span>
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                              </div>
+                            </details>
+                          ) : (
+                            <>
                           <p className="mb-2 px-1 text-[0.68rem] font-black uppercase tracking-[0.2em] text-neutral-600">
                             {group.title}
                           </p>
@@ -4238,6 +4331,8 @@ export default function AdminPage() {
                                 );
                               })}
                           </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -4284,7 +4379,7 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <div className={`${compactMode ? "mt-5 gap-3" : "mt-8 gap-4"} hidden sm:grid md:grid-cols-2 xl:grid-cols-5`}>
+                <div className={`${compactMode ? "mt-5 gap-3" : "mt-8 gap-4"} hidden sm:grid md:grid-cols-2 xl:grid-cols-4`}>
                   <button
                     type="button"
                     onClick={() => {
@@ -4347,20 +4442,6 @@ export default function AdminPage() {
                     <h3 className={`${compactMode ? "mt-1 text-base" : "mt-2 text-lg"} font-black`}>
                       Kundengalerien
                     </h3>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("contact")}
-                    className={`${adminRounded} border border-white/10 bg-white/[0.08] ${adminCardPadding} text-left transition hover:-translate-y-1 hover:bg-white/[0.12]`}
-                  >
-                    <div className={`${compactMode ? "h-10 w-10" : "h-12 w-12"} flex items-center justify-center rounded-full bg-white/10`}>
-                      <Mail className="h-5 w-5" />
-                    </div>
-                    <p className={`${compactMode ? "mt-3 text-base" : "mt-5 text-lg"} break-words font-black`}>
-                      {siteSettings.contact_email}
-                    </p>
-                    <h3 className={`${compactMode ? "mt-1 text-base" : "mt-2 text-lg"} font-black`}>Kontaktinfos</h3>
                   </button>
                 </div>
 
