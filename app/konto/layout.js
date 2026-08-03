@@ -1,4 +1,7 @@
 export const metadata = {
+  title: "Kundenkonto",
+  description:
+    "Kundenkonto bei feliix.wxf: Galerien ansehen, Profil verwalten und Downloads abrufen.",
   alternates: {
     canonical: "/konto",
   },

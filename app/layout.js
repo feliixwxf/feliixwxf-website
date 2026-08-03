@@ -132,12 +132,6 @@ const localBusinessJsonLd = {
     addressRegion: "Thüringen",
     addressCountry: "DE",
   },
-  geo: {
-    "@type": "GeoCoordinates",
-    addressCountry: "DE",
-    addressRegion: "Thüringen",
-    addressLocality: "Eisfeld",
-  },
   areaServed: [
     "Eisfeld",
     "Hildburghausen",

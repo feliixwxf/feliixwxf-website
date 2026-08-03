@@ -100,9 +100,9 @@ const sections = [
     ],
   },
   {
-    title: "Ihre Rechte",
+    title: "Deine Rechte",
     paragraphs: [
-      "Sie haben jederzeit das Recht auf Auskunft, Berichtigung oder Löschung Ihrer gespeicherten Daten. Außerdem können je nach Situation Einschränkung der Verarbeitung, Widerspruch gegen die Verarbeitung oder Datenübertragbarkeit verlangt werden.",
+      "Du hast jederzeit das Recht auf Auskunft, Berichtigung oder Löschung deiner gespeicherten Daten. Außerdem können je nach Situation Einschränkung der Verarbeitung, Widerspruch gegen die Verarbeitung oder Datenübertragbarkeit verlangt werden.",
       "Sofern eine Verarbeitung auf Einwilligung beruht, kann diese Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen werden. Außerdem besteht das Recht, sich bei einer zuständigen Datenschutzaufsichtsbehörde zu beschweren.",
     ],
   },
@@ -123,9 +123,8 @@ export default function DatenschutzPage() {
           </h1>
           <p className="mt-6 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-neutral-400">
             Diese Hinweise fassen zusammen, welche Daten auf dieser Website
-            verarbeitet werden. Sie ersetzen keine individuelle Rechtsberatung,
-            sollen aber transparent erklären, wie Kontaktformular, Kundenkonto,
-            Bewertungen und Kundengalerien funktionieren.
+            verarbeitet werden und erklären transparent, wie Kontaktformular,
+            Kundenkonto, Bewertungen und Kundengalerien funktionieren.
           </p>
 
           <div className="mt-10 space-y-8 text-neutral-300">

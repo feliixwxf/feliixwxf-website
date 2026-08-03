@@ -74,37 +74,6 @@ const LOCAL_SEO_SERVICES = [
   },
 ];
 
-const HOME_FAQ_JSON_LD = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "Wo bietet feliix.wxf Fotoshootings an?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "feliix.wxf fotografiert vor allem in Hildburghausen, Eisfeld, Südthüringen und Umgebung. Shootings in angrenzenden Regionen sind nach Absprache möglich.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Welche Shootings kann ich anfragen?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Anfragen sind für Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung möglich.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Wie schnell bekomme ich eine Antwort?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Anfragen werden unverbindlich geprüft und in der Regel zeitnah beantwortet.",
-      },
-    },
-  ],
-};
-
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
   hero_title_line_1: "Bilder mit Charakter.",
@@ -1210,12 +1179,6 @@ export default function FeliixWxfPhotography() {
     <div
       className={`isolate min-h-screen transition-colors duration-300 ${pageStyle}`}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(HOME_FAQ_JSON_LD),
-        }}
-      />
       <header
         className={`fixed top-0 z-[500] w-full border-b backdrop-blur-xl ${
           dark
@@ -2165,10 +2128,9 @@ export default function FeliixWxfPhotography() {
             <div className="mt-10 space-y-8 text-neutral-300 leading-8">
               <p className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-neutral-400">
                 Stand: August 2026. Diese Hinweise fassen zusammen, welche Daten
-                auf dieser Website verarbeitet werden. Sie ersetzen keine
-                individuelle Rechtsberatung, sollen aber transparent erklären,
-                wie Kontaktformular, Kundenkonto, Bewertungen und
-                Kundengalerien funktionieren.
+                auf dieser Website verarbeitet werden und erklären transparent,
+                wie Kontaktformular, Kundenkonto, Bewertungen und Kundengalerien
+                funktionieren.
               </p>
 
               <div>
@@ -2176,7 +2138,7 @@ export default function FeliixWxfPhotography() {
                   Allgemeine Hinweise
                 </h3>
                 <p className="mt-3">
-                  Der Schutz Ihrer persönlichen Daten ist uns wichtig.
+                  Der Schutz deiner persönlichen Daten ist uns wichtig.
                   Personenbezogene Daten werden vertraulich behandelt und nur
                   verarbeitet, wenn dies für die Bereitstellung der Website,
                   die Bearbeitung einer Anfrage, die Nutzung eines
@@ -2203,7 +2165,7 @@ export default function FeliixWxfPhotography() {
                   des Betriebs. Je nach Vorgang erfolgt die Verarbeitung zur
                   Durchführung vorvertraglicher oder vertraglicher Maßnahmen,
                   auf Grundlage berechtigter Interessen an einem sicheren und
-                  funktionierenden Webangebot oder auf Grundlage Ihrer
+                  funktionierenden Webangebot oder auf Grundlage deiner
                   Einwilligung, sofern eine solche abgefragt wird.
                 </p>
                 <p className="mt-3">
@@ -2220,8 +2182,8 @@ export default function FeliixWxfPhotography() {
                 </h3>
                 <p className="mt-3">
                   Übermittelte Daten aus dem Kontaktformular werden zur
-                  Bearbeitung Ihrer Anfrage verarbeitet. Dazu können Name,
-                  E-Mail-Adresse, Telefonnummer und Ihre Nachricht gehören.
+                  Bearbeitung deiner Anfrage verarbeitet. Dazu können Name,
+                  E-Mail-Adresse, Telefonnummer und deine Nachricht gehören.
                   Die Anfrage wird zuerst über eine eigene API in Supabase
                   gespeichert und anschließend zusätzlich an Formspree
                   übertragen, damit eine Benachrichtigung und
@@ -2235,7 +2197,7 @@ export default function FeliixWxfPhotography() {
                   Kundenkonto und Kundengalerien
                 </h3>
                 <p className="mt-3">
-                  Wenn Sie ein Kundenkonto erstellen oder eine Kundengalerie
+                  Wenn du ein Kundenkonto erstellst oder eine Kundengalerie
                   nutzen, werden die dafür erforderlichen Daten verarbeitet. Dazu
                   gehören insbesondere E-Mail-Adresse, Nutzername, optional
                   Telefonnummer, optional Profilbild, Galerie-Zuordnung,
@@ -2423,11 +2385,11 @@ export default function FeliixWxfPhotography() {
 
               <div>
                 <h3 className="text-2xl font-bold text-white">
-                  Ihre Rechte
+                  Deine Rechte
                 </h3>
                 <p className="mt-3">
-                  Sie haben jederzeit das Recht auf Auskunft, Berichtigung oder
-                  Löschung Ihrer gespeicherten Daten. Außerdem können Sie je
+                  Du hast jederzeit das Recht auf Auskunft, Berichtigung oder
+                  Löschung deiner gespeicherten Daten. Außerdem kannst du je
                   nach Situation Einschränkung der Verarbeitung, Widerspruch
                   gegen die Verarbeitung oder Datenübertragbarkeit verlangen.
                   Für Anfragen genügt eine Nachricht an die im Impressum
