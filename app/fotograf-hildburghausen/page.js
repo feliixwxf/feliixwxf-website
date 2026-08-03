@@ -4,6 +4,25 @@ import LegalBackButton from "@/components/legal-back-button";
 
 const pageUrl = "https://www.feliixwxf.de/fotograf-hildburghausen";
 
+const services = [
+  {
+    title: "Portraits",
+    text: "natürlich, urban oder passend zu deinem Look",
+  },
+  {
+    title: "Hochzeiten",
+    text: "Paarbilder, Momente und kleine Reportagen",
+  },
+  {
+    title: "Car Photography",
+    text: "Fahrzeuge, Details und Social-Media-Content",
+  },
+  {
+    title: "Events",
+    text: "private Feiern und geschäftliche Anlässe",
+  },
+];
+
 export const metadata = {
   title: "Fotograf in Hildburghausen für Portraits, Hochzeiten & Autos",
   description:
@@ -121,23 +140,47 @@ const breadcrumbJsonLd = {
   ],
 };
 
-const services = [
+const faqItems = [
   {
-    title: "Portraits",
-    text: "Natürliche Portraits, Bewerbungsbilder und kreative Shootings mit modernem Look.",
+    question: "Was kostet ein Fotoshooting in Hildburghausen?",
+    answer:
+      "Die Preise hängen von Shooting-Art, Dauer, Location und gewünschtem Umfang ab. Portraits, Hochzeiten, Autofotos und Events werden individuell geplant. Nach deiner Anfrage erhältst du ein unverbindliches Angebot.",
   },
   {
-    title: "Hochzeiten",
-    text: "Emotionale Reportagen, Paarbilder und Detailaufnahmen für euren Tag.",
+    question: "Wo fotografierst du rund um Hildburghausen?",
+    answer:
+      "Ich fotografiere in Hildburghausen, Eisfeld, Coburg, Südthüringen und nach Absprache auch an weiteren Orten in der Umgebung.",
   },
   {
-    title: "Car Photography",
-    text: "Dynamische Autofotos, Detailshots und Content für Social Media.",
+    question: "Wie läuft ein Shooting ab?",
+    answer:
+      "Zuerst klären wir deine Idee, den Stil, den Ort und den Zeitraum. Danach planen wir das Shooting konkret, fotografieren vor Ort und stellen die bearbeiteten Bilder digital bereit.",
   },
   {
-    title: "Events",
-    text: "Unauffällige Eventbegleitung mit sauberen, hochwertigen Ergebnissen.",
+    question: "Wann erhalte ich meine fertigen Bilder?",
+    answer:
+      "Die Bearbeitungs- und Lieferzeit richtet sich nach dem Umfang. Kleinere Shootings sind meist schneller fertig, bei Hochzeiten oder Events wird der Zeitraum vorher gemeinsam besprochen.",
   },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
+const steps = [
+  "Anfrage mit Wunsch, Ort und Zeitraum senden.",
+  "Look, Ablauf und Umfang gemeinsam klären.",
+  "Shooting in Hildburghausen oder Umgebung umsetzen.",
+  "Bilder bearbeiten und digital bereitstellen.",
 ];
 
 export default function FotografHildburghausenPage() {
@@ -154,6 +197,10 @@ export default function FotografHildburghausenPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <section className="px-5 py-8">
@@ -204,16 +251,47 @@ export default function FotografHildburghausenPage() {
       </section>
 
       <section className="border-y border-white/10 bg-white/[0.04] px-5 py-14">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-3xl font-black">Fotografie für Hildburghausen und Umgebung</h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+          <div>
+            <h2 className="text-3xl font-black">
+              Fotografie für Hildburghausen und Umgebung
+            </h2>
+            <p className="mt-4 leading-8 text-neutral-300">
+              Felix Wolff ist der Fotograf hinter feliix.wxf. Ich fotografiere
+              in Hildburghausen, Eisfeld, Coburg und Südthüringen und biete
+              Portraitshootings, Hochzeiten, Autofotografie, Events und moderne
+              Bildbearbeitung an. Ziel sind Bilder mit Charakter, natürlicher
+              Wirkung und einem klaren Look, der zum Menschen, Fahrzeug oder
+              Anlass passt.
+            </p>
+            <p className="mt-4 leading-8 text-neutral-300">
+              Für ein Shooting in Hildburghausen stimmen wir Location,
+              Bildstil, Licht und Umfang vorher gemeinsam ab. Ob natürliche
+              Portraits, Paarbilder, Hochzeitsmomente, Detailaufnahmen von
+              Fahrzeugen oder Eventfotos: Jedes Shooting wird passend geplant.
+              Preise nenne ich bewusst auf Anfrage, weil Dauer, Ort und Umfang
+              stark variieren können.
+            </p>
+            <p className="mt-4 leading-8 text-neutral-300">
+              Nach dem Termin werden die Bilder sortiert, bearbeitet und digital
+              bereitgestellt. Die Lieferzeit hängt vom Umfang ab. Kleinere
+              Portrait- oder Autofotoshootings sind meist schneller fertig,
+              Hochzeiten und Events benötigen mehr Auswahl und Bearbeitung.
+              Wenn du in Hildburghausen oder Umgebung fotografiert werden
+              möchtest, kannst du direkt über das Kontaktformular anfragen.
+            </p>
+          </div>
+
+          <div className="grid content-start gap-3 sm:grid-cols-2 lg:pt-2">
             {services.map((service) => (
               <article
                 key={service.title}
-                className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5"
+                className="rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 shadow-sm"
               >
-                <h3 className="text-lg font-black">{service.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-neutral-300">
+                <h3 className="text-base font-black leading-tight text-white">
+                  {service.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-neutral-400">
                   {service.text}
                 </p>
               </article>
@@ -223,27 +301,49 @@ export default function FotografHildburghausenPage() {
       </section>
 
       <section className="px-5 py-14">
-        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-          <div>
-            <h2 className="text-2xl font-black">Warum lokal?</h2>
-            <p className="mt-4 leading-7 text-neutral-300">
-              Kurze Wege, flexible Termine und Orte in Südthüringen, die zum
-              Motiv passen. Ob Innenstadt, Natur, Auto-Location oder Feier.
-            </p>
-          </div>
-          <div>
-            <h2 className="text-2xl font-black">Für wen?</h2>
-            <p className="mt-4 leading-7 text-neutral-300">
-              Privatpersonen, Paare, Autofans, Abiturienten, Familien,
-              Veranstalter und Unternehmen aus Hildburghausen.
-            </p>
-          </div>
-          <div>
-            <h2 className="text-2xl font-black">Kontakt</h2>
-            <p className="mt-4 leading-7 text-neutral-300">
-              Schreib kurz, was du planst. Du bekommst eine unverbindliche
-              Rückmeldung zu Ablauf, Termin und Möglichkeiten.
-            </p>
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+            <div>
+              <h2 className="text-3xl font-black">So läuft eine Anfrage ab</h2>
+              <p className="mt-4 leading-8 text-neutral-300">
+                Du sendest mir eine unverbindliche Anfrage mit Shooting-Art,
+                Wunschort, Zeitraum und einer kurzen Beschreibung deiner Idee.
+                Danach klären wir Stil, Location, Umfang und mögliche Termine.
+                Erst wenn alles passt, planen wir den Termin konkret.
+              </p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {steps.map((step, index) => (
+                  <article
+                    key={step}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5"
+                  >
+                    <p className="text-sm font-black text-yellow-300">
+                      Schritt {index + 1}
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-neutral-300">
+                      {step}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-black">Häufige Fragen</h2>
+              <div className="mt-8 space-y-4">
+                {faqItems.map((item) => (
+                  <article
+                    key={item.question}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5"
+                  >
+                    <h3 className="font-black text-white">{item.question}</h3>
+                    <p className="mt-3 text-sm leading-7 text-neutral-300">
+                      {item.answer}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
         <div className="mx-auto mt-10 flex max-w-6xl flex-wrap gap-3">
