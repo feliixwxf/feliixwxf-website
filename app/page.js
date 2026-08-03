@@ -44,8 +44,23 @@ const REVIEW_AVATARS = Array.from({ length: 12 }, (_, index) => ({
   url: `/images/review-avatars/avatar-${index + 1}.svg`,
 }));
 
+const INITIAL_REVIEW_SUMMARY = {
+  count: 15,
+  average: 4.8,
+};
+
 function siteAssetImageUrl(key) {
   return `/api/site-assets/image/${key}`;
+}
+
+function optimizedSiteAssetImageUrl(key, width, format = "webp") {
+  return `/api/site-assets/image/${key}?w=${width}&f=${format}`;
+}
+
+function optimizedSiteAssetSrcSet(key, format = "webp") {
+  return [600, 900, 1200]
+    .map((width) => `${optimizedSiteAssetImageUrl(key, width, format)} ${width}w`)
+    .join(", ");
 }
 
 const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "nature";
@@ -550,12 +565,20 @@ export default function FeliixWxfPhotography() {
   const navItems = ["Startseite", "Info", "Portfolio", "Bewertung", "Kontakt"];
   const contactEmailHref = `mailto:${siteSettings.contact_email}`;
   const contactPhoneHref = `tel:${siteSettings.contact_phone.replace(/[^\d+]/g, "")}`;
-  const reviewCount = reviews.length;
-  const reviewAverage =
-    reviewCount > 0
+  const loadedReviewCount = reviews.length;
+  const loadedReviewAverage =
+    loadedReviewCount > 0
       ? reviews.reduce((sum, review) => sum + Number(review.stars || 0), 0) /
-        reviewCount
+        loadedReviewCount
       : 0;
+  const reviewCount =
+    loadedReviewCount > DEFAULT_REVIEWS.length
+      ? loadedReviewCount
+      : INITIAL_REVIEW_SUMMARY.count;
+  const reviewAverage =
+    loadedReviewCount > DEFAULT_REVIEWS.length
+      ? loadedReviewAverage
+      : INITIAL_REVIEW_SUMMARY.average;
   const formattedReviewAverage = reviewAverage.toLocaleString("de-DE", {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
@@ -1373,10 +1396,14 @@ export default function FeliixWxfPhotography() {
                 onPointerMove={(e) => {
                   if (e.buttons === 1) updateSlider(e.clientX);
                 }}
-                className="relative aspect-[4/5] touch-none select-none overflow-hidden rounded-[1.5rem]"
+                className={`relative aspect-[4/5] touch-none select-none overflow-hidden rounded-[1.5rem] ${
+                  dark ? "bg-neutral-800" : "bg-neutral-200"
+                }`}
               >
                 <img
-                  src={siteAssetImageUrl("hero_after")}
+                  src={optimizedSiteAssetImageUrl("hero_after", 900)}
+                  srcSet={optimizedSiteAssetSrcSet("hero_after")}
+                  sizes="(min-width: 1024px) 45vw, 100vw"
                   alt="Bearbeitetes Portraitfoto von feliix.wxf mit moderner Bildbearbeitung"
                   draggable="false"
                   loading="eager"
@@ -1393,12 +1420,14 @@ export default function FeliixWxfPhotography() {
                   style={{ clipPath: "inset(0 50% 0 0)" }}
                 >
                   <img
-                    src={siteAssetImageUrl("hero_before")}
+                    src={optimizedSiteAssetImageUrl("hero_before", 900)}
+                    srcSet={optimizedSiteAssetSrcSet("hero_before")}
+                    sizes="(min-width: 1024px) 45vw, 100vw"
                     alt="Unbearbeitetes Portraitfoto vor der Bildbearbeitung von feliix.wxf"
                     draggable="false"
                     loading="eager"
                     decoding="async"
-                    fetchPriority="high"
+                    fetchPriority="auto"
                     width="1200"
                     height="1500"
                     className="h-full w-full object-cover"

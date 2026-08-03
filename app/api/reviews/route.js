@@ -23,6 +23,9 @@ const REVIEW_NOTIFICATION_ENDPOINT =
   process.env.REVIEW_NOTIFICATION_ENDPOINT ||
   process.env.FORMSPREE_ENDPOINT ||
   "https://formspree.io/f/xqennvyy";
+const REVIEW_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+};
 
 const headers = {
   apikey: SUPABASE_KEY || "",
@@ -69,7 +72,7 @@ async function fetchReviews(select) {
     `${supabaseRestUrl}/rest/v1/reviews?select=${select}&is_approved=eq.true&order=created_at.desc&limit=50`,
     {
       headers,
-      cache: "no-store",
+      next: { revalidate: 60 },
     }
   );
 
@@ -136,7 +139,7 @@ export async function GET(request) {
     }
 
     if (!isConfigured) {
-      return NextResponse.json({ reviews: [] });
+      return NextResponse.json({ reviews: [] }, { headers: REVIEW_CACHE_HEADERS });
     }
 
     let result = await fetchReviews("name,text,stars,avatar_url,created_at");
@@ -147,13 +150,22 @@ export async function GET(request) {
 
     if (!result.response.ok) {
       console.error("Could not load reviews:", result.details);
-      return NextResponse.json({ reviews: [] }, { status: 200 });
+      return NextResponse.json(
+        { reviews: [] },
+        { status: 200, headers: REVIEW_CACHE_HEADERS }
+      );
     }
 
-    return NextResponse.json({ reviews: result.reviews || [] });
+    return NextResponse.json(
+      { reviews: result.reviews || [] },
+      { headers: REVIEW_CACHE_HEADERS }
+    );
   } catch (error) {
     console.error("Review GET failed:", error);
-    return NextResponse.json({ reviews: [] }, { status: 200 });
+    return NextResponse.json(
+      { reviews: [] },
+      { status: 200, headers: REVIEW_CACHE_HEADERS }
+    );
   }
 }
 
