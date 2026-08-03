@@ -74,7 +74,8 @@ const LOCAL_SEO_SERVICES = [
   },
 ];
 
-const PRESS_PUBLICATION_URL = "https://www.insuedthueringen.de/thema/Abiball";
+const PRESS_PUBLICATION_URL =
+  "https://www.insuedthueringen.de/inhalt.sbsz-hildburghausen-abikropolis-abiturienten-verlassen-den-olymp.f37f4fe5-bc8f-4a78-bb17-948d220d264d.html";
 
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
@@ -1360,12 +1361,6 @@ export default function FeliixWxfPhotography() {
                 <span>Antwort meist innerhalb von 24 Stunden</span>
               </p>
 
-              <p
-                className={`mt-3 max-w-xl text-[0.68rem] font-semibold uppercase leading-5 tracking-[0.14em] sm:text-xs ${muted}`}
-              >
-                Fotograf in Hildburghausen, Eisfeld und Thüringen für Portraits,
-                Hochzeiten, Car Photography und Events.
-              </p>
             </div>
 
             <div className={`rounded-[2rem] border p-4 shadow-lg ${glass}`}>
