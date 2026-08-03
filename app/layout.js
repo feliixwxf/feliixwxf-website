@@ -108,11 +108,12 @@ const websiteJsonLd = {
 
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
-  "@type": ["LocalBusiness", "ProfessionalService"],
-  name: "feliix.wxf",
+  "@type": "ProfessionalService",
+  name: "feliix.wxf Photography",
+  alternateName: "feliix.wxf",
   legalName: "Felix Wolff",
   url: "https://www.feliixwxf.de",
-  image: "https://www.feliixwxf.de/icon.png",
+  image: "https://www.feliixwxf.de/images/startpoint.jpg",
   logo: "https://www.feliixwxf.de/icon.png",
   description:
     "Fotograf für Hildburghausen, Eisfeld und Südthüringen mit Fokus auf Portraits, Hochzeiten, Car Photography, Events und moderne Bildbearbeitung.",
@@ -138,13 +139,14 @@ const localBusinessJsonLd = {
     addressLocality: "Eisfeld",
   },
   areaServed: [
-    "Hildburghausen",
     "Eisfeld",
+    "Hildburghausen",
+    "Coburg",
+    "Südthüringen",
     "Thüringen",
     "Suhl",
-    "Coburg",
   ],
-  sameAs: ["https://www.instagram.com/feliix.wxf"],
+  sameAs: ["https://www.instagram.com/feliix.wxf/"],
   knowsAbout: [
     "Portraitfotografie",
     "Hochzeitsfotografie",
