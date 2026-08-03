@@ -15,24 +15,25 @@ export const metadata = {
 
 const sections = [
   {
-    title: "Allgemeine Hinweise",
+    title: "Verantwortlicher",
     paragraphs: [
-      "Der Schutz persönlicher Daten ist wichtig. Personenbezogene Daten werden vertraulich behandelt und nur verarbeitet, wenn dies für die Bereitstellung der Website, die Bearbeitung einer Anfrage, die Nutzung eines Kundenkontos oder die Bereitstellung einer Kundengalerie erforderlich ist.",
-      "Verantwortlich für diese Website ist Felix Wolff. Für Datenschutzanfragen, Auskunft oder Löschwünsche genügt eine Nachricht an die im Impressum genannte E-Mail-Adresse.",
+      "Verantwortlich für die Verarbeitung personenbezogener Daten auf dieser Website ist Felix Wolff, feliix.wxf Photography, Zum Großenbach 1, 98673 Eisfeld, Deutschland.",
+      "Kontakt und Datenschutzanfragen: felixwolff411@gmail.com. Über diese E-Mail-Adresse können Auskunfts-, Berichtigungs-, Lösch- und Widerspruchsanfragen gestellt werden.",
     ],
   },
   {
     title: "Zwecke und Rechtsgrundlagen",
     paragraphs: [
-      "Die Verarbeitung erfolgt zur Bereitstellung dieser Website, zur Bearbeitung von Kontaktanfragen, zur Verwaltung von Kundenkonten, zur Bereitstellung von Kundengalerien, zur Verwaltung von Bewertungen sowie zur technischen Absicherung des Betriebs.",
-      "Je nach Vorgang erfolgt die Verarbeitung zur Durchführung vorvertraglicher oder vertraglicher Maßnahmen, auf Grundlage berechtigter Interessen an einem sicheren und funktionierenden Webangebot oder auf Grundlage einer Einwilligung, sofern eine solche abgefragt wird.",
+      "Personenbezogene Daten werden verarbeitet, um diese Website bereitzustellen, Kontaktanfragen zu beantworten, Kundenkonten zu verwalten, Kundengalerien und Bilddownloads bereitzustellen, Bewertungen zu prüfen und zu veröffentlichen sowie den technischen Betrieb abzusichern.",
+      "Rechtsgrundlagen sind Art. 6 Abs. 1 lit. b DSGVO für vorvertragliche und vertragliche Maßnahmen, Art. 6 Abs. 1 lit. f DSGVO für den sicheren und funktionierenden Betrieb der Website sowie Art. 6 Abs. 1 lit. a DSGVO, wenn eine Einwilligung ausdrücklich abgefragt wird.",
     ],
   },
   {
     title: "Kontaktformular",
     paragraphs: [
-      "Übermittelte Daten aus dem Kontaktformular werden zur Bearbeitung der Anfrage verarbeitet. Dazu können Name, E-Mail-Adresse, Telefonnummer und die Nachricht gehören.",
-      "Die Verarbeitung erfolgt, um die Anfrage beantworten und ein mögliches Shooting vorbereiten zu können. Kontaktanfragen können zusätzlich im geschützten Adminbereich gespeichert werden, damit Anfragen zuverlässig nachverfolgt und beantwortet werden können.",
+      "Bei Nutzung des Kontaktformulars werden Name, E-Mail-Adresse, optional Telefonnummer, Nachricht, Quelle der Anfrage und technische Angaben wie der User-Agent verarbeitet. Diese Daten werden zuerst über eine eigene API in der Supabase-Datenbank gespeichert, damit Anfragen im geschützten Adminbereich zuverlässig nachverfolgt und beantwortet werden können.",
+      "Anschließend wird dieselbe Formulareinsendung zusätzlich an Formspree übertragen, damit eine E-Mail-Benachrichtigung und Formularverwaltung möglich ist. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO für die Bearbeitung der Anfrage und Art. 6 Abs. 1 lit. f DSGVO für eine zuverlässige Anfrageverwaltung.",
+      "Kontaktanfragen werden gespeichert, solange dies für die Bearbeitung, Nachverfolgung oder Dokumentation der Anfrage erforderlich ist. Nicht mehr benötigte Anfragen können im Adminbereich gelöscht werden. Formspree hält Formulareinsendungen im kostenlosen Tarif nach Anbieterangaben für 30 Tage vor.",
     ],
   },
   {
@@ -53,35 +54,48 @@ const sections = [
     ],
   },
   {
-    title: "Cookies und lokale Speicherung",
+    title: "Supabase",
     paragraphs: [
-      "Für den Betrieb der Website können technisch notwendige Session-Cookies verwendet werden, etwa für Admin- oder Kunden-Logins. Zusätzlich können einzelne Einstellungen wie der gewählte Hell-/Dunkel-Modus lokal im Browser gespeichert werden.",
-      "Eine werbliche Tracking- oder Analysefunktion ist auf dieser Website nicht vorgesehen.",
+      "Für Datenbank, Authentifizierung, Kundenkonten, Bewertungen, Kontaktanfragen, Kundengalerien, Bildspeicher und Administrationsfunktionen wird Supabase genutzt. Anbieter ist Supabase Inc., 970 Toa Payoh North #07-04, Singapore 318992.",
+      "Verarbeitet werden je nach Funktion insbesondere E-Mail-Adresse, Nutzername, optional Telefonnummer, Passwort- beziehungsweise Authentifizierungsdaten, Profilbild, Bewertungsdaten, Kontaktanfragen, Galerie-Zuordnungen, Zugangscodes, Favoriten, Download-Freigaben, Bilddateien, Dateipfade, technische Statusdaten und Zeitstempel.",
+      "Die Projektregion ist nach aktueller Dashboard-Anzeige West EU (Ireland), technisch `eu-west-1`. Datenbank- und Speicherdaten werden damit in dieser Supabase-Projektregion verarbeitet. Supabase setzt zur Bereitstellung, Sicherheit und Wartung weitere Unterauftragsverarbeiter ein.",
+      "Rechtsgrundlagen sind Art. 6 Abs. 1 lit. b DSGVO für Kundenkonto, Galerie- und Shooting-Abwicklung sowie Art. 6 Abs. 1 lit. f DSGVO für den sicheren Betrieb, die Verwaltung und die technische Absicherung der Website.",
+      "Konto- und Galerie-Daten werden gespeichert, solange das Kundenkonto besteht, die Galerie bereitgestellt wird oder die Daten für Projektabwicklung, Nachlieferung, Dokumentation oder gesetzliche Pflichten benötigt werden. Kundenkonten können im Konto-Bereich gelöscht werden; Bewertungen bleiben wie angegeben ohne Konto-Verknüpfung bestehen, sofern keine separate Löschung per E-Mail verlangt wird.",
+      "Mit Supabase werden die vom Anbieter bereitgestellten Vereinbarungen zur Auftragsverarbeitung und Datenverarbeitung genutzt. Soweit Supabase oder Unterauftragsverarbeiter Daten in Drittstaaten verarbeiten, werden die vom Anbieter vorgesehenen Schutzmechanismen wie EU-Standardvertragsklauseln eingesetzt.",
+    ],
+  },
+  {
+    title: "Formspree",
+    paragraphs: [
+      "Für die zusätzliche Verarbeitung von Kontaktformularen und E-Mail-Benachrichtigungen wird Formspree genutzt. Anbieter ist Formspree, Inc., USA.",
+      "An Formspree werden die im Kontaktformular eingegebenen Daten übertragen, insbesondere Name, E-Mail-Adresse, optional Telefonnummer und Nachricht. Zusätzlich können technische Daten wie Zeitpunkt der Einsendung, IP-Adresse, Browser- und Geräteinformationen verarbeitet werden.",
+      "Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO für die Bearbeitung der Anfrage und Art. 6 Abs. 1 lit. f DSGVO für die zuverlässige Zustellung und Verwaltung von Kontaktanfragen.",
+      "Formspree speichert Formulareinsendungen im Formspree-Konto. Im kostenlosen Tarif werden Einsendungen nach Anbieterangaben für 30 Tage vorgehalten. Danach richtet sich die weitere Speicherdauer nach den im Formspree-Konto verfügbaren Tarif- und Kontoeinstellungen.",
+      "Formspree verarbeitet Daten nach Anbieterangaben über Amazon Web Services in den USA. Für Datenübermittlungen in die USA beruft sich Formspree auf EU-Standardvertragsklauseln. Mit Formspree werden die vom Anbieter bereitgestellten Datenschutz- und Auftragsverarbeitungsbedingungen genutzt.",
     ],
   },
   {
     title: "Hosting und Content Delivery Network mit Vercel",
     paragraphs: [
-      "Diese Website wird bei Vercel gehostet. Anbieter ist Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA. Vercel stellt Webhosting-Kapazitäten, Infrastruktur-Dienstleistungen und ein weltweites Content Delivery Network (CDN) bereit, damit die Inhalte der Website schnell, sicher und zuverlässig ausgeliefert werden können.",
-      "Beim Aufruf der Website können durch Vercel technisch erforderliche Daten verarbeitet werden. Dazu gehören insbesondere IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seiten, Browser- und Geräteinformationen, Betriebssystem, Referrer-URL sowie weitere technische Verbindungsdaten.",
-      "Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Das berechtigte Interesse liegt in der sicheren, schnellen und fehlerfreien Bereitstellung des Onlineangebots durch einen professionellen Cloud- und Hosting-Anbieter.",
-      "Da Vercel ein Anbieter mit Sitz in den USA ist, kann eine Übermittlung personenbezogener Daten in die USA nicht ausgeschlossen werden. Mit Vercel wurde ein Data Processing Addendum abgeschlossen, das die EU-Standardvertragsklauseln enthält, um ein angemessenes Datenschutzniveau bei Datenübermittlungen in Drittstaaten sicherzustellen.",
-      "IP-Adressen und Server-Logfiles werden nur so lange verarbeitet und gespeichert, wie dies für die Bereitstellung des Dienstes, die technische Funktionalität und die IT-Sicherheit erforderlich ist. Soweit verfügbar, werden datenschutzfreundliche Einstellungen wie die Anonymisierung von IP-Adressen und Logdaten genutzt.",
+      "Diese Website wird bei Vercel gehostet. Anbieter ist Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA. Vercel stellt Webhosting-Kapazitäten, Infrastruktur-Dienstleistungen und ein weltweites Content Delivery Network bereit, damit Inhalte schnell, sicher und zuverlässig ausgeliefert werden.",
+      "Beim Aufruf der Website verarbeitet Vercel technisch erforderliche Daten wie IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seiten, Browser- und Geräteinformationen, Betriebssystem, Referrer-URL und technische Verbindungsdaten.",
+      "Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Das berechtigte Interesse liegt in der sicheren, schnellen und fehlerfreien Bereitstellung des Onlineangebots.",
+      "Vercel hat seinen Sitz in den USA. Das abgeschlossene Data Processing Addendum von Vercel enthält EU-Standardvertragsklauseln, um ein angemessenes Datenschutzniveau bei Datenübermittlungen in Drittstaaten sicherzustellen.",
+      "IP-Adressen und Server-Logfiles werden nur so lange verarbeitet und gespeichert, wie dies für Bereitstellung, Betrieb, technische Funktionalität und IT-Sicherheit erforderlich ist. Soweit verfügbar, werden datenschutzfreundliche Einstellungen wie Log- oder IP-Anonymisierung genutzt.",
+    ],
+  },
+  {
+    title: "Cookies und lokale Speicherung",
+    paragraphs: [
+      "Für den Betrieb der Website werden technisch notwendige Session-Cookies verwendet, etwa für Admin- oder Kunden-Logins. Zusätzlich können einzelne Einstellungen wie der gewählte Hell-/Dunkel-Modus lokal im Browser gespeichert werden.",
+      "Eine werbliche Tracking- oder Analysefunktion ist auf dieser Website nicht vorgesehen.",
     ],
   },
   {
     title: "Speicherdauer",
     paragraphs: [
-      "Daten werden nur so lange gespeichert, wie sie für die jeweiligen Zwecke erforderlich sind. Kundengalerien können nach Abschluss eines Projekts deaktiviert, mit einem Ablaufdatum versehen oder gelöscht werden.",
-      "Gesetzliche Aufbewahrungspflichten bleiben unberührt.",
-    ],
-  },
-  {
-    title: "Externe Dienste",
-    paragraphs: [
-      "Diese Website nutzt externe Dienste zur Bereitstellung und Verwaltung der Inhalte. Supabase wird für Datenbank, Kundenkonten, Bewertungen, Kundengalerien und Bildspeicher genutzt. Formspree kann für Kontaktformulare eingesetzt werden.",
-      "Bei diesen Diensten können technische Daten wie IP-Adresse, Zeitpunkt des Zugriffs, Geräte- und Browserinformationen oder Formularinhalte verarbeitet werden, soweit dies für Betrieb, Sicherheit und Anfragebearbeitung erforderlich ist.",
-      "Soweit diese Dienste personenbezogene Daten im Auftrag verarbeiten, sollten entsprechende Vereinbarungen zur Auftragsverarbeitung geprüft und abgeschlossen werden.",
+      "Daten werden nur so lange gespeichert, wie sie für die jeweiligen Zwecke erforderlich sind. Kontaktanfragen werden bis zur Bearbeitung und notwendigen Nachverfolgung gespeichert. Kundengalerien können nach Abschluss eines Projekts deaktiviert, archiviert, mit einem Ablaufdatum versehen oder gelöscht werden.",
+      "Kundenkonten werden bis zur Löschung durch den Nutzer oder bis zu einer notwendigen administrativen Löschung gespeichert. Technische Protokolle und Fehlerberichte werden nur so lange vorgehalten, wie dies zur Fehlersuche, Sicherheit und Missbrauchsvermeidung erforderlich ist. Gesetzliche Aufbewahrungspflichten bleiben unberührt.",
     ],
   },
   {
@@ -101,7 +115,7 @@ export default function DatenschutzPage() {
 
         <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl sm:p-8">
           <p className="text-sm uppercase tracking-[0.28em] text-neutral-400">
-            Stand: Juni 2026
+            Stand: August 2026
           </p>
           <h1 className="mt-4 text-4xl font-black sm:text-5xl">
             Datenschutz

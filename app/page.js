@@ -2137,7 +2137,7 @@ export default function FeliixWxfPhotography() {
 
             <div className="mt-10 space-y-8 text-neutral-300 leading-8">
               <p className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm leading-6 text-neutral-400">
-                Stand: Juni 2026. Diese Hinweise fassen zusammen, welche Daten
+                Stand: August 2026. Diese Hinweise fassen zusammen, welche Daten
                 auf dieser Website verarbeitet werden. Sie ersetzen keine
                 individuelle Rechtsberatung, sollen aber transparent erklären,
                 wie Kontaktformular, Kundenkonto, Bewertungen und
@@ -2157,9 +2157,10 @@ export default function FeliixWxfPhotography() {
                   erforderlich ist.
                 </p>
                 <p className="mt-3">
-                  Verantwortlich für diese Website ist Felix Wolff. Für
-                  Datenschutzanfragen, Auskunft oder Löschwünsche genügt eine
-                  Nachricht an die im Impressum genannte E-Mail-Adresse.
+                  Verantwortlich für diese Website ist Felix Wolff, feliix.wxf
+                  Photography, Zum Großenbach 1, 98673 Eisfeld, Deutschland.
+                  Für Datenschutzanfragen, Auskunft oder Löschwünsche genügt
+                  eine Nachricht an {siteSettings.contact_email}.
                 </p>
               </div>
 
@@ -2194,11 +2195,11 @@ export default function FeliixWxfPhotography() {
                   Übermittelte Daten aus dem Kontaktformular werden zur
                   Bearbeitung Ihrer Anfrage verarbeitet. Dazu können Name,
                   E-Mail-Adresse, Telefonnummer und Ihre Nachricht gehören.
-                  Die Verarbeitung erfolgt, um Ihre Anfrage beantworten und ein
-                  mögliches Shooting vorbereiten zu können. Kontaktanfragen
-                  können zusätzlich im geschützten Adminbereich gespeichert
-                  werden, damit Anfragen zuverlässig nachverfolgt und
-                  beantwortet werden können.
+                  Die Anfrage wird zuerst über eine eigene API in Supabase
+                  gespeichert und anschließend zusätzlich an Formspree
+                  übertragen, damit eine Benachrichtigung und
+                  Formularverwaltung möglich ist. Kontaktanfragen können im
+                  geschützten Adminbereich nachverfolgt und gelöscht werden.
                 </p>
               </div>
 
@@ -2348,14 +2349,14 @@ export default function FeliixWxfPhotography() {
 
               <div>
                 <h3 className="text-2xl font-bold text-white">
-                  Externe Dienste
+                  Supabase und Formspree
                 </h3>
                 <p className="mt-3">
-                  Diese Website nutzt externe Dienste zur Bereitstellung und
-                  Verwaltung der Inhalte. Supabase wird für Datenbank,
-                  Kundenkonten, Bewertungen, Kundengalerien und Bildspeicher
-                  genutzt. Formspree kann für die Verarbeitung von
-                  Kontaktformularen eingesetzt werden.
+                  Supabase wird für Datenbank, Authentifizierung,
+                  Kundenkonten, Bewertungen, Kontaktanfragen, Kundengalerien
+                  und Bildspeicher genutzt. Die Projektregion ist nach
+                  aktueller Dashboard-Anzeige West EU (Ireland), technisch
+                  eu-west-1.
                 </p>
                 <p className="mt-3">
                   Im Adminbereich können Kundenkonten anhand von E-Mail-Adresse
@@ -2364,18 +2365,19 @@ export default function FeliixWxfPhotography() {
                   Download-Freigaben oder Löschanfragen erforderlich ist.
                 </p>
                 <p className="mt-3">
-                  Bei diesen Diensten können technische Daten wie IP-Adresse,
-                  Zeitpunkt des Zugriffs, Geräte- und Browserinformationen oder
-                  Formularinhalte verarbeitet werden, soweit dies für Betrieb,
-                  Sicherheit und Anfragebearbeitung erforderlich ist.
+                  Formspree wird für die zusätzliche Verarbeitung von
+                  Kontaktformularen und E-Mail-Benachrichtigungen genutzt. An
+                  Formspree werden die eingegebenen Formulardaten übertragen.
+                  Im kostenlosen Tarif werden Einsendungen nach
+                  Anbieterangaben für 30 Tage vorgehalten.
                 </p>
                 <p className="mt-3">
-                  Soweit diese Dienste personenbezogene Daten im Auftrag
-                  verarbeiten, sollten entsprechende Vereinbarungen zur
-                  Auftragsverarbeitung geprüft und abgeschlossen werden.
-                  Einzelne Dienste können Daten auch außerhalb der EU
-                  verarbeiten; dabei sind die jeweiligen Datenschutz- und
-                  Sicherheitsangaben des Dienstes zu beachten.
+                  Formspree verarbeitet Daten nach Anbieterangaben über AWS in
+                  den USA und nutzt für Drittlandübermittlungen
+                  EU-Standardvertragsklauseln. Supabase und Formspree werden
+                  auf Grundlage der jeweils bereitgestellten
+                  Datenverarbeitungs- und Auftragsverarbeitungsbedingungen
+                  eingesetzt.
                 </p>
                 <p className="mt-3">
                   Supabase wird außerdem für die Authentifizierung verwendet.
