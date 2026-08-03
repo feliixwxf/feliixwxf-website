@@ -1631,8 +1631,7 @@ export default function AccountPage() {
                           >
                             Datenschutzhinweise
                           </Link>{" "}
-                          gelesen und stimme der Verarbeitung meiner Daten für
-                          Kundenkonto und Kundengalerien zu.
+                          zur Kenntnis genommen.
                         </span>
                       </label>
                     )}

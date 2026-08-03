@@ -365,8 +365,8 @@ function MaintenanceView({ siteSettings }) {
             />
 
             <p className="text-xs leading-6 text-neutral-400 md:col-span-2">
-              Mit dem Absenden erklärst du dich einverstanden, dass deine
-              Angaben zur Bearbeitung deiner Anfrage verarbeitet werden.
+              Deine Angaben werden zur Bearbeitung deiner Anfrage verarbeitet.
+              Weitere Informationen findest du in den Datenschutzhinweisen.
             </p>
 
             <Button type="submit" className="rounded-2xl py-6 text-base md:col-span-2">
@@ -832,12 +832,22 @@ export default function FeliixWxfPhotography() {
     setReviewMessage("");
     setReviewMessageType("info");
 
+    if (formData.get("publicReviewConsent") !== "yes") {
+      setReviewSubmitting(false);
+      setReviewMessageType("error");
+      setReviewMessage(
+        "Bitte bestätige, dass Name, Bewertung und gegebenenfalls Avatar nach Freigabe öffentlich sichtbar sein dürfen."
+      );
+      return;
+    }
+
     const newReview = {
       name: reviewName.trim(),
       text: reviewText.trim(),
       stars: rating || 5,
       website: formData.get("website") || "",
       startedAt: reviewFormStartedAtRef.current,
+      publicReviewConsent: true,
     };
 
     if (reviewAvatar) newReview.avatar_url = reviewAvatar;
@@ -1746,6 +1756,22 @@ export default function FeliixWxfPhotography() {
                       </p>
                     )}
 
+                    <label className={`flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.07] p-4 text-sm leading-6 ${muted} md:col-span-2`}>
+                      <input
+                        type="checkbox"
+                        name="publicReviewConsent"
+                        value="yes"
+                        className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 accent-yellow-400"
+                      />
+                      <span>
+                        Ich bin einverstanden, dass mein Name, meine Bewertung
+                        und gegebenenfalls mein ausgewählter Avatar oder mein
+                        Profilbild nach Freigabe öffentlich auf der Website
+                        erscheinen. Die Einwilligung kann ich jederzeit per
+                        E-Mail widerrufen.
+                      </span>
+                    </label>
+
                     <Button
                       type="submit"
                       disabled={reviewSubmitting}
@@ -1884,14 +1910,13 @@ export default function FeliixWxfPhotography() {
                 />
 
                 <p className={`text-xs leading-6 ${muted} md:col-span-2`}>
-                  Mit dem Absenden erklärst du dich einverstanden, dass deine
-                  Angaben zur Bearbeitung deiner Anfrage verarbeitet werden.
-                  Weitere Informationen findest du im{" "}
+                  Deine Angaben werden zur Bearbeitung deiner Anfrage
+                  verarbeitet. Weitere Informationen findest du in den{" "}
                   <a
                     href="/datenschutz"
                     className="font-bold underline decoration-white/30 underline-offset-4 transition hover:decoration-white"
                   >
-                    Datenschutz
+                    Datenschutzhinweisen
                   </a>
                   .
                 </p>
@@ -2268,6 +2293,14 @@ export default function FeliixWxfPhotography() {
                   nach manueller Freigabe veröffentlicht. Bei eingeloggten
                   Kunden kann zusätzlich das Profilbild und der Nutzername aus
                   dem Kundenkonto angezeigt werden.
+                </p>
+                <p className="mt-3">
+                  Vor dem Absenden einer Bewertung muss freiwillig bestätigt
+                  werden, dass Name, Bewertung und gegebenenfalls ausgewählter
+                  Avatar oder Profilbild nach Freigabe öffentlich auf der
+                  Website erscheinen dürfen. Rechtsgrundlage ist Art. 6 Abs. 1
+                  lit. a DSGVO. Die Einwilligung kann jederzeit per E-Mail
+                  widerrufen werden.
                 </p>
                 <p className="mt-3">
                   Wird ein Kundenkonto gelöscht, bleibt eine bereits

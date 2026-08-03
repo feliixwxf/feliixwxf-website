@@ -49,6 +49,7 @@ const sections = [
     title: "Bewertungen",
     paragraphs: [
       "Abgegebene Bewertungen werden zunächst gespeichert und erst nach manueller Freigabe veröffentlicht. Bei eingeloggten Kunden kann zusätzlich das Profilbild und der Nutzername aus dem Kundenkonto angezeigt werden.",
+      "Vor dem Absenden einer Bewertung muss freiwillig bestätigt werden, dass Name, Bewertung und gegebenenfalls ausgewählter Avatar oder Profilbild nach Freigabe öffentlich auf der Website erscheinen dürfen. Rechtsgrundlage für diese Veröffentlichung ist Art. 6 Abs. 1 lit. a DSGVO. Die Einwilligung kann jederzeit per E-Mail mit Wirkung für die Zukunft widerrufen werden.",
       "Wird ein Kundenkonto gelöscht, bleibt eine bereits veröffentlichte Bewertung ohne Konto-Verknüpfung bestehen. Wenn eine Bewertung ebenfalls gelöscht werden soll, kann dies jederzeit per E-Mail angefragt werden.",
       "Bei neuen Bewertungen kann eine Benachrichtigung per E-Mail an den Betreiber ausgelöst werden, damit die Bewertung geprüft und freigegeben werden kann.",
     ],

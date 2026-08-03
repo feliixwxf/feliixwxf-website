@@ -163,10 +163,22 @@ export async function POST(request) {
     const user = customerSession.user;
     const body = await request.json().catch(() => ({}));
     const botCheck = checkBotSubmission(body, { minimumSeconds: 4 });
+    const publicReviewConsent = body?.publicReviewConsent === true;
 
     if (!botCheck.ok) {
       const response = NextResponse.json(
         { error: botCheck.message },
+        { status: 400 }
+      );
+      return applyCustomerSessionCookies(response, customerSession);
+    }
+
+    if (!publicReviewConsent) {
+      const response = NextResponse.json(
+        {
+          error:
+            "Bitte bestätige, dass Name, Bewertung und gegebenenfalls Avatar öffentlich sichtbar sein dürfen.",
+        },
         { status: 400 }
       );
       return applyCustomerSessionCookies(response, customerSession);
