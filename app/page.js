@@ -1298,6 +1298,42 @@ export default function FeliixWxfPhotography() {
                 {siteSettings.hero_intro}
               </p>
 
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("Kontakt")}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-yellow-300 bg-yellow-400 px-6 py-3 text-sm font-black text-black shadow-[0_18px_45px_rgba(250,204,21,0.22)] transition-transform duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-yellow-300 sm:w-auto"
+                >
+                  <Camera className="h-5 w-5" />
+                  Shooting unverbindlich anfragen
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("Portfolio")}
+                  className={`inline-flex w-full items-center justify-center gap-2 rounded-full border px-6 py-3 text-sm font-black transition-transform duration-200 hover:-translate-y-0.5 hover:scale-[1.02] sm:w-auto ${
+                    dark
+                      ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
+                      : "border-black/10 bg-white text-neutral-950 shadow-md hover:bg-neutral-100"
+                  }`}
+                >
+                  Arbeiten ansehen
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+              </div>
+
+              <p
+                className={`mt-4 flex max-w-xl flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold ${
+                  dark ? "text-neutral-200" : "text-neutral-700"
+                }`}
+              >
+                <span>{reviewCount} Bewertungen</span>
+                <span aria-hidden="true">·</span>
+                <span>Ø {formattedReviewAverage}</span>
+                <span aria-hidden="true">·</span>
+                <span>Antwort meist innerhalb von 24 Stunden</span>
+              </p>
+
               <p
                 className={`mt-3 max-w-xl text-[0.68rem] font-semibold uppercase leading-5 tracking-[0.14em] sm:text-xs ${muted}`}
               >
