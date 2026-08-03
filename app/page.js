@@ -74,6 +74,8 @@ const LOCAL_SEO_SERVICES = [
   },
 ];
 
+const PRESS_PUBLICATION_URL = "https://www.insuedthueringen.de/thema/Abiball";
+
 const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: "Fotografie & Editing",
   hero_title_line_1: "Bilder mit Charakter.",
@@ -1071,6 +1073,30 @@ export default function FeliixWxfPhotography() {
               })}
             </div>
           )}
+
+          <div
+            className={`mt-10 rounded-[2rem] border p-6 sm:p-8 ${glass}`}
+          >
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-2xl font-black">
+                  Gefällt dir dieser Look? Lass uns dein Shooting planen.
+                </p>
+                <p className={`mt-2 text-sm leading-6 ${muted}`}>
+                  Preise auf Anfrage, passend zu Umfang, Ort und Bildanzahl.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => scrollToSection("Kontakt")}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-yellow-300 bg-yellow-400 px-6 py-3 text-sm font-black text-black shadow-[0_18px_45px_rgba(250,204,21,0.22)] transition-transform duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-yellow-300 md:w-auto"
+              >
+                <Camera className="h-5 w-5" />
+                Shooting unverbindlich anfragen
+              </button>
+            </div>
+          </div>
         </div>
 
         {selectedPortfolioImage && (
@@ -1457,6 +1483,46 @@ export default function FeliixWxfPhotography() {
           </div>
         </Section>
 
+        <Section id="referenz" className="px-5 pb-10">
+          <div
+            className={`mx-auto max-w-7xl rounded-[2rem] border p-6 sm:p-8 ${
+              dark
+                ? "border-yellow-300/20 bg-yellow-300/[0.08] text-white"
+                : "border-yellow-500/25 bg-yellow-50 text-neutral-950 shadow-sm"
+            }`}
+          >
+            <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
+              Veröffentlichung
+            </p>
+            <div className="mt-4 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-black md:text-3xl">
+                  Fotoveröffentlichung bei inSüdthüringen
+                </h2>
+                <p className={`mt-3 max-w-3xl leading-7 ${muted}`}>
+                  Beim Abiball des SBSZ Hildburghausen 2026 wurde ein Foto von
+                  Felix Wolff / www.feliixwxf.de bei inSüdthüringen
+                  veröffentlicht.
+                </p>
+              </div>
+
+              <a
+                href={PRESS_PUBLICATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex w-full items-center justify-center gap-2 rounded-full border px-5 py-3 text-sm font-black transition-transform duration-200 hover:-translate-y-0.5 md:w-auto ${
+                  dark
+                    ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
+                    : "border-black/10 bg-white text-neutral-950 hover:bg-neutral-100"
+                }`}
+              >
+                Artikel bei inSüdthüringen
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </Section>
+
         <section id="portfolio" className="relative z-0 scroll-mt-28 px-5 py-24">
           <div className="mx-auto max-w-7xl">
             <p className={`text-sm uppercase tracking-[0.3em] ${muted}`}>
@@ -1477,9 +1543,9 @@ export default function FeliixWxfPhotography() {
                     <img
                       src={item.image}
                       alt={getPortfolioCoverAlt(item)}
-                      loading={index < 2 ? "eager" : "lazy"}
+                      loading="lazy"
                       decoding="async"
-                      fetchPriority={index === 0 ? "high" : "auto"}
+                      fetchPriority="auto"
                       width="1200"
                       height="1600"
                       sizes="(min-width: 768px) 50vw, 100vw"
