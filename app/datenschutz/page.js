@@ -4,6 +4,9 @@ export const metadata = {
   title: "Datenschutz",
   description:
     "Datenschutzhinweise von feliix.wxf zu Kontaktformular, Kundenkonto, Bewertungen und Kundengalerien.",
+  alternates: {
+    canonical: "/datenschutz",
+  },
   robots: {
     index: true,
     follow: true,

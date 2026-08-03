@@ -4,6 +4,9 @@ import LegalBackButton from "@/components/legal-back-button";
 export const metadata = {
   title: "Impressum",
   description: "Impressum und Kontaktangaben von feliix.wxf Photography.",
+  alternates: {
+    canonical: "/impressum",
+  },
   robots: {
     index: true,
     follow: true,
