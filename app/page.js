@@ -553,7 +553,6 @@ export default function FeliixWxfPhotography() {
 
   const scrollToSection = (id) => {
     setActiveGallery(null);
-    setShowPopup(false);
 
     if (window.location.search.includes("galerie=")) {
       window.history.pushState(null, "", `/#${id.toLowerCase()}`);
@@ -563,6 +562,27 @@ export default function FeliixWxfPhotography() {
       document
         .getElementById(id.toLowerCase())
         ?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+
+    setMenuOpen(false);
+  };
+
+  const scrollToContactForm = () => {
+    setActiveGallery(null);
+
+    if (window.location.search.includes("galerie=")) {
+      window.history.pushState(null, "", "/#kontaktformular");
+    }
+
+    setTimeout(() => {
+      const contactForm = document.getElementById("kontaktformular");
+      contactForm?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      window.setTimeout(() => {
+        contactForm
+          ?.querySelector('input[name="name"]')
+          ?.focus({ preventScroll: true });
+      }, 550);
     }, 50);
 
     setMenuOpen(false);
@@ -1767,6 +1787,7 @@ export default function FeliixWxfPhotography() {
             </div>
 
             <form
+              id="kontaktformular"
               onSubmit={handleContactSubmit}
               className="rounded-[2rem] border border-white/15 bg-white/[0.08] p-6 shadow-lg"
             >
@@ -1992,7 +2013,7 @@ export default function FeliixWxfPhotography() {
         </div>
       )}
 
-      <FaqChatbot dark={dark} onContact={() => scrollToSection("Kontakt")} />
+      <FaqChatbot dark={dark} onContact={scrollToContactForm} />
 
       {showImpressum && (
         <div className="fixed inset-0 z-[700] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
