@@ -39,3 +39,13 @@ Der Schwerpunkt liegt auf Eisfeld, Hildburghausen und Südthüringen. Weitere Or
 - Preise, Verfügbarkeit, Dauer, Ort und Lieferzeit werden passend zum gewünschten Shooting individuell abgestimmt.
 - Portfolio-Bilder und andere Medien sind urheberrechtlich geschützt und dürfen nicht ohne Erlaubnis weiterverwendet werden.
 - Private Kundengalerien und Kundeninformationen sind nicht für öffentliche Indexierung oder automatisierte Auswertung bestimmt.
+
+## Crawler-Hinweise
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: *
+Allow: /
+
+Sitemap: https://www.feliixwxf.de/sitemap.xml
