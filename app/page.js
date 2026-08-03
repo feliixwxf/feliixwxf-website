@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ReportUserErrorButton from "@/components/report-user-error-button";
+import FaqChatbot from "@/components/faq-chatbot";
 
 const DEFAULT_REVIEWS = [
   {
@@ -341,8 +342,6 @@ export default function FeliixWxfPhotography() {
   const [reviewText, setReviewText] = useState("");
   const [reviewAvatar, setReviewAvatar] = useState("");
   const [showReviewAvatars, setShowReviewAvatars] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupClosed, setPopupClosed] = useState(false);
   const [reviews, setReviews] = useState(DEFAULT_REVIEWS);
   const [currentCustomer, setCurrentCustomer] = useState(null);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -446,7 +445,6 @@ export default function FeliixWxfPhotography() {
       loadAccountSession();
     }, 650);
 
-    const timer = setTimeout(() => setShowPopup(true), 8000);
     const handlePopState = () => {
       const nextParams = new URLSearchParams(window.location.search);
       const nextGallery = nextParams.get("galerie");
@@ -462,7 +460,6 @@ export default function FeliixWxfPhotography() {
     window.addEventListener("popstate", handlePopState);
 
     return () => {
-      clearTimeout(timer);
       clearTimeout(secondaryLoadTimer);
       window.removeEventListener("popstate", handlePopState);
     };
@@ -1995,31 +1992,7 @@ export default function FeliixWxfPhotography() {
         </div>
       )}
 
-      {showPopup && !popupClosed && (
-        <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.28 }}
-          className="fixed bottom-6 right-6 z-[650] max-w-sm rounded-[1.7rem] border border-white/30 bg-neutral-950/90 p-5 text-white shadow-xl backdrop-blur-md"
-        >
-          <button
-            onClick={() => setPopupClosed(true)}
-            className={`absolute right-3 top-3 rounded-full bg-white/10 p-1 text-white ${buttonHover}`}
-          >
-            <X className="h-4 w-4" />
-          </button>
-
-          <button
-            onClick={() => scrollToSection("Kontakt")}
-            className={`pr-6 text-left ${buttonHover}`}
-          >
-            <p className="text-lg font-black">Benötigen Sie ein Shooting?</p>
-            <p className="mt-2 text-sm text-neutral-300">
-              Dann direkt hier klicken und eine Anfrage senden.
-            </p>
-          </button>
-        </motion.div>
-      )}
+      <FaqChatbot dark={dark} onContact={() => scrollToSection("Kontakt")} />
 
       {showImpressum && (
         <div className="fixed inset-0 z-[700] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
