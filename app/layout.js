@@ -78,6 +78,9 @@ export const metadata = {
       "max-video-preview": -1,
     },
   },
+  other: {
+    "msvalidate.01": "F12E0B328F3931FDC59FFF62697EF373",
+  },
   icons: {
     icon: [
       { url: "/icon.png?v=4", sizes: "512x512", type: "image/png" },
