@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Camera, MessageCircleQuestion, Send, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 const FAQ_ITEMS = [
@@ -37,18 +38,13 @@ const FAQ_ITEMS = [
   },
 ];
 
-export default function FaqChatbot({ dark, onContact }) {
+export default function FaqChatbot({ dark }) {
   const [open, setOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
 
   const closeChat = () => {
     setOpen(false);
     setSelectedQuestion(null);
-  };
-
-  const startRequest = () => {
-    closeChat();
-    onContact();
   };
 
   return (
@@ -135,14 +131,14 @@ export default function FaqChatbot({ dark, onContact }) {
                       {selectedQuestion.answer}
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={startRequest}
+                    <Link
+                      href="/#kontaktformular"
+                      onClick={closeChat}
                       className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-400 px-4 py-3 text-sm font-black text-black transition hover:bg-yellow-300"
                     >
                       Shooting anfragen
                       <Send className="h-4 w-4" />
-                    </button>
+                    </Link>
                     <button
                       type="button"
                       onClick={() => setSelectedQuestion(null)}
@@ -178,14 +174,14 @@ export default function FaqChatbot({ dark, onContact }) {
                         {item.question}
                       </button>
                     ))}
-                    <button
-                      type="button"
-                      onClick={startRequest}
+                    <Link
+                      href="/#kontaktformular"
+                      onClick={closeChat}
                       className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-yellow-400 px-4 py-3 text-sm font-black text-black transition hover:bg-yellow-300"
                     >
                       Direkt anfragen
                       <Send className="h-4 w-4" />
-                    </button>
+                    </Link>
                   </motion.div>
                 )}
               </AnimatePresence>

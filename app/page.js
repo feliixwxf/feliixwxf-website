@@ -567,27 +567,6 @@ export default function FeliixWxfPhotography() {
     setMenuOpen(false);
   };
 
-  const scrollToContactForm = () => {
-    setActiveGallery(null);
-
-    if (window.location.search.includes("galerie=")) {
-      window.history.pushState(null, "", "/#kontaktformular");
-    }
-
-    setTimeout(() => {
-      const contactForm = document.getElementById("kontaktformular");
-      contactForm?.scrollIntoView({ behavior: "smooth", block: "center" });
-
-      window.setTimeout(() => {
-        contactForm
-          ?.querySelector('input[name="name"]')
-          ?.focus({ preventScroll: true });
-      }, 550);
-    }, 50);
-
-    setMenuOpen(false);
-  };
-
   const openPortfolioGallery = (key) => {
     setActiveGallery(key);
     closePortfolioImage();
@@ -2013,7 +1992,7 @@ export default function FeliixWxfPhotography() {
         </div>
       )}
 
-      <FaqChatbot dark={dark} onContact={scrollToContactForm} />
+      <FaqChatbot dark={dark} />
 
       {showImpressum && (
         <div className="fixed inset-0 z-[700] flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
