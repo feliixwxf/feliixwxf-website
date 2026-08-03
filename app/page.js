@@ -48,6 +48,7 @@ function siteAssetImageUrl(key) {
 }
 
 const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "nature";
+const PORTFOLIO_GALLERY_KEYS = new Set(["car", "portrait", "nature", "event"]);
 
 const LOCAL_SEO_SERVICES = [
   {
@@ -369,6 +370,11 @@ export default function FeliixWxfPhotography() {
       window.history.replaceState(null, "", "/");
     }
 
+    const requestedGallery = params.get("galerie");
+    if (PORTFOLIO_GALLERY_KEYS.has(requestedGallery)) {
+      setActiveGallery(requestedGallery);
+    }
+
     const savedTheme = localStorage.getItem("feliix-theme");
 
     if (savedTheme) setTheme(savedTheme);
@@ -431,9 +437,24 @@ export default function FeliixWxfPhotography() {
     }, 650);
 
     const timer = setTimeout(() => setShowPopup(true), 8000);
+    const handlePopState = () => {
+      const nextParams = new URLSearchParams(window.location.search);
+      const nextGallery = nextParams.get("galerie");
+
+      setSelectedPortfolioImage(null);
+      setSelectedPortfolioImageIndex(null);
+      setPortfolioImageZoomed(false);
+      setActiveGallery(
+        PORTFOLIO_GALLERY_KEYS.has(nextGallery) ? nextGallery : null
+      );
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
     return () => {
       clearTimeout(timer);
       clearTimeout(secondaryLoadTimer);
+      window.removeEventListener("popstate", handlePopState);
     };
   }, []);
 
@@ -527,6 +548,10 @@ export default function FeliixWxfPhotography() {
     setActiveGallery(null);
     setShowPopup(false);
 
+    if (window.location.search.includes("galerie=")) {
+      window.history.pushState(null, "", `/#${id.toLowerCase()}`);
+    }
+
     setTimeout(() => {
       document
         .getElementById(id.toLowerCase())
@@ -534,6 +559,28 @@ export default function FeliixWxfPhotography() {
     }, 50);
 
     setMenuOpen(false);
+  };
+
+  const openPortfolioGallery = (key) => {
+    setActiveGallery(key);
+    closePortfolioImage();
+
+    const nextUrl = `/?galerie=${encodeURIComponent(key)}`;
+    if (window.location.pathname + window.location.search !== nextUrl) {
+      window.history.pushState(null, "", nextUrl);
+    }
+  };
+
+  const closePortfolioGallery = () => {
+    closePortfolioImage();
+    setActiveGallery(null);
+    window.history.pushState(null, "", "/#portfolio");
+
+    setTimeout(() => {
+      document
+        .getElementById("portfolio")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
   };
 
   const updateSlider = (clientX) => {
@@ -923,10 +970,7 @@ export default function FeliixWxfPhotography() {
       <div className={`min-h-screen ${pageStyle}`}>
         <div className="mx-auto max-w-7xl px-5 py-10">
           <Button
-            onClick={() => {
-              closePortfolioImage();
-              setActiveGallery(null);
-            }}
+            onClick={closePortfolioGallery}
             className={`mb-8 rounded-full ${buttonHover}`}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -1323,7 +1367,7 @@ export default function FeliixWxfPhotography() {
               {visiblePortfolioItems.map((item, index) => (
                 <Card
                   key={item.key}
-                  onClick={() => setActiveGallery(item.key)}
+                  onClick={() => openPortfolioGallery(item.key)}
                   className={`group flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] border ${glass} transition-colors duration-200 hover:border-white/30 hover:bg-white/[0.14]`}
                 >
                   <div className="aspect-[3/4] shrink-0 overflow-hidden bg-black/20">
