@@ -364,6 +364,15 @@ export default function FeliixWxfPhotography() {
   const [showDatenschutz, setShowDatenschutz] = useState(false);
 
   useEffect(() => {
+    if (
+      window.location.pathname === "/" &&
+      window.location.hash === "#portfolio" &&
+      !window.location.search
+    ) {
+      window.history.replaceState(null, "", "/");
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+
     const params = new URLSearchParams(window.location.search);
     if (params.get("datenschutz") === "1") {
       setShowDatenschutz(true);
@@ -580,7 +589,7 @@ export default function FeliixWxfPhotography() {
   const closePortfolioGallery = () => {
     closePortfolioImage();
     setActiveGallery(null);
-    window.history.pushState(null, "", "/#portfolio");
+    window.history.pushState(null, "", "/");
 
     setTimeout(() => {
       document
