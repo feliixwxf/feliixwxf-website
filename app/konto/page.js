@@ -1049,6 +1049,7 @@ export default function AccountPage() {
                         </div>
 
                         <form
+                          method="post"
                           onSubmit={linkGalleryByCode}
                           className={`rounded-[1.35rem] border p-4 sm:p-5 ${dark ? "border-yellow-400/20 bg-yellow-400/[0.07]" : "border-yellow-700/20 bg-yellow-100/60"}`}
                         >
@@ -1311,7 +1312,7 @@ export default function AccountPage() {
                   </section>
                 </div>
               ) : mode === "resetConfirm" ? (
-                <form onSubmit={confirmPasswordReset}>
+                <form method="post" onSubmit={confirmPasswordReset}>
                   <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-5">
                     <p className="text-xs font-black uppercase tracking-[0.25em] text-yellow-100/70">
                       Passwort zurücksetzen
@@ -1396,7 +1397,7 @@ export default function AccountPage() {
                   </div>
                 </form>
               ) : mode === "resetRequest" ? (
-                <form onSubmit={requestPasswordReset}>
+                <form method="post" onSubmit={requestPasswordReset}>
                   <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
                     <p className="text-xs font-black uppercase tracking-[0.25em] text-neutral-500">
                       Passwort vergessen
@@ -1454,7 +1455,7 @@ export default function AccountPage() {
                   </div>
                 </form>
               ) : (
-                <form onSubmit={submitAccount}>
+                <form method="post" onSubmit={submitAccount}>
                   <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/10 p-1">
                     <button
                       type="button"

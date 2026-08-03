@@ -8,7 +8,7 @@ export default function robots() {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/api", "/konto", "/kunden"],
+        disallow: ["/admin", "/api"],
       },
     ],
     sitemap: "https://www.feliixwxf.de/sitemap.xml",

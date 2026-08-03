@@ -178,10 +178,8 @@ export default function CustomerGalleryPage() {
     ? "Downloads sind freigegeben."
     : "Downloads sind aktuell deaktiviert. Die Bilder sind als geschützte Vorschau sichtbar.";
   const getImageDownloadUrl = (image) =>
-    gallery?.access_code && image?.id
-      ? `/api/client-gallery/download?code=${encodeURIComponent(
-          gallery.access_code
-        )}&image=${encodeURIComponent(image.id)}`
+    image?.id
+      ? `/api/client-gallery/download?image=${encodeURIComponent(image.id)}`
       : "";
 
   const showMessage = (text, type = "info") => {
@@ -396,6 +394,7 @@ export default function CustomerGalleryPage() {
               </div>
 
               <form
+                method="post"
                 onSubmit={loadGallery}
                 className="self-center rounded-[1.3rem] border border-white/10 bg-black/25 p-4 sm:rounded-[1.5rem] sm:p-6"
               >

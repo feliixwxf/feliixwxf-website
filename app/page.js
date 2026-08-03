@@ -1574,6 +1574,7 @@ export default function FeliixWxfPhotography() {
 
             <form
               id="bewertung-schreiben"
+              method="post"
               onSubmit={handleReviewSubmit}
               className={`scroll-mt-28 mt-14 overflow-hidden rounded-[2.5rem] border ${glass}`}
             >
@@ -1867,6 +1868,7 @@ export default function FeliixWxfPhotography() {
 
             <form
               id="kontaktformular"
+              method="post"
               onSubmit={handleContactSubmit}
               className="rounded-[2rem] border border-white/15 bg-white/[0.08] p-6 shadow-lg"
             >

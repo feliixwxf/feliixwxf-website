@@ -9,6 +9,10 @@ import {
   downloadClientGalleryStorageObject,
   isDownloadWatermarkEnabled,
 } from "../../_lib/storage";
+import {
+  CLIENT_GALLERY_SESSION_COOKIE,
+  verifyClientGallerySession,
+} from "../../_lib/gallery-session";
 
 export const runtime = "nodejs";
 
@@ -47,18 +51,22 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const code = normalizeCode(searchParams.get("code"));
   const imageId = String(searchParams.get("image") || "").trim();
+  const sessionGalleryId = verifyClientGallerySession(
+    request.cookies.get(CLIENT_GALLERY_SESSION_COOKIE)?.value
+  );
 
-  if (!code || !imageId) {
+  if ((!code && !sessionGalleryId) || !imageId) {
     return NextResponse.json(
       { error: "Download-Link ist unvollständig." },
       { status: 400 }
     );
   }
 
+  const galleryFilter = sessionGalleryId
+    ? `id=eq.${encodeURIComponent(sessionGalleryId)}`
+    : `access_code=eq.${encodeURIComponent(code)}`;
   const galleryResponse = await fetch(
-    `${supabaseBaseUrl}/rest/v1/client_galleries?select=id,access_code,is_active,downloads_enabled,status,client_name,expires_at&access_code=eq.${encodeURIComponent(
-      code
-    )}&limit=1`,
+    `${supabaseBaseUrl}/rest/v1/client_galleries?select=id,access_code,is_active,downloads_enabled,status,client_name,expires_at&${galleryFilter}&limit=1`,
     {
       headers: supabaseServiceHeaders,
       cache: "no-store",

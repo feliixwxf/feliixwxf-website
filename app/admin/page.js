@@ -4048,6 +4048,7 @@ export default function AdminPage() {
 
         {!authenticated ? (
           <form
+            method="post"
             onSubmit={handleLogin}
             className="mt-10 max-w-md rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 backdrop-blur-md"
           >
@@ -4727,6 +4728,7 @@ export default function AdminPage() {
                 </div>
 
                 <form
+                  method="post"
                   onSubmit={uploadImage}
                   className="mt-6 grid gap-4 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6 backdrop-blur-md md:grid-cols-[1fr_1fr_auto]"
                 >
@@ -5412,6 +5414,7 @@ export default function AdminPage() {
                     </div>
 
                     <form
+                      method="post"
                       onSubmit={searchCustomerAccounts}
                       className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]"
                     >
@@ -5608,6 +5611,7 @@ export default function AdminPage() {
 
 	                {showClientGalleryForm && (
                 <form
+                  method="post"
                   onSubmit={createClientGallery}
                   className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6"
                 >
@@ -6572,6 +6576,7 @@ export default function AdminPage() {
 
                         {activeClientPanel === "upload" && (
                         <form
+                          method="post"
                           onSubmit={uploadClientGalleryImage}
                           className="mt-6 grid gap-4 rounded-2xl border border-white/10 bg-black/20 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end"
                         >
@@ -7160,7 +7165,7 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                <form onSubmit={saveSiteSettings} className="mt-8 space-y-6">
+                <form method="post" onSubmit={saveSiteSettings} className="mt-8 space-y-6">
                   {TEXT_FIELD_GROUPS.map((group) => (
                     <section
                       key={group.title}
@@ -7264,6 +7269,7 @@ export default function AdminPage() {
                 </div>
 
                 <form
+                  method="post"
                   onSubmit={saveSiteSettings}
                   className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.08] p-4 sm:p-6"
                 >
@@ -7915,6 +7921,7 @@ export default function AdminPage() {
                 {activeContractsPanel === "documents" && (
                   <div className="mt-6 grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
                     <form
+                      method="post"
                       onSubmit={(event) => {
                         event.preventDefault();
                         saveContractsResource(
@@ -8213,6 +8220,7 @@ export default function AdminPage() {
                 {activeContractsPanel === "appointments" && (
                   <div className="mt-6 grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
                     <form
+                      method="post"
                       onSubmit={(event) => {
                         event.preventDefault();
                         saveContractsResource(
@@ -8516,6 +8524,7 @@ export default function AdminPage() {
                 {activeContractsPanel === "waitlist" && (
                   <div className="mt-6 grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
                     <form
+                      method="post"
                       onSubmit={(event) => {
                         event.preventDefault();
                         saveContractsResource(

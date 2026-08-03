@@ -9,11 +9,46 @@ import {
   getClientGalleryArchivePath,
   withSignedImageUrls,
 } from "../_lib/storage";
+import {
+  CLIENT_GALLERY_SESSION_COOKIE,
+  clientGallerySessionCookieOptions,
+  createClientGallerySession,
+} from "../_lib/gallery-session";
 
 const GALLERY_SELECT =
   "id,title,client_name,access_code,downloads_enabled,status,cover_image_id,welcome_message,archive_path,archive_size,archive_created_at,expires_at,created_at";
 const LEGACY_GALLERY_SELECT =
   "id,title,client_name,access_code,downloads_enabled,welcome_message,expires_at,created_at";
+const CODE_ATTEMPT_WINDOW_MS = 10 * 60 * 1000;
+const MAX_FAILED_CODE_ATTEMPTS = 8;
+const codeAttempts = new Map();
+
+function getClientKey(request) {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
+function getAttemptState(key) {
+  const now = Date.now();
+  const current = codeAttempts.get(key);
+
+  if (!current || current.resetAt <= now) {
+    return { count: 0, resetAt: now + CODE_ATTEMPT_WINDOW_MS };
+  }
+
+  return current;
+}
+
+function rememberFailedAttempt(key) {
+  const current = getAttemptState(key);
+  codeAttempts.set(key, {
+    count: current.count + 1,
+    resetAt: current.resetAt,
+  });
+}
 
 function normalizeCode(value) {
   return String(value || "")
@@ -33,11 +68,23 @@ export async function POST(request) {
 
   const { accessCode } = await request.json();
   const code = normalizeCode(accessCode);
+  const clientKey = getClientKey(request);
+  const attemptState = getAttemptState(clientKey);
 
   if (!code) {
     return NextResponse.json(
       { error: "Bitte Galerie-Code eingeben." },
       { status: 400 }
+    );
+  }
+
+  if (attemptState.count >= MAX_FAILED_CODE_ATTEMPTS) {
+    return NextResponse.json(
+      {
+        error:
+          "Zu viele falsche Code-Versuche. Bitte warte ein paar Minuten und versuche es erneut.",
+      },
+      { status: 429 }
     );
   }
 
@@ -85,6 +132,7 @@ export async function POST(request) {
   const [gallery] = await galleryResponse.json();
 
   if (!gallery) {
+    rememberFailedAttempt(clientKey);
     return NextResponse.json(
       { error: "Galerie-Code wurde nicht gefunden oder ist nicht aktiv." },
       { status: 404 }
@@ -92,6 +140,7 @@ export async function POST(request) {
   }
 
   if (gallery.expires_at && new Date(gallery.expires_at) <= new Date()) {
+    rememberFailedAttempt(clientKey);
     return NextResponse.json(
       { error: "Diese Galerie ist abgelaufen." },
       { status: 410 }
@@ -132,7 +181,7 @@ export async function POST(request) {
   const archivePath =
     gallery.status === "completed" ? getClientGalleryArchivePath(gallery) : "";
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     gallery: {
       ...gallery,
       cover_url: coverImage?.url || "",
@@ -144,4 +193,16 @@ export async function POST(request) {
     images,
     favorites: await favoriteResponse.json(),
   });
+
+  const session = createClientGallerySession(gallery.id);
+  if (session) {
+    response.cookies.set(
+      CLIENT_GALLERY_SESSION_COOKIE,
+      session,
+      clientGallerySessionCookieOptions
+    );
+  }
+
+  codeAttempts.delete(clientKey);
+  return response;
 }

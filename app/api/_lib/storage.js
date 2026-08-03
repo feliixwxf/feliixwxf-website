@@ -27,7 +27,7 @@ export function getClientGalleryArchivePath(gallery) {
   const archiveName = `${sanitizeArchivePart(
     gallery.title,
     "kundengalerie"
-  )}-${sanitizeArchivePart(gallery.access_code, "galerie")}.zip`;
+  )}-${sanitizeArchivePart(gallery.id, "galerie")}.zip`;
 
   return `client-galleries/${gallery.id}/archive/${archiveName}`;
 }
