@@ -374,6 +374,13 @@ export default function FeliixWxfPhotography() {
     const requestedGallery = params.get("galerie");
     if (PORTFOLIO_GALLERY_KEYS.has(requestedGallery)) {
       setActiveGallery(requestedGallery);
+      if (params.has("bild")) {
+        window.history.replaceState(
+          null,
+          "",
+          `/?galerie=${encodeURIComponent(requestedGallery)}`
+        );
+      }
     }
 
     const savedTheme = localStorage.getItem("feliix-theme");
@@ -713,28 +720,6 @@ export default function FeliixWxfPhotography() {
     setSelectedPortfolioImage(null);
     setSelectedPortfolioImageIndex(null);
     setPortfolioImageZoomed(false);
-
-    if (activeGallery && window.location.search.includes("bild=")) {
-      window.history.replaceState(
-        null,
-        "",
-        `/?galerie=${encodeURIComponent(activeGallery)}`
-      );
-    }
-  };
-
-  const setPortfolioImageUrl = (index, mode = "replace") => {
-    if (!activeGallery) return;
-
-    const nextUrl = `/?galerie=${encodeURIComponent(
-      activeGallery
-    )}&bild=${encodeURIComponent(index)}`;
-
-    if (mode === "push") {
-      window.history.pushState(null, "", nextUrl);
-    } else {
-      window.history.replaceState(null, "", nextUrl);
-    }
   };
 
   const selectPortfolioImageAt = (index) => {
@@ -746,7 +731,6 @@ export default function FeliixWxfPhotography() {
     setSelectedPortfolioImage(activePortfolioImages[nextIndex]);
     setSelectedPortfolioImageIndex(nextIndex);
     setPortfolioImageZoomed(false);
-    setPortfolioImageUrl(nextIndex);
   };
 
   const showPreviousPortfolioImage = () => {
@@ -756,30 +740,6 @@ export default function FeliixWxfPhotography() {
   const showNextPortfolioImage = () => {
     selectPortfolioImageAt((selectedPortfolioImageIndex ?? 0) + 1);
   };
-
-  useEffect(() => {
-    if (!activeGallery || !portfolioImagesLoaded || selectedPortfolioImage) {
-      return;
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    const imageIndex = Number(params.get("bild"));
-
-    if (
-      Number.isInteger(imageIndex) &&
-      imageIndex >= 0 &&
-      imageIndex < activePortfolioImages.length
-    ) {
-      setSelectedPortfolioImage(activePortfolioImages[imageIndex]);
-      setSelectedPortfolioImageIndex(imageIndex);
-      setPortfolioImageZoomed(false);
-    }
-  }, [
-    activeGallery,
-    portfolioImagesLoaded,
-    selectedPortfolioImage,
-    activePortfolioImages.length,
-  ]);
 
   useEffect(() => {
     if (!selectedPortfolioImage) return undefined;
@@ -1053,7 +1013,6 @@ export default function FeliixWxfPhotography() {
                   setSelectedPortfolioImage(image);
                   setSelectedPortfolioImageIndex(index);
                   setPortfolioImageZoomed(false);
-                  setPortfolioImageUrl(index, "push");
                 }}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
