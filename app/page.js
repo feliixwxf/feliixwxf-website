@@ -956,7 +956,7 @@ export default function FeliixWxfPhotography() {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.025, duration: 0.35 }}
-                className="group mb-5 w-full break-inside-avoid overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.06] p-2 text-left shadow-lg outline-none ring-white/50 transition-transform duration-200 hover:-translate-y-1 focus-visible:ring-2"
+                className="group mb-5 w-full break-inside-avoid overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.06] p-2 text-left shadow-lg outline-none ring-white/50 transition-colors duration-200 hover:border-white/30 hover:bg-white/[0.09] focus-visible:ring-2"
               >
                 <img
                   src={imageUrl}
@@ -1324,7 +1324,7 @@ export default function FeliixWxfPhotography() {
                 <Card
                   key={item.key}
                   onClick={() => setActiveGallery(item.key)}
-                  className={`flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] border ${glass} ${hoverLift}`}
+                  className={`group flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] border ${glass} transition-colors duration-200 hover:border-white/30 hover:bg-white/[0.14]`}
                 >
                   <div className="aspect-[3/4] shrink-0 overflow-hidden bg-black/20">
                     <img
@@ -1335,7 +1335,7 @@ export default function FeliixWxfPhotography() {
                       fetchPriority={index < 2 ? "high" : "auto"}
                       width="1200"
                       height="1600"
-                      className="block h-full w-full object-cover transition-transform duration-500 hover:scale-[1.04]"
+                      className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.025]"
                     />
                   </div>
                   <CardContent className="min-h-[92px] p-5">
