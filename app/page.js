@@ -2354,6 +2354,20 @@ export default function FeliixWxfPhotography() {
           <a href="/datenschutz" className="transition hover:text-white">
             Datenschutz
           </a>
+
+          <a
+            href="/fotograf-eisfeld"
+            className="transition hover:text-white"
+          >
+            Fotograf Eisfeld
+          </a>
+
+          <a
+            href="/fotograf-hildburghausen"
+            className="transition hover:text-white"
+          >
+            Fotograf Hildburghausen
+          </a>
         </div>
       </footer>
     </div>

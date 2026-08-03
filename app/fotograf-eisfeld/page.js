@@ -364,6 +364,20 @@ export default function FotografEisfeldPage() {
               Kundenbewertungen
             </Link>
           </div>
+
+          <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5">
+            <p className="text-sm leading-7 text-neutral-300">
+              Du suchst ein Shooting in der Umgebung? Entdecke auch meinen
+              Service als{" "}
+              <Link
+                href="/fotograf-hildburghausen"
+                className="font-bold text-yellow-300 transition hover:text-yellow-200"
+              >
+                Fotograf in Hildburghausen
+              </Link>
+              .
+            </p>
+          </div>
         </div>
       </section>
     </main>
