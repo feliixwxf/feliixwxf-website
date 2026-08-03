@@ -120,6 +120,42 @@ const breadcrumbJsonLd = {
   ],
 };
 
+const faqItems = [
+  {
+    question: "Was kostet ein Fotoshooting in Eisfeld?",
+    answer:
+      "Die Preise hängen von Art, Dauer und Umfang des Shootings ab. Portraits, Autofotos, Hochzeiten und Events werden individuell geplant. Du erhältst nach deiner Anfrage ein unverbindliches Angebot.",
+  },
+  {
+    question: "Wo fotografierst du rund um Eisfeld?",
+    answer:
+      "Ich fotografiere in Eisfeld, Hildburghausen, Coburg, Südthüringen und nach Absprache auch an weiteren Orten in der Umgebung.",
+  },
+  {
+    question: "Wie lange dauert die Bearbeitung der Bilder?",
+    answer:
+      "Die genaue Bearbeitungs- und Lieferzeit hängt vom Shooting ab. Nach Portrait- oder Autofotos erhältst du deine bearbeiteten Bilder in der Regel schneller als bei großen Events oder Hochzeiten.",
+  },
+  {
+    question: "Wie kann ich einen Termin anfragen?",
+    answer:
+      "Am einfachsten nutzt du das Kontaktformular auf der Website. Beschreibe kurz, welche Bilder du brauchst, wo das Shooting stattfinden soll und ob du schon ein Wunschdatum hast.",
+  },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
 const steps = [
   "Anfrage mit Wunsch, Ort und Zeitraum senden.",
   "Gemeinsam passenden Look und Ablauf klären.",
@@ -141,6 +177,10 @@ export default function FotografEisfeldPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
 
       <section className="px-5 py-8">
@@ -194,9 +234,29 @@ export default function FotografEisfeldPage() {
           <div>
             <h2 className="text-3xl font-black">Shootings in Eisfeld</h2>
             <p className="mt-4 leading-8 text-neutral-300">
-              Ob Portrait, Hochzeit, Auto oder Event: Die Fotos sollen nicht
-              nach Standard aussehen, sondern nach dir. Dafür werden Location,
-              Licht, Bildstil und Bearbeitung passend geplant.
+              Felix Wolff ist der Fotograf hinter feliix.wxf. Ich arbeite vor
+              allem in Eisfeld, Hildburghausen, Coburg und Südthüringen und
+              biete Portraitshootings, Hochzeiten, Autofotografie, Events und
+              moderne Bildbearbeitung an. Wichtig ist mir, dass die Bilder nicht
+              nach Standard aussehen, sondern zu dir, deinem Anlass und deiner
+              Umgebung passen.
+            </p>
+            <p className="mt-4 leading-8 text-neutral-300">
+              Ein Shooting in Eisfeld kann draußen, urban, natürlich, am Auto,
+              bei einer Feier oder an einer gemeinsam gewählten Location
+              stattfinden. Vorab klären wir, welchen Look du möchtest, wie viele
+              Bilder du brauchst und ob es besondere Wünsche gibt. Preise gibt
+              es deshalb bewusst auf Anfrage: Ein kurzes Portraitshooting hat
+              einen anderen Umfang als eine Hochzeit, ein Event oder ein
+              komplettes Fahrzeug-Shooting mit Detailaufnahmen.
+            </p>
+            <p className="mt-4 leading-8 text-neutral-300">
+              Nach dem Shooting werden die Bilder sortiert, sauber bearbeitet
+              und digital bereitgestellt. Die Bearbeitungs- und Lieferzeit hängt
+              vom Umfang ab. Bei kleineren Shootings geht es meist schneller,
+              bei Hochzeiten oder Events planen wir den Zeitraum vorher
+              gemeinsam. Wenn du ein Shooting in Eisfeld oder Umgebung anfragen
+              möchtest, erreichst du mich direkt über das Kontaktformular.
             </p>
           </div>
 
@@ -220,22 +280,51 @@ export default function FotografEisfeldPage() {
 
       <section className="px-5 py-14">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-3xl font-black">So läuft eine Anfrage ab</h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-4">
-            {steps.map((step, index) => (
-              <article
-                key={step}
-                className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5"
-              >
-                <p className="text-sm font-black text-yellow-300">
-                  Schritt {index + 1}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-neutral-300">
-                  {step}
-                </p>
-              </article>
-            ))}
+          <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+            <div>
+              <h2 className="text-3xl font-black">So läuft eine Anfrage ab</h2>
+              <p className="mt-4 leading-8 text-neutral-300">
+                Du schickst mir zuerst eine unverbindliche Anfrage. Hilfreich
+                sind Shooting-Art, Ort, Wunschdatum und eine kurze Beschreibung,
+                was du dir vorstellst. Danach besprechen wir den Stil, die
+                Location und den ungefähren Umfang. Erst wenn alles passt,
+                planen wir den Termin konkret.
+              </p>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {steps.map((step, index) => (
+                  <article
+                    key={step}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5"
+                  >
+                    <p className="text-sm font-black text-yellow-300">
+                      Schritt {index + 1}
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-neutral-300">
+                      {step}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-3xl font-black">Häufige Fragen</h2>
+              <div className="mt-8 space-y-4">
+                {faqItems.map((item) => (
+                  <article
+                    key={item.question}
+                    className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5"
+                  >
+                    <h3 className="font-black text-white">{item.question}</h3>
+                    <p className="mt-3 text-sm leading-7 text-neutral-300">
+                      {item.answer}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
+
           <div className="mt-10 flex flex-wrap gap-3">
             <Link
               href="/"
