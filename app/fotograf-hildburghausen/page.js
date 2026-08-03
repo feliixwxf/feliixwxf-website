@@ -23,6 +23,19 @@ const services = [
   },
 ];
 
+const featuredReviews = [
+  {
+    name: "Lukas",
+    stars: 5,
+    text: "Mega entspannte Atmosphäre beim Shooting. Die Bilder wirken natürlich und trotzdem richtig hochwertig.",
+  },
+  {
+    name: "Nele S.",
+    stars: 4.5,
+    text: "Sehr sauber bearbeitet und schnell geliefert. Genau der Look, den ich mir vorgestellt habe.",
+  },
+];
+
 export const metadata = {
   title: "Fotograf in Hildburghausen für Portraits, Hochzeiten & Autos",
   description:
@@ -182,6 +195,14 @@ const steps = [
   "Shooting in Hildburghausen oder Umgebung umsetzen.",
   "Bilder bearbeiten und digital bereitstellen.",
 ];
+
+function ReviewStars({ value }) {
+  return (
+    <span className="text-lg font-black tracking-[0.08em] text-yellow-300">
+      {value >= 5 ? "★★★★★" : "★★★★½"}
+    </span>
+  );
+}
 
 export default function FotografHildburghausenPage() {
   return (
@@ -346,6 +367,27 @@ export default function FotografHildburghausenPage() {
             </div>
           </div>
         </div>
+
+        <div className="mx-auto mt-10 max-w-6xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500">
+            Stimmen von Kunden
+          </p>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            {featuredReviews.map((review) => (
+              <article
+                key={review.name}
+                className="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5"
+              >
+                <ReviewStars value={review.stars} />
+                <p className="mt-4 text-sm leading-7 text-neutral-300">
+                  “{review.text}”
+                </p>
+                <p className="mt-5 font-black text-white">{review.name}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+
         <div className="mx-auto mt-10 flex max-w-6xl flex-wrap gap-3">
           <Link
             href="/"
