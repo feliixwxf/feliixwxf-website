@@ -211,6 +211,30 @@ function getPortfolioImageUrl(image) {
   return normalizePortfolioImage(image).url;
 }
 
+function getPortfolioCoverAlt(item) {
+  const altTexts = {
+    car: "Car Photography von feliix.wxf in Thüringen mit professionellem Autofoto",
+    portrait:
+      "Portraitfotografie von feliix.wxf in Eisfeld, Hildburghausen und Südthüringen",
+    nature:
+      "Nature und Street Photography von feliix.wxf in Thüringen",
+    event:
+      "Eventfotografie von feliix.wxf in Eisfeld, Hildburghausen und Südthüringen",
+  };
+
+  return altTexts[item?.key] || `${item?.title || "Portfolio"} von feliix.wxf`;
+}
+
+function getPortfolioGalleryAlt(categoryTitle, image, index) {
+  const normalizedImage = normalizePortfolioImage(image);
+
+  if (normalizedImage.title) {
+    return `${normalizedImage.title} - ${categoryTitle} von feliix.wxf`;
+  }
+
+  return `${categoryTitle} Portfoliofoto ${index + 1} von feliix.wxf`;
+}
+
 function MaintenanceView({ siteSettings }) {
   const contactEmailHref = `mailto:${siteSettings.contact_email}`;
   const contactPhoneHref = `tel:${siteSettings.contact_phone.replace(/[^\d+]/g, "")}`;
@@ -1026,7 +1050,7 @@ export default function FeliixWxfPhotography() {
               >
                 <img
                   src={imageUrl}
-                  alt=""
+                  alt={getPortfolioGalleryAlt(current.title, image, index)}
                   loading="lazy"
                   decoding="async"
                   sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -1104,7 +1128,11 @@ export default function FeliixWxfPhotography() {
               >
                 <img
                   src={getPortfolioImageUrl(selectedPortfolioImage)}
-                  alt=""
+                  alt={getPortfolioGalleryAlt(
+                    current.title,
+                    selectedPortfolioImage,
+                    selectedPortfolioImageIndex
+                  )}
                   className={`mx-auto max-h-[88vh] w-auto max-w-[calc(100vw-2rem)] rounded-[1.5rem] object-contain shadow-2xl transition-transform duration-200 ${
                     portfolioImageZoomed
                       ? "scale-[1.45] md:scale-[1.25]"
@@ -1282,7 +1310,7 @@ export default function FeliixWxfPhotography() {
               >
                 <img
                   src={siteAssetImageUrl("hero_after")}
-                  alt="Nachher"
+                  alt="Bearbeitetes Portraitfoto von feliix.wxf mit moderner Bildbearbeitung"
                   draggable="false"
                   loading="eager"
                   decoding="async"
@@ -1299,7 +1327,7 @@ export default function FeliixWxfPhotography() {
                 >
                   <img
                     src={siteAssetImageUrl("hero_before")}
-                    alt="Vorher"
+                    alt="Unbearbeitetes Portraitfoto vor der Bildbearbeitung von feliix.wxf"
                     draggable="false"
                     loading="eager"
                     decoding="async"
@@ -1402,7 +1430,7 @@ export default function FeliixWxfPhotography() {
                   <div className="aspect-[3/4] shrink-0 overflow-hidden bg-black/20">
                     <img
                       src={item.image}
-                      alt={item.title}
+                      alt={getPortfolioCoverAlt(item)}
                       loading={index < 2 ? "eager" : "lazy"}
                       decoding="async"
                       fetchPriority={index === 0 ? "high" : "auto"}
