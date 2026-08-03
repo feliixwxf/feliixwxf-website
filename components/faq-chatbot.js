@@ -93,9 +93,9 @@ export default function FaqChatbot({ dark }) {
         {open && (
           <motion.section
             layout
-            initial={{ opacity: 0, y: 22, scale: 0.94, filter: "blur(6px)" }}
+            initial={{ opacity: 0, y: 22, scale: 0.94 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 14, scale: 0.96, filter: "blur(4px)" }}
+            exit={{ opacity: 0, y: 14, scale: 0.96 }}
             transition={panelTransition}
             role="dialog"
             aria-label="Häufige Fragen zum Shooting"
