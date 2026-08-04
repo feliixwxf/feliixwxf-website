@@ -1,9 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowRight,
+  Calendar,
+  CheckCircle2,
   Download,
   Eye,
   EyeOff,
@@ -15,15 +20,19 @@ import {
   Mail,
   Moon,
   Phone,
+  PlusCircle,
   RefreshCw,
+  ShieldCheck,
+  Sparkles,
   Sun,
   Trash2,
   Upload,
-  UserRound,
   UserPlus,
+  UserRound,
 } from "lucide-react";
-import Link from "next/link";
 import ReportUserErrorButton from "@/components/report-user-error-button";
+
+const LOUNGE_IMAGE = "/images/abititel.jpg";
 
 function formatDate(value) {
   if (!value) return "";
@@ -35,20 +44,6 @@ function formatDate(value) {
   });
 }
 
-function getGalleryStatus(gallery) {
-  if (gallery?.status === "completed") {
-    return {
-      label: "Abgeschlossen",
-      className: "bg-sky-300 text-neutral-950",
-    };
-  }
-
-  return {
-    label: "Aktiv",
-    className: "bg-emerald-400 text-neutral-950",
-  };
-}
-
 function normalizeCode(value) {
   return String(value || "")
     .trim()
@@ -57,14 +52,121 @@ function normalizeCode(value) {
     .slice(0, 32);
 }
 
+function isPastDate(value) {
+  if (!value) return false;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  return date < new Date();
+}
+
+function getGalleryStatus(gallery) {
+  if (isPastDate(gallery?.expires_at)) {
+    return {
+      label: "Abgelaufen",
+      className: "border-red-300/25 bg-red-400/12 text-red-100",
+    };
+  }
+
+  if (gallery?.downloads_enabled || gallery?.archive_download_url) {
+    return {
+      label: "Download verfügbar",
+      className: "border-emerald-300/25 bg-emerald-400/12 text-emerald-100",
+    };
+  }
+
+  if ((gallery?.favorite_count || 0) > 0) {
+    return {
+      label: "Auswahl offen",
+      className: "border-yellow-300/25 bg-yellow-400/12 text-yellow-100",
+    };
+  }
+
+  if (gallery?.status === "completed") {
+    return {
+      label: "Abgeschlossen",
+      className: "border-sky-300/25 bg-sky-400/12 text-sky-100",
+    };
+  }
+
+  return {
+    label: "Neu",
+    className: "border-white/10 bg-white/8 text-neutral-200",
+  };
+}
+
+function GalleryImage({ src, alt = "", className = "", sizes = "100vw" }) {
+  if (!src) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-neutral-900 text-neutral-600 ${className}`}
+      >
+        <ImageIcon className="h-7 w-7" />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      sizes={sizes}
+      unoptimized={String(src).startsWith("http")}
+      className={className}
+    />
+  );
+}
+
+function MessageBox({ message, type, page, source }) {
+  if (!message) return null;
+
+  const style =
+    type === "success"
+      ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-50"
+      : type === "error"
+        ? "border-red-300/25 bg-red-500/10 text-red-50"
+        : "border-yellow-300/25 bg-yellow-400/10 text-yellow-50";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      role="status"
+      aria-live="polite"
+      className={`rounded-2xl border px-4 py-3 text-sm shadow-lg shadow-black/10 ${style}`}
+    >
+      <p className="leading-6">{message}</p>
+      {type === "error" && (
+        <ReportUserErrorButton page={page} source={source} message={message} />
+      )}
+    </motion.div>
+  );
+}
+
+function SkeletonGalleryCard() {
+  return (
+    <div className="overflow-hidden rounded-[1.35rem] border border-white/10 bg-white/[0.05]">
+      <div className="h-48 animate-pulse bg-white/[0.07]" />
+      <div className="space-y-3 p-4">
+        <div className="h-4 w-2/3 animate-pulse rounded-full bg-white/[0.08]" />
+        <div className="h-3 w-1/2 animate-pulse rounded-full bg-white/[0.08]" />
+        <div className="h-10 animate-pulse rounded-2xl bg-white/[0.08]" />
+      </div>
+    </div>
+  );
+}
+
 export default function AccountPage() {
-  const accountFormStartedAtRef = useRef(Date.now());
+  const accountFormStartedAtRef = useRef(0);
+  const prefersReducedMotion = useReducedMotion();
   const [mode, setMode] = useState("login");
   const [user, setUser] = useState(null);
   const [galleries, setGalleries] = useState([]);
   const [galleryCode, setGalleryCode] = useState("");
   const [galleryFilter, setGalleryFilter] = useState("all");
   const [accountSection, setAccountSection] = useState("galleries");
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -96,40 +198,12 @@ export default function AccountPage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
 
+  const dark = theme === "dark";
+
   const showMessage = (text, type = "info") => {
     setMessage(text);
     setMessageType(type);
   };
-
-  const messageStyle =
-    messageType === "success"
-      ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
-      : messageType === "error"
-        ? "border-red-400/30 bg-red-500/10 text-red-100"
-        : "border-yellow-400/30 bg-yellow-400/10 text-yellow-100";
-
-  const dark = theme === "dark";
-  const pageStyle = dark
-    ? "bg-[linear-gradient(135deg,#070707,#161616,#222)] text-white"
-    : "bg-[linear-gradient(135deg,#aeb7c2,#c6ccd4_45%,#9ea8b5)] text-slate-950";
-  const panelStyle = dark
-    ? "border-white/10 bg-white/[0.04] shadow-2xl"
-    : "border-slate-500/45 bg-slate-200/88 shadow-[0_24px_80px_rgba(15,23,42,0.22)]";
-  const softPanelStyle = dark
-    ? "border-white/10 bg-white/[0.06]"
-    : "border-slate-500/50 bg-slate-100/88 shadow-[0_14px_40px_rgba(15,23,42,0.14)]";
-  const subtlePanelStyle = dark
-    ? "border-white/10 bg-black/25"
-    : "border-slate-500/45 bg-slate-300/55";
-  const muted = dark ? "text-neutral-400" : "text-neutral-600";
-  const softMuted = dark ? "text-neutral-300" : "text-neutral-700";
-  const titleText = dark ? "text-white" : "text-neutral-950";
-  const backButtonStyle = dark
-    ? "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
-    : "border-slate-400/60 bg-slate-100 text-slate-800 shadow-sm hover:bg-white";
-  const themeButtonStyle = dark
-    ? "border-white/10 bg-white/10 text-neutral-200 hover:bg-white/15"
-    : "border-slate-400/60 bg-slate-100 text-slate-800 shadow-sm hover:bg-white";
 
   const updateForm = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -147,6 +221,7 @@ export default function AccountPage() {
     setResetTokens({ accessToken: "", refreshToken: "" });
     setNewPassword("");
     setMessage("");
+    accountFormStartedAtRef.current = Date.now();
   };
 
   const toggleTheme = () => {
@@ -181,7 +256,7 @@ export default function AccountPage() {
       return false;
     }
 
-    if (!response.ok && response.status === 409) {
+    if (response.status === 409) {
       showMessage(data.error || "Galerie ist bereits anders verknüpft.", "error");
     }
 
@@ -196,7 +271,7 @@ export default function AccountPage() {
 
     if (!response.ok) {
       setGalleries([]);
-      showMessage(data.error || "Galerien konnten nicht geladen werden.", "error");
+      showMessage("Galerien konnten gerade nicht geladen werden.", "error");
       return;
     }
 
@@ -230,10 +305,6 @@ export default function AccountPage() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("feliix-theme");
-    if (savedTheme === "light" || savedTheme === "dark") {
-      setTheme(savedTheme);
-    }
-
     const params = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const confirmed = params.get("verified") === "1";
@@ -244,23 +315,31 @@ export default function AccountPage() {
     const error =
       params.get("error_description") || hashParams.get("error_description");
 
-    if (recoveryType === "recovery" && accessToken) {
-      setResetTokens({ accessToken, refreshToken });
-      setMode("resetConfirm");
-      showMessage("Bitte vergib jetzt dein neues Passwort.", "success");
-      window.history.replaceState(null, "", "/konto?reset=1");
-    } else if (confirmed) {
-      showMessage("E-Mail wurde bestätigt. Du kannst dich jetzt einloggen.", "success");
-      window.history.replaceState(null, "", "/konto");
-    } else if (resetRequested) {
-      setMode("resetRequest");
-      showMessage("Gib deine E-Mail ein, um eine Reset-Mail zu erhalten.", "info");
-    } else if (error) {
-      showMessage(decodeURIComponent(error).replace(/\+/g, " "), "error");
-      window.history.replaceState(null, "", "/konto");
-    }
+    queueMicrotask(() => {
+      accountFormStartedAtRef.current = Date.now();
 
-    loadSession();
+      if (savedTheme === "light" || savedTheme === "dark") {
+        setTheme(savedTheme);
+      }
+
+      if (recoveryType === "recovery" && accessToken) {
+        setResetTokens({ accessToken, refreshToken });
+        setMode("resetConfirm");
+        showMessage("Bitte vergib jetzt dein neues Passwort.", "success");
+        window.history.replaceState(null, "", "/konto?reset=1");
+      } else if (confirmed) {
+        showMessage("E-Mail wurde bestätigt. Du kannst dich jetzt einloggen.", "success");
+        window.history.replaceState(null, "", "/konto");
+      } else if (resetRequested) {
+        setMode("resetRequest");
+        showMessage("Gib deine E-Mail ein, um eine Reset-Mail zu erhalten.", "info");
+      } else if (error) {
+        showMessage(decodeURIComponent(error).replace(/\+/g, " "), "error");
+        window.history.replaceState(null, "", "/konto");
+      }
+
+      loadSession();
+    });
   }, []);
 
   const submitAccount = async (event) => {
@@ -292,7 +371,7 @@ export default function AccountPage() {
         body: JSON.stringify({
           ...form,
           website: formData.get("website") || "",
-          startedAt: accountFormStartedAtRef.current,
+          startedAt: accountFormStartedAtRef.current || Date.now(),
         }),
       }
     );
@@ -326,6 +405,19 @@ export default function AccountPage() {
     await loadGalleries();
     accountFormStartedAtRef.current = Date.now();
     setSubmitting(false);
+  };
+
+  const openGalleryCode = (event) => {
+    event.preventDefault();
+    const code = normalizeCode(galleryCode);
+
+    if (!code) {
+      showMessage("Bitte gib deinen Galeriecode ein.", "error");
+      return;
+    }
+
+    localStorage.setItem("feliix-client-gallery-code", code);
+    window.location.assign(`/kunden?code=${encodeURIComponent(code)}`);
   };
 
   const requestPasswordReset = async (event) => {
@@ -444,6 +536,8 @@ export default function AccountPage() {
     setProfilePhone("");
     setAvatarPreview("");
     setGalleries([]);
+    setProfileMenuOpen(false);
+    setAccountSection("galleries");
     showMessage("Du wurdest ausgeloggt.", "success");
   };
 
@@ -454,7 +548,10 @@ export default function AccountPage() {
     }
 
     if (!deleteDataAccepted) {
-      showMessage("Bitte bestätige per Haken, dass deine Kontodaten gelöscht werden sollen.", "error");
+      showMessage(
+        "Bitte bestätige per Haken, dass deine Kontodaten gelöscht werden sollen.",
+        "error"
+      );
       return;
     }
 
@@ -557,7 +654,7 @@ export default function AccountPage() {
     const code = normalizeCode(galleryCode);
 
     if (!code) {
-      showMessage("Bitte einen Galerie-Code eingeben.", "error");
+      showMessage("Bitte einen Galeriecode eingeben.", "error");
       return;
     }
 
@@ -590,9 +687,9 @@ export default function AccountPage() {
 
   const openGallery = (gallery) => {
     localStorage.setItem("feliix-client-gallery-code", gallery.access_code);
-    window.location.href = `/kunden?code=${encodeURIComponent(
-      gallery.access_code
-    )}`;
+    window.location.assign(
+      `/kunden?code=${encodeURIComponent(gallery.access_code)}`
+    );
   };
 
   const activeGalleries = galleries.filter(
@@ -604,31 +701,24 @@ export default function AccountPage() {
   const downloadableGalleries = galleries.filter(
     (gallery) => gallery.downloads_enabled
   );
-  const visibleActiveGalleries = activeGalleries.filter((gallery) => {
-    if (galleryFilter === "completed") return false;
+  const visibleGalleries = galleries.filter((gallery) => {
+    if (galleryFilter === "active") return gallery.status !== "completed";
+    if (galleryFilter === "completed") return gallery.status === "completed";
     if (galleryFilter === "downloads") return gallery.downloads_enabled;
     return true;
   });
-  const visibleCompletedGalleries = completedGalleries.filter((gallery) => {
-    if (galleryFilter === "active") return false;
-    if (galleryFilter === "downloads") return gallery.downloads_enabled;
-    return true;
-  });
-  const visibleGalleryCount =
-    visibleActiveGalleries.length + visibleCompletedGalleries.length;
   const galleryFilters = [
     { key: "all", label: "Alle", count: galleries.length },
     { key: "active", label: "Aktiv", count: activeGalleries.length },
     {
       key: "completed",
-      label: "Abgeschlossen",
+      label: "Fertig",
       count: completedGalleries.length,
     },
     { key: "downloads", label: "Downloads", count: downloadableGalleries.length },
   ];
   const accountHeroGallery =
-    activeGalleries.find((gallery) => gallery.cover_url) ||
-    completedGalleries.find((gallery) => gallery.cover_url);
+    galleries.find((gallery) => gallery.cover_url) || galleries[0];
   const accountDisplayName =
     String(user?.name || "").trim() ||
     String(galleries.find((gallery) => gallery.client_name)?.client_name || "").trim() ||
@@ -638,1029 +728,1057 @@ export default function AccountPage() {
       .trim();
   const accountGreeting = accountDisplayName
     ? `Hallo, ${accountDisplayName}.`
-    : "Dein Konto.";
-  const accountIntro = user
-    ? "Deine Shootings, Bilder und Downloads gesammelt an einem ruhigen Ort."
-    : "Melde dich an, um deine freigegebenen Galerien gesammelt an einem Ort zu sehen.";
+    : "Hallo.";
+  const inputClass =
+    "mt-2 h-14 w-full rounded-2xl border border-white/10 bg-[#202020] px-4 text-[0.95rem] text-white outline-none transition placeholder:text-neutral-600 focus:border-yellow-400 focus:bg-[#242424] focus:ring-2 focus:ring-yellow-400/15";
+  const iconInputClass =
+    "h-14 w-full rounded-2xl border border-white/10 bg-[#202020] py-3 pl-12 pr-14 text-[0.95rem] text-white outline-none transition placeholder:text-neutral-600 focus:border-yellow-400 focus:bg-[#242424] focus:ring-2 focus:ring-yellow-400/15";
+  const primaryButtonClass =
+    "inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-yellow-400 px-5 text-sm font-black text-black shadow-[0_18px_60px_rgba(250,204,21,0.16)] transition hover:-translate-y-0.5 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-60";
+  const secondaryButtonClass =
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-bold text-neutral-200 transition hover:border-white/18 hover:bg-white/[0.1] focus:outline-none focus:ring-2 focus:ring-yellow-300/60 disabled:cursor-not-allowed disabled:opacity-60";
+  const mediaMotion = prefersReducedMotion
+    ? {}
+    : {
+        scale: [1, 1.045, 1.02],
+        x: [0, -8, 0],
+        y: [0, 6, 0],
+      };
 
-  return (
-    <main className={`min-h-screen px-3 py-3 sm:px-5 sm:py-8 ${pageStyle}`}>
-      <div className="mx-auto max-w-7xl">
-        <div className="flex items-center justify-between gap-3">
-          <Link
-            href="/"
-            className={`inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${backButtonStyle}`}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Zur Website
-          </Link>
+  const renderLoginForm = () => (
+    <form method="post" onSubmit={submitAccount} className="grid gap-4">
+      <label className="sr-only" aria-hidden="true">
+        Website
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+      </label>
 
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">E-Mail</span>
+        <div className="relative mt-2">
+          <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+          <input
+            type="email"
+            value={form.email}
+            onChange={(event) => updateForm("email", event.target.value)}
+            placeholder="kunde@example.com"
+            autoComplete="email"
+            className={iconInputClass}
+          />
+        </div>
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">Passwort</span>
+        <div className="relative mt-2">
+          <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+          <input
+            type={showPassword ? "text" : "password"}
+            value={form.password}
+            onChange={(event) => updateForm("password", event.target.value)}
+            autoComplete="current-password"
+            placeholder="Dein Passwort"
+            className={iconInputClass}
+          />
           <button
             type="button"
-            onClick={toggleTheme}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition sm:w-auto sm:px-4 ${themeButtonStyle}`}
-            aria-label="Darstellung wechseln"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => setShowPassword((current) => !current)}
+            className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-300/60"
+            aria-pressed={showPassword}
+            aria-label={showPassword ? "Passwort ausblenden" : "Passwort anzeigen"}
           >
-            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            <span className="ml-2 hidden text-sm font-semibold sm:inline">
-              {dark ? "Hell" : "Dunkel"}
-            </span>
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
+      </label>
 
-        <section className={`mt-3 overflow-hidden rounded-[1.15rem] border backdrop-blur-xl sm:mt-7 sm:rounded-[2rem] ${panelStyle}`}>
-          <div className="grid gap-3 p-2 sm:gap-5 sm:p-5">
-            <div className={`relative overflow-hidden rounded-[1rem] border p-3 sm:rounded-[1.5rem] sm:p-5 ${user ? "hidden" : ""} ${dark ? "border-white/10 bg-black/30" : "border-black/10 bg-white/70"}`}>
-              {accountHeroGallery?.cover_url && (
-                <img
-                  src={accountHeroGallery.cover_url}
-                  alt=""
-                  className="absolute inset-0 h-full w-full scale-105 object-cover opacity-10 blur-sm"
-                />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-br from-black via-black/85 to-black/65" />
-              <div className="relative">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:h-12 sm:w-12 sm:rounded-2xl">
-                    {user && avatarPreview ? (
-                      <img
-                        src={avatarPreview}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <Lock className="h-5 w-5" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs uppercase tracking-[0.22em] text-neutral-500">
-                      Kundenkonto
-                    </p>
-                    {user && (
-                      <p className={`mt-1 truncate text-sm ${softMuted}`}>
-                        {user.email}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <motion.h1
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.45, ease: "easeOut" }}
-                  className="mt-4 text-2xl font-black leading-tight sm:mt-6 sm:text-3xl"
-                >
-                  {accountGreeting}
-                </motion.h1>
-                <p className="mt-2 text-sm leading-6 text-neutral-400 sm:mt-3">
-                  {accountIntro}
-                </p>
+      <button
+        type="button"
+        onClick={showPasswordResetRequest}
+        className="w-fit text-sm font-bold text-neutral-400 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white focus:outline-none focus:ring-2 focus:ring-yellow-300/60"
+      >
+        Passwort vergessen?
+      </button>
 
-              </div>
-            </div>
+      <button type="submit" disabled={submitting} className={primaryButtonClass}>
+        {submitting ? (
+          <RefreshCw className="h-5 w-5 animate-spin" />
+        ) : (
+          <Lock className="h-5 w-5" />
+        )}
+        {submitting ? "Bitte warten..." : "Zu meinen Galerien"}
+      </button>
 
-            {message && (
-              <div
-                className={`rounded-2xl border px-4 py-3 text-sm ${messageStyle}`}
-              >
-                <p className="leading-6">{message}</p>
-                {messageType === "error" && (
-                  <ReportUserErrorButton
-                    page="/konto"
-                    source="Kundenkonto"
-                    message={message}
-                  />
-                )}
-              </div>
+      <p className="text-center text-sm text-neutral-400">
+        Noch kein Konto?{" "}
+        <button
+          type="button"
+          onClick={() => {
+            setMode("register");
+            setMessage("");
+            accountFormStartedAtRef.current = Date.now();
+          }}
+          className="font-black text-yellow-300 underline decoration-yellow-300/30 underline-offset-4 transition hover:text-yellow-200"
+        >
+          Konto erstellen
+        </button>
+      </p>
+    </form>
+  );
+
+  const renderCodeForm = (variant = "public") => (
+    <form
+      method="post"
+      onSubmit={variant === "account" ? linkGalleryByCode : openGalleryCode}
+      className="grid gap-4"
+    >
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">Galeriecode</span>
+        <div className="relative mt-2">
+          <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+          <input
+            value={galleryCode}
+            onChange={(event) => {
+              setGalleryCode(event.target.value.toUpperCase());
+              setMessage("");
+            }}
+            placeholder="z. B. GAL-ABC123"
+            className={`${iconInputClass} font-black tracking-[0.08em]`}
+          />
+        </div>
+      </label>
+      <p className="text-sm leading-6 text-neutral-500">
+        Den Code findest du in deiner persönlichen Nachricht.
+      </p>
+      <button
+        type="submit"
+        disabled={variant === "account" ? linkingGallery : false}
+        className={primaryButtonClass}
+      >
+        {variant === "account" && linkingGallery ? (
+          <RefreshCw className="h-5 w-5 animate-spin" />
+        ) : (
+          <ImageIcon className="h-5 w-5" />
+        )}
+        {variant === "account"
+          ? linkingGallery
+            ? "Verknüpfe..."
+            : "Galerie hinzufügen"
+          : "Private Galerie öffnen"}
+      </button>
+    </form>
+  );
+
+  const renderRegisterForm = () => (
+    <form method="post" onSubmit={submitAccount} className="grid gap-4">
+      <label className="sr-only" aria-hidden="true">
+        Website
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">
+          Name oder Benutzername
+        </span>
+        <input
+          value={form.name}
+          onChange={(event) => updateForm("name", event.target.value)}
+          required
+          placeholder="z. B. Felix"
+          autoComplete="name"
+          className={inputClass}
+        />
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">E-Mail</span>
+        <div className="relative mt-2">
+          <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+          <input
+            type="email"
+            value={form.email}
+            onChange={(event) => updateForm("email", event.target.value)}
+            placeholder="kunde@example.com"
+            autoComplete="email"
+            className={iconInputClass}
+          />
+        </div>
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">Passwort</span>
+        <div className="relative mt-2">
+          <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+          <input
+            type={showPassword ? "text" : "password"}
+            value={form.password}
+            onChange={(event) => updateForm("password", event.target.value)}
+            autoComplete="new-password"
+            placeholder="Mindestens 8 Zeichen"
+            className={iconInputClass}
+          />
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => setShowPassword((current) => !current)}
+            className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-300/60"
+            aria-pressed={showPassword}
+            aria-label={showPassword ? "Passwort ausblenden" : "Passwort anzeigen"}
+          >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
+      </label>
+
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">
+          Telefonnummer optional
+        </span>
+        <div className="relative mt-2">
+          <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+          <input
+            type="tel"
+            value={form.phone}
+            onChange={(event) => updateForm("phone", event.target.value)}
+            placeholder="+49 ..."
+            autoComplete="tel"
+            className={iconInputClass}
+          />
+        </div>
+      </label>
+
+      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-sm leading-6 text-neutral-300">
+        <input
+          type="checkbox"
+          checked={form.privacyAccepted}
+          onChange={(event) =>
+            updateForm("privacyAccepted", event.target.checked)
+          }
+          className="mt-1 h-4 w-4 rounded border-white/20 accent-yellow-400"
+        />
+        <span>
+          Ich habe die{" "}
+          <Link
+            href="/datenschutz"
+            className="font-bold text-white underline decoration-white/40 underline-offset-4 transition hover:decoration-white"
+          >
+            Datenschutzhinweise
+          </Link>{" "}
+          zur Kenntnis genommen.
+        </span>
+      </label>
+
+      <button type="submit" disabled={submitting} className={primaryButtonClass}>
+        {submitting ? (
+          <RefreshCw className="h-5 w-5 animate-spin" />
+        ) : (
+          <UserPlus className="h-5 w-5" />
+        )}
+        {submitting ? "Bitte warten..." : "Konto erstellen"}
+      </button>
+
+      <button
+        type="button"
+        onClick={showLoginForm}
+        className="text-sm font-bold text-neutral-400 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white focus:outline-none focus:ring-2 focus:ring-yellow-300/60"
+      >
+        Zurück zur Anmeldung
+      </button>
+    </form>
+  );
+
+  const renderResetRequest = () => (
+    <form method="post" onSubmit={requestPasswordReset} className="grid gap-4">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+        <p className="text-xs font-black uppercase tracking-[0.24em] text-neutral-500">
+          Passwort vergessen
+        </p>
+        <h2 className="mt-2 text-2xl font-black text-white">
+          Reset-Link per E-Mail
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-neutral-400">
+          Gib deine E-Mail-Adresse ein. Wenn dein Konto existiert, bekommst du
+          einen Link zum Zurücksetzen.
+        </p>
+      </div>
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">E-Mail</span>
+        <div className="relative mt-2">
+          <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+          <input
+            type="email"
+            value={resetEmail}
+            onChange={(event) => {
+              setResetEmail(event.target.value);
+              setMessage("");
+            }}
+            placeholder="kunde@example.com"
+            className={iconInputClass}
+          />
+        </div>
+      </label>
+      <button type="submit" disabled={submitting} className={primaryButtonClass}>
+        {submitting ? (
+          <RefreshCw className="h-5 w-5 animate-spin" />
+        ) : (
+          <Mail className="h-5 w-5" />
+        )}
+        {submitting ? "Sende..." : "Passwort zurücksetzen"}
+      </button>
+      <button
+        type="button"
+        onClick={showLoginForm}
+        className="text-sm font-bold text-neutral-400 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white"
+      >
+        Zurück zum Login
+      </button>
+    </form>
+  );
+
+  const renderResetConfirm = () => (
+    <form method="post" onSubmit={confirmPasswordReset} className="grid gap-4">
+      <div className="rounded-2xl border border-yellow-300/20 bg-yellow-400/10 p-4">
+        <p className="text-xs font-black uppercase tracking-[0.24em] text-yellow-100/70">
+          Passwort zurücksetzen
+        </p>
+        <h2 className="mt-2 text-2xl font-black text-white">
+          Neues Passwort vergeben
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-yellow-50/75">
+          Dein Reset-Link wurde erkannt. Gib jetzt dein neues Passwort ein.
+        </p>
+      </div>
+      <label className="block">
+        <span className="text-sm font-semibold text-neutral-300">
+          Neues Passwort
+        </span>
+        <div className="relative mt-2">
+          <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
+          <input
+            type={showNewPassword ? "text" : "password"}
+            value={newPassword}
+            onChange={(event) => {
+              setNewPassword(event.target.value);
+              setMessage("");
+            }}
+            autoComplete="new-password"
+            placeholder="Mindestens 8 Zeichen"
+            className={iconInputClass}
+          />
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => setShowNewPassword((current) => !current)}
+            className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-300/60"
+            aria-pressed={showNewPassword}
+            aria-label={
+              showNewPassword ? "Passwort ausblenden" : "Passwort anzeigen"
+            }
+          >
+            {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
+      </label>
+      <button type="submit" disabled={submitting} className={primaryButtonClass}>
+        {submitting ? (
+          <RefreshCw className="h-5 w-5 animate-spin" />
+        ) : (
+          <KeyRound className="h-5 w-5" />
+        )}
+        {submitting ? "Bitte warten..." : "Passwort speichern"}
+      </button>
+      <button
+        type="button"
+        onClick={showLoginForm}
+        className="text-sm font-bold text-neutral-400 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white"
+      >
+        Zurück zum Login
+      </button>
+    </form>
+  );
+
+  return (
+    <main
+      className={`min-h-screen overflow-x-hidden px-4 py-5 sm:px-6 sm:py-8 ${
+        dark
+          ? "bg-[#080808] text-white"
+          : "bg-[linear-gradient(135deg,#8f98a5,#c2c7ce_48%,#949fac)] text-white"
+      }`}
+    >
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(250,204,21,0.14),transparent_30%),radial-gradient(circle_at_86%_20%,rgba(255,255,255,0.09),transparent_26%),linear-gradient(135deg,rgba(255,255,255,0.03),transparent)]" />
+
+      <div className="mx-auto max-w-[1200px]">
+        <motion.section
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+          className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#151515]/92 shadow-[0_30px_120px_rgba(0,0,0,0.42)] backdrop-blur-2xl md:rounded-[2rem] lg:grid lg:min-h-[720px] lg:grid-cols-[0.54fr_0.46fr]"
+        >
+          <aside className="relative min-h-[190px] overflow-hidden md:min-h-[230px] lg:min-h-full">
+            <motion.div
+              className="absolute inset-0"
+              animate={mediaMotion}
+              transition={{
+                duration: 18,
+                repeat: Infinity,
+                repeatType: "mirror",
+                ease: "easeInOut",
+              }}
+            >
+              <Image
+                src={accountHeroGallery?.cover_url || LOUNGE_IMAGE}
+                alt="Private Kundengalerie von feliix.wxf"
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, 648px"
+                unoptimized={Boolean(accountHeroGallery?.cover_url)}
+                className="object-cover"
+              />
+            </motion.div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/20 lg:bg-gradient-to-br lg:from-black/92 lg:via-black/38 lg:to-black/12" />
+            <div className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:18px_18px]" />
+            {!prefersReducedMotion && (
+              <motion.div
+                aria-hidden="true"
+                className="absolute -left-1/3 top-0 h-full w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/12 to-transparent blur-2xl"
+                animate={{ x: ["0%", "260%"] }}
+                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+              />
             )}
 
-            <div className="rounded-[1rem] border-0 border-white/10 bg-transparent p-0">
-              {loading ? (
-                <div className="flex min-h-64 items-center justify-center">
-                  <RefreshCw className="h-7 w-7 animate-spin text-neutral-300" />
-                </div>
-              ) : user ? (
-                <div className="grid gap-4 lg:grid-cols-[310px_1fr] xl:grid-cols-[340px_1fr]">
-                  <aside className={`rounded-[1.35rem] border p-4 sm:p-5 lg:sticky lg:top-5 lg:self-start ${softPanelStyle}`}>
-                    <div className="flex items-center gap-4 lg:block">
-                      <div className={`flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[1.25rem] border sm:h-24 sm:w-24 lg:h-28 lg:w-28 ${dark ? "border-white/10 bg-white/10" : "border-slate-300 bg-slate-200"}`}>
-                        {avatarPreview ? (
-                          <img
-                            src={avatarPreview}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <UserRound className="h-9 w-9 text-neutral-400" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1 lg:mt-5">
-                        <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
-                          Kundenkonto
-                        </p>
-                        <h1 className={`mt-2 text-2xl font-black leading-tight sm:text-3xl ${titleText}`}>
-                          {accountDisplayName || "Willkommen"}
-                        </h1>
-                        <p className={`mt-1 truncate text-sm ${muted}`}>
-                          {user.email}
-                        </p>
-                      </div>
-                    </div>
+            <div className="relative flex h-full min-h-[190px] flex-col justify-end p-5 md:min-h-[230px] md:p-8 lg:min-h-full lg:p-10">
+              <Link
+                href="/"
+                className="absolute left-5 top-5 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-black/25 px-4 text-sm font-bold text-white backdrop-blur transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-yellow-300/70"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Website
+              </Link>
 
-                    <div className="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-1">
+              <div className="max-w-md">
+                <p className="text-xs font-black uppercase tracking-[0.32em] text-yellow-200/90">
+                  Private Client Lounge
+                </p>
+                <h1 className="mt-4 text-3xl font-black leading-tight text-white md:text-5xl">
+                  Deine Bilder.
+                  <br />
+                  Dein persönlicher Bereich.
+                </h1>
+                <p className="mt-4 max-w-sm text-sm leading-7 text-neutral-200 md:text-base">
+                  Private Galerien, Favoriten und Downloads an einem Ort.
+                </p>
+                <div className="mt-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                  {[
+                    [ShieldCheck, "Privat geschützt"],
+                    [Heart, "Favoriten speichern"],
+                    [Download, "Bilder herunterladen"],
+                  ].map(([Icon, label]) => (
+                    <div
+                      key={label}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-white/10 px-3 text-xs font-bold text-white/90 backdrop-blur"
+                    >
+                      <Icon className="h-4 w-4 text-yellow-300" />
+                      {label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <section className="flex min-h-[560px] flex-col bg-[#111]/95 p-5 sm:p-8 lg:p-10">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-neutral-500">
+                  Kundenbereich
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-white md:text-3xl">
+                  {user ? accountGreeting : "Schön, dass du da bist."}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-neutral-200 transition hover:bg-white/[0.1] focus:outline-none focus:ring-2 focus:ring-yellow-300/60"
+                aria-label="Dark- oder Whitemode wechseln"
+              >
+                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+            </div>
+
+            <p className="mt-4 max-w-md text-sm leading-7 text-neutral-400">
+              {user
+                ? "Hier findest du deine privaten Shootings, Favoriten und freigegebenen Downloads."
+                : "Melde dich an oder öffne deine Galerie direkt mit deinem persönlichen Code."}
+            </p>
+
+            <div className="mt-6">
+              <AnimatePresence mode="wait">
+                {message && (
+                  <MessageBox
+                    key={`${messageType}-${message}`}
+                    message={message}
+                    type={messageType}
+                    page="/konto"
+                    source="Kundenkonto"
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {loading ? (
+              <div className="mt-8 grid gap-4" aria-live="polite">
+                <SkeletonGalleryCard />
+                <SkeletonGalleryCard />
+              </div>
+            ) : user ? (
+              <div className="mt-7 flex flex-1 flex-col">
+                <header className="flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/[0.07]">
+                      {avatarPreview ? (
+                        <img
+                          src={avatarPreview}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <UserRound className="h-5 w-5 text-neutral-400" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-black text-white">feliix.wxf</p>
+                      <p className="truncate text-sm text-neutral-500">{user.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                    <Link href="/" className={secondaryButtonClass}>
+                      Zur Website
+                    </Link>
+                    <div className="relative">
                       <button
                         type="button"
-                        onClick={() => setAccountSection("galleries")}
-                        className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition ${
-                          accountSection === "galleries"
-                            ? "bg-white text-neutral-950 shadow-xl"
-                            : dark
-                              ? "bg-white/[0.07] text-neutral-200 hover:bg-white/[0.11]"
-                              : "bg-slate-100 text-slate-800 hover:bg-white"
-                        }`}
-                      >
-                        <ImageIcon className="h-4 w-4" />
-                        Galerien
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAccountSection("profile")}
-                        className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition ${
-                          accountSection === "profile"
-                            ? "bg-white text-neutral-950 shadow-xl"
-                            : dark
-                              ? "bg-white/[0.07] text-neutral-200 hover:bg-white/[0.11]"
-                              : "bg-slate-100 text-slate-800 hover:bg-white"
-                        }`}
+                        onClick={() => setProfileMenuOpen((current) => !current)}
+                        className={`${secondaryButtonClass} w-full`}
+                        aria-expanded={profileMenuOpen}
                       >
                         <UserRound className="h-4 w-4" />
                         Profil
                       </button>
-                    </div>
-
-                    <div className={`mt-4 rounded-2xl border p-3 ${subtlePanelStyle}`}>
-                      <div className="grid grid-cols-3 gap-2 text-center">
-                        <div>
-                          <p className={`text-base font-black sm:text-lg ${titleText}`}>{galleries.length}</p>
-                          <p className={`mt-0.5 text-[0.58rem] font-bold uppercase tracking-[0.1em] ${muted}`}>Galerien</p>
-                        </div>
-                        <div>
-                          <p className={`text-base font-black sm:text-lg ${titleText}`}>{completedGalleries.length}</p>
-                          <p className={`mt-0.5 text-[0.58rem] font-bold uppercase tracking-[0.1em] ${muted}`}>Fertig</p>
-                        </div>
-                        <div>
-                          <p className={`text-base font-black sm:text-lg ${titleText}`}>{downloadableGalleries.length}</p>
-                          <p className={`mt-0.5 text-[0.58rem] font-bold uppercase tracking-[0.1em] ${muted}`}>ZIP</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 grid gap-2">
-                      <button
-                        type="button"
-                        onClick={logout}
-                        className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${backButtonStyle}`}
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Ausloggen
-                      </button>
-                    </div>
-                  </aside>
-
-                  <section className="min-w-0">
-                    {accountSection === "profile" ? (
-                      <div className="grid gap-4 xl:grid-cols-[1fr_0.86fr]">
-                        <div className={`rounded-[1.35rem] border p-4 sm:p-6 ${softPanelStyle}`}>
-                          <div className="flex items-start justify-between gap-4">
-                            <div>
-                              <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
-                                Profil bearbeiten
-                              </p>
-                              <h2 className={`mt-2 text-2xl font-black ${titleText}`}>
-                                Deine Angaben
-                              </h2>
-                            </div>
-                            <label className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${backButtonStyle}`}>
-                              {avatarUploading ? (
-                                <RefreshCw className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4" />
-                              )}
-                              Bild
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={uploadAvatar}
-                                disabled={avatarUploading}
-                                className="hidden"
-                              />
-                            </label>
-                          </div>
-
-                          <div className="mt-6 grid gap-4 sm:grid-cols-[120px_1fr] sm:items-start">
-                            <div className={`flex h-28 w-28 items-center justify-center overflow-hidden rounded-[1.5rem] border ${dark ? "border-white/10 bg-white/10" : "border-slate-300 bg-slate-200"}`}>
-                              {avatarPreview ? (
-                                <img
-                                  src={avatarPreview}
-                                  alt=""
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <UserRound className="h-10 w-10 text-neutral-400" />
-                              )}
-                            </div>
-
-                            <div className="grid gap-4">
-                              <label className="block">
-                                <span className={`text-xs font-bold uppercase tracking-[0.2em] ${muted}`}>
-                                  Benutzername
-                                </span>
-                                <input
-                                  value={profileName}
-                                  onChange={(event) => {
-                                    setProfileName(event.target.value);
-                                    setMessage("");
-                                  }}
-                                  placeholder="z. B. Felix"
-                                  className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-neutral-950 outline-none focus:border-yellow-400"
-                                />
-                              </label>
-                              <label className="block">
-                                <span className={`text-xs font-bold uppercase tracking-[0.2em] ${muted}`}>
-                                  Telefonnummer optional
-                                </span>
-                                <input
-                                  type="tel"
-                                  value={profilePhone}
-                                  onChange={(event) => {
-                                    setProfilePhone(event.target.value);
-                                    setMessage("");
-                                  }}
-                                  placeholder="+49 ..."
-                                  className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-neutral-950 outline-none focus:border-yellow-400"
-                                />
-                              </label>
-                              <button
-                                type="button"
-                                onClick={saveProfile}
-                                disabled={profileSaving}
-                                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 sm:w-fit"
-                              >
-                                {profileSaving && (
-                                  <RefreshCw className="h-4 w-4 animate-spin" />
-                                )}
-                                Profil speichern
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className={`rounded-[1.35rem] border p-4 sm:p-6 ${softPanelStyle}`}>
-                          <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
-                            Konto
-                          </p>
-                          <h2 className={`mt-2 text-2xl font-black ${titleText}`}>
-                            Sicherheit
-                          </h2>
-
-                          <button
-                            type="button"
-                            onClick={requestCurrentAccountPasswordReset}
-                            disabled={submitting}
-                            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60"
+                      <AnimatePresence>
+                        {profileMenuOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                            className="absolute right-0 z-20 mt-2 w-52 rounded-2xl border border-white/10 bg-[#1b1b1b] p-2 shadow-2xl"
                           >
-                            {submitting ? (
-                              <RefreshCw className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Mail className="h-4 w-4" />
-                            )}
-                            Passwort zurücksetzen
-                          </button>
-
-                          <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-4">
-                            <div className="flex items-start gap-3">
-                              <Trash2 className="mt-0.5 h-5 w-5 text-red-200" />
-                              <div>
-                                <h3 className="font-black text-red-50">Konto löschen</h3>
-                                <p className="mt-1 text-sm leading-6 text-red-100/75">
-                                  Löscht Konto, Profilbild und Favoriten. Bewertungen bleiben ohne Konto-Verknüpfung bestehen.
-                                </p>
-                              </div>
-                            </div>
                             <button
                               type="button"
                               onClick={() => {
-                                setDeletePanelOpen((current) => !current);
-                                setDeleteDataAccepted(false);
+                                setAccountSection("profile");
+                                setProfileMenuOpen(false);
                               }}
-                              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-300/30 bg-red-300/10 px-4 py-3 text-sm font-black text-red-50 transition hover:bg-red-300/20"
+                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-neutral-200 hover:bg-white/8"
                             >
-                              {deletePanelOpen ? "Abbrechen" : "Löschen vorbereiten"}
+                              <UserRound className="h-4 w-4" />
+                              Konto bearbeiten
                             </button>
+                            <button
+                              type="button"
+                              onClick={logout}
+                              className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-neutral-200 hover:bg-white/8"
+                            >
+                              <LogOut className="h-4 w-4" />
+                              Abmelden
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </header>
 
-                            {deletePanelOpen && (
-                              <div className="mt-4 rounded-2xl border border-red-300/20 bg-black/25 p-4">
-                                <label className="block">
-                                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-100/70">
-                                    Zur Bestätigung LÖSCHEN eingeben
-                                  </span>
-                                  <input
-                                    value={deleteConfirmText}
-                                    onChange={(event) => {
-                                      setDeleteConfirmText(event.target.value);
-                                      setMessage("");
-                                    }}
-                                    placeholder="LÖSCHEN"
-                                    className="mt-2 w-full rounded-2xl border border-red-300/20 bg-white px-4 py-3 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
-                                  />
-                                </label>
-                                <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-2xl border border-red-300/20 bg-red-300/10 p-3 text-sm leading-6 text-red-50">
-                                  <input
-                                    type="checkbox"
-                                    checked={deleteDataAccepted}
-                                    onChange={(event) => {
-                                      setDeleteDataAccepted(event.target.checked);
-                                      setMessage("");
-                                    }}
-                                    className="mt-1 h-4 w-4 rounded border-red-200 accent-red-500"
-                                  />
-                                  <span>
-                                    Ich bestätige, dass mein Konto, Profilbild,
-                                    Telefonnummer, Favoriten und verknüpfte
-                                    Kontodaten gelöscht werden. Bewertungen
-                                    bleiben wie vereinbart bestehen und können
-                                    per E-Mail zur Löschung angefragt werden.
-                                  </span>
-                                </label>
-                                <button
-                                  type="button"
-                                  onClick={deleteAccount}
-                                  disabled={
-                                    deletingAccount ||
-                                    deleteConfirmText !== "LÖSCHEN" ||
-                                    !deleteDataAccepted
-                                  }
-                                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 py-3 text-sm font-black text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  {deletingAccount ? (
-                                    <RefreshCw className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                  Endgültig löschen
-                                </button>
-                              </div>
-                            )}
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                      {galleries.length} Galerie{galleries.length === 1 ? "" : "n"}
+                    </p>
+                    <h2 className="mt-2 text-3xl font-black text-white">
+                      Deine Galerien
+                    </h2>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAccountSection("galleries")}
+                      className={`${secondaryButtonClass} ${
+                        accountSection === "galleries" ? "border-yellow-300/40 text-yellow-100" : ""
+                      }`}
+                    >
+                      Galerien
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAccountSection("profile")}
+                      className={`${secondaryButtonClass} ${
+                        accountSection === "profile" ? "border-yellow-300/40 text-yellow-100" : ""
+                      }`}
+                    >
+                      Profil
+                    </button>
+                  </div>
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {accountSection === "profile" ? (
+                    <motion.div
+                      key="profile"
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.25 }}
+                      className="mt-6 grid gap-4 xl:grid-cols-[1fr_0.78fr]"
+                    >
+                      <section className="rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4 sm:p-5">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                              Profil
+                            </p>
+                            <h3 className="mt-2 text-2xl font-black text-white">
+                              Deine Angaben
+                            </h3>
                           </div>
+                          <label className={`${secondaryButtonClass} cursor-pointer`}>
+                            {avatarUploading ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Upload className="h-4 w-4" />
+                            )}
+                            Profilbild
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={uploadAvatar}
+                              disabled={avatarUploading}
+                              className="hidden"
+                            />
+                          </label>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="grid gap-4">
-                        <div className={`hidden overflow-hidden rounded-[1.35rem] border sm:block ${softPanelStyle}`}>
-                          <div className={`relative p-4 sm:p-6 ${dark ? "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.14),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))]" : "bg-[radial-gradient(circle_at_top_right,rgba(250,204,21,0.25),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.86),rgba(226,232,240,0.74))]"}`}>
-                            {accountHeroGallery?.cover_url && (
+
+                        <div className="mt-5 grid gap-5 sm:grid-cols-[116px_1fr]">
+                          <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-[1.4rem] border border-white/10 bg-white/[0.06]">
+                            {avatarPreview ? (
                               <img
-                                src={accountHeroGallery.cover_url}
+                                src={avatarPreview}
                                 alt=""
-                                className="absolute inset-0 h-full w-full object-cover opacity-10"
+                                className="h-full w-full object-cover"
                               />
+                            ) : (
+                              <UserRound className="h-10 w-10 text-neutral-500" />
                             )}
-                            <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                              <div>
-                                <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
-                                  Deine Shootings
-                                </p>
-                                <h2 className={`mt-2 text-3xl font-black leading-tight sm:text-4xl ${titleText}`}>
-                                  Bilder, Favoriten und Downloads.
-                                </h2>
-                                <p className={`mt-3 max-w-2xl text-sm leading-6 ${muted}`}>
-                                  Alles Wichtige zu deinen Galerien bleibt hier gesammelt und schnell erreichbar.
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={loadGalleries}
-                                className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition md:w-fit ${backButtonStyle}`}
-                              >
-                                <RefreshCw className="h-4 w-4" />
-                                Aktualisieren
-                              </button>
-                            </div>
                           </div>
-                        </div>
-
-                        <form
-                          method="post"
-                          onSubmit={linkGalleryByCode}
-                          className={`rounded-[1.35rem] border p-4 sm:p-5 ${dark ? "border-yellow-400/20 bg-yellow-400/[0.07]" : "border-yellow-700/20 bg-yellow-100/60"}`}
-                        >
-                          <div className="flex flex-col gap-3 md:flex-row md:items-end">
-                            <label className="min-w-0 flex-1">
-                              <span className={`text-xs font-bold uppercase tracking-[0.2em] ${dark ? "text-yellow-100/75" : "text-yellow-900"}`}>
-                                Galerie-Code hinzufügen
+                          <div className="grid gap-4">
+                            <label className="block">
+                              <span className="text-sm font-semibold text-neutral-300">
+                                Benutzername
                               </span>
                               <input
-                                value={galleryCode}
+                                value={profileName}
                                 onChange={(event) => {
-                                  setGalleryCode(normalizeCode(event.target.value));
+                                  setProfileName(event.target.value);
                                   setMessage("");
                                 }}
-                                placeholder="z. B. GAL-ABC123"
-                                className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm font-black tracking-[0.12em] text-neutral-950 outline-none focus:border-yellow-400"
+                                placeholder="z. B. Felix"
+                                className={inputClass}
+                              />
+                            </label>
+                            <label className="block">
+                              <span className="text-sm font-semibold text-neutral-300">
+                                Telefonnummer optional
+                              </span>
+                              <input
+                                type="tel"
+                                value={profilePhone}
+                                onChange={(event) => {
+                                  setProfilePhone(event.target.value);
+                                  setMessage("");
+                                }}
+                                placeholder="+49 ..."
+                                className={inputClass}
                               />
                             </label>
                             <button
-                              type="submit"
-                              disabled={linkingGallery}
-                              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 disabled:opacity-60 md:w-fit"
+                              type="button"
+                              onClick={saveProfile}
+                              disabled={profileSaving}
+                              className={primaryButtonClass}
                             >
-                              {linkingGallery ? (
+                              {profileSaving && (
                                 <RefreshCw className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <KeyRound className="h-4 w-4" />
                               )}
-                              Verknüpfen
+                              Profil speichern
                             </button>
                           </div>
-                        </form>
+                        </div>
+                      </section>
 
-                        {galleries.length > 0 && (
-                          <div className={`rounded-[1.35rem] border p-2 ${softPanelStyle}`}>
-                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                              {galleryFilters.map((filter) => (
-                                <button
-                                  key={filter.key}
-                                  type="button"
-                                  onClick={() => setGalleryFilter(filter.key)}
-                                  className={`rounded-2xl px-3 py-3 text-sm font-black transition ${
-                                    galleryFilter === filter.key
-                                      ? "bg-white text-neutral-950 shadow-lg"
-                                      : dark
-                                        ? "bg-white/[0.06] text-neutral-300 hover:bg-white/[0.1]"
-                                        : "bg-slate-100 text-slate-700 hover:bg-white"
-                                  }`}
-                                >
-                                  {filter.label}
-                                  <span className="ml-2 opacity-60">{filter.count}</span>
-                                </button>
-                              ))}
+                      <section className="rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4 sm:p-5">
+                        <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                          Sicherheit
+                        </p>
+                        <h3 className="mt-2 text-2xl font-black text-white">
+                          Konto
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={requestCurrentAccountPasswordReset}
+                          disabled={submitting}
+                          className={`${primaryButtonClass} mt-5`}
+                        >
+                          {submitting ? (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Mail className="h-4 w-4" />
+                          )}
+                          Passwort zurücksetzen
+                        </button>
+
+                        <div className="mt-5 rounded-2xl border border-red-300/18 bg-red-500/8 p-4">
+                          <div className="flex items-start gap-3">
+                            <Trash2 className="mt-0.5 h-5 w-5 text-red-200" />
+                            <div>
+                              <h4 className="font-black text-red-50">Konto löschen</h4>
+                              <p className="mt-1 text-sm leading-6 text-red-100/70">
+                                Konto, Profilbild, Telefonnummer und Favoriten
+                                werden gelöscht. Bewertungen bleiben bestehen.
+                              </p>
                             </div>
                           </div>
-                        )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeletePanelOpen((current) => !current);
+                              setDeleteDataAccepted(false);
+                            }}
+                            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-red-300/25 bg-red-300/10 px-4 text-sm font-black text-red-50 transition hover:bg-red-300/15"
+                          >
+                            {deletePanelOpen ? "Abbrechen" : "Löschen vorbereiten"}
+                          </button>
 
-                        {galleries.length === 0 && (
-                          <div className={`rounded-[1.35rem] border p-5 sm:p-7 ${softPanelStyle}`}>
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                              <div>
-                                <p className={`text-xs font-black uppercase tracking-[0.22em] ${muted}`}>
-                                  Noch keine Galerie
-                                </p>
-                                <h3 className={`mt-2 text-2xl font-black ${titleText}`}>
-                                  Verbinde dein erstes Shooting
-                                </h3>
-                                <p className={`mt-2 max-w-xl text-sm leading-6 ${muted}`}>
-                                  Nutze oben deinen Galerie-Code oder öffne die Code-Seite.
-                                </p>
-                              </div>
-                              <Link
-                                href="/kunden"
-                                className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 sm:w-fit"
+                          <AnimatePresence>
+                            {deletePanelOpen && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden"
                               >
-                                <KeyRound className="h-4 w-4" />
-                                Code-Seite
-                              </Link>
-                            </div>
+                                <div className="mt-4 grid gap-3 rounded-2xl border border-red-300/20 bg-black/25 p-4">
+                                  <label className="block">
+                                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-100/70">
+                                      Zur Bestätigung LÖSCHEN eingeben
+                                    </span>
+                                    <input
+                                      value={deleteConfirmText}
+                                      onChange={(event) => {
+                                        setDeleteConfirmText(event.target.value);
+                                        setMessage("");
+                                      }}
+                                      placeholder="LÖSCHEN"
+                                      className="mt-2 h-12 w-full rounded-2xl border border-red-300/20 bg-white px-4 text-sm font-black text-neutral-950 outline-none focus:border-red-400"
+                                    />
+                                  </label>
+                                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-red-300/20 bg-red-300/10 p-3 text-sm leading-6 text-red-50">
+                                    <input
+                                      type="checkbox"
+                                      checked={deleteDataAccepted}
+                                      onChange={(event) => {
+                                        setDeleteDataAccepted(event.target.checked);
+                                        setMessage("");
+                                      }}
+                                      className="mt-1 h-4 w-4 rounded border-red-200 accent-red-500"
+                                    />
+                                    <span>
+                                      Ich bestätige, dass meine Kontodaten gelöscht
+                                      werden sollen.
+                                    </span>
+                                  </label>
+                                  <button
+                                    type="button"
+                                    onClick={deleteAccount}
+                                    disabled={
+                                      deletingAccount ||
+                                      deleteConfirmText !== "LÖSCHEN" ||
+                                      !deleteDataAccepted
+                                    }
+                                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-red-500 px-4 text-sm font-black text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    {deletingAccount ? (
+                                      <RefreshCw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                    Endgültig löschen
+                                  </button>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </section>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="galleries"
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.25 }}
+                      className="mt-6"
+                    >
+                      <section className="rounded-[1.35rem] border border-white/10 bg-white/[0.045] p-4 sm:p-5">
+                        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                          <div>
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
+                              Galeriecode hinzufügen
+                            </p>
+                            <p className="mt-2 max-w-lg text-sm leading-6 text-neutral-400">
+                              Wenn du einen neuen Code erhalten hast, kannst du
+                              ihn hier dauerhaft mit deinem Konto verbinden.
+                            </p>
                           </div>
-                        )}
+                          <div className="w-full xl:max-w-md">{renderCodeForm("account")}</div>
+                        </div>
+                      </section>
 
-                        {galleries.length > 0 && visibleGalleryCount === 0 && (
-                          <div className={`rounded-[1.35rem] border p-5 text-sm leading-6 ${softPanelStyle} ${softMuted}`}>
-                            Für diesen Filter gibt es aktuell keine Galerien.
+                      <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+                        {galleryFilters.map((filter) => (
+                          <button
+                            key={filter.key}
+                            type="button"
+                            onClick={() => setGalleryFilter(filter.key)}
+                            className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-black transition focus:outline-none focus:ring-2 focus:ring-yellow-300/60 ${
+                              galleryFilter === filter.key
+                                ? "border-yellow-300/40 bg-yellow-400 text-black"
+                                : "border-white/10 bg-white/[0.06] text-neutral-300 hover:bg-white/[0.1]"
+                            }`}
+                          >
+                            {filter.label}
+                            <span className="rounded-full bg-black/15 px-2 py-0.5 text-xs">
+                              {filter.count}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {galleries.length === 0 ? (
+                        <div className="mt-5 rounded-[1.5rem] border border-dashed border-white/14 bg-white/[0.035] p-8 text-center">
+                          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-yellow-400 text-black">
+                            <PlusCircle className="h-6 w-6" />
                           </div>
-                        )}
-
-                        {galleryFilter === "downloads" && downloadableGalleries.length > 0 ? (
-                          <section className="grid gap-3">
-                            <div className="flex items-center justify-between gap-3 px-1">
-                              <h3 className={`text-sm font-black uppercase tracking-[0.22em] ${softMuted}`}>
-                                Download-Dateien
-                              </h3>
-                              <span className={`rounded-full px-3 py-1 text-xs font-black ${dark ? "bg-white/10 text-neutral-300" : "bg-slate-100 text-slate-700"}`}>
-                                {downloadableGalleries.length}
-                              </span>
-                            </div>
-
-                            <div className="grid gap-3">
-                              {downloadableGalleries.map((gallery) => (
-                                <article
-                                  key={gallery.id}
-                                  className={`rounded-[1.15rem] border p-4 ${dark ? "border-white/10 bg-white/[0.055]" : "border-slate-400/45 bg-slate-100/80"}`}
+                          <h3 className="mt-5 text-2xl font-black text-white">
+                            Noch keine Galerie verknüpft.
+                          </h3>
+                          <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-neutral-400">
+                            Gib deinen persönlichen Galeriecode ein, um deine
+                            Bilder hinzuzufügen.
+                          </p>
+                        </div>
+                      ) : visibleGalleries.length === 0 ? (
+                        <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6 text-sm text-neutral-400">
+                          Für diesen Filter gibt es aktuell keine Galerie.
+                        </div>
+                      ) : (
+                        <div className="mt-5 grid gap-4 md:grid-cols-2">
+                          {visibleGalleries.map((gallery, index) => {
+                            const status = getGalleryStatus(gallery);
+                            const galleryDate =
+                              gallery.shooting_date ||
+                              gallery.date ||
+                              gallery.created_at;
+                            return (
+                              <motion.article
+                                key={gallery.id}
+                                initial={
+                                  prefersReducedMotion
+                                    ? false
+                                    : { opacity: 0, y: 18 }
+                                }
+                                animate={
+                                  prefersReducedMotion
+                                    ? undefined
+                                    : { opacity: 1, y: 0 }
+                                }
+                                transition={{
+                                  duration: 0.32,
+                                  delay: Math.min(index * 0.04, 0.18),
+                                }}
+                                className="group overflow-hidden rounded-[1.45rem] border border-white/10 bg-[#181818] shadow-[0_18px_60px_rgba(0,0,0,0.22)] transition hover:-translate-y-1 hover:border-white/18 focus-within:ring-2 focus-within:ring-yellow-300/60"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => openGallery(gallery)}
+                                  className="relative block aspect-[4/3] w-full overflow-hidden bg-[#101010] text-left focus:outline-none"
                                 >
-                                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="flex min-w-0 items-center gap-3">
-                                      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${dark ? "bg-sky-300/10 text-sky-100" : "bg-sky-100 text-sky-900"}`}>
-                                        <Download className="h-5 w-5" />
-                                      </div>
-                                      <div className="min-w-0">
-                                        <h4 className={`truncate text-base font-black ${titleText}`}>
-                                          {gallery.title || "Kundengalerie"}
-                                        </h4>
-                                        <p className={`mt-0.5 truncate text-xs ${muted}`}>
-                                          {gallery.archive_path
-                                            ? gallery.archive_path.split("/").pop()
-                                            : `${gallery.access_code || "galerie"}.zip`}
-                                        </p>
-                                      </div>
-                                    </div>
+                                  <GalleryImage
+                                    src={gallery.cover_url}
+                                    alt={gallery.title || "Kundengalerie"}
+                                    sizes="(max-width: 768px) 100vw, 360px"
+                                    className="object-cover transition duration-700 group-hover:scale-[1.035]"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/12 to-transparent" />
+                                  <span
+                                    className={`absolute left-3 top-3 rounded-full border px-3 py-1 text-xs font-black backdrop-blur ${status.className}`}
+                                  >
+                                    {status.label}
+                                  </span>
+                                  <div className="absolute bottom-4 left-4 right-4">
+                                    <h3 className="line-clamp-2 text-xl font-black text-white">
+                                      {gallery.title || "Privates Shooting"}
+                                    </h3>
+                                    <p className="mt-1 text-sm text-neutral-300">
+                                      {gallery.client_name || accountDisplayName || "Kundengalerie"}
+                                    </p>
+                                  </div>
+                                </button>
 
-                                    {gallery.archive_download_url ? (
+                                <div className="grid gap-4 p-4">
+                                  <div className="grid grid-cols-2 gap-2 text-xs font-bold text-neutral-300">
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-2">
+                                      <Calendar className="h-3.5 w-3.5" />
+                                      {formatDate(galleryDate) || "Datum offen"}
+                                    </span>
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-2">
+                                      <Sparkles className="h-3.5 w-3.5" />
+                                      {gallery.category || "Shooting"}
+                                    </span>
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-2">
+                                      <ImageIcon className="h-3.5 w-3.5" />
+                                      {gallery.image_count || 0} Bilder
+                                    </span>
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-yellow-400/10 px-3 py-2 text-yellow-100">
+                                      <Heart className="h-3.5 w-3.5" />
+                                      {gallery.favorite_count || 0} Favoriten
+                                    </span>
+                                  </div>
+
+                                  <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                                    <button
+                                      type="button"
+                                      onClick={() => openGallery(gallery)}
+                                      className={primaryButtonClass}
+                                    >
+                                      Galerie öffnen
+                                      <ArrowRight className="h-4 w-4" />
+                                    </button>
+                                    {gallery.archive_download_url && (
                                       <a
                                         href={gallery.archive_download_url}
                                         download
-                                        className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl sm:w-fit"
+                                        className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-sky-300/25 bg-sky-300/10 px-4 text-sm font-black text-sky-100 transition hover:bg-sky-300/15 focus:outline-none focus:ring-2 focus:ring-sky-200"
                                       >
                                         <Download className="h-4 w-4" />
-                                        Herunterladen
+                                        ZIP
                                       </a>
-                                    ) : (
-                                      <span className={`inline-flex w-full shrink-0 items-center justify-center rounded-2xl border px-4 py-3 text-sm font-black sm:w-fit ${backButtonStyle}`}>
-                                        ZIP wird vorbereitet
-                                      </span>
                                     )}
                                   </div>
-                                </article>
-                              ))}
-                            </div>
-                          </section>
-                        ) : (
-                          [
-                          {
-                            title: "Aktive Galerien",
-                            items: visibleActiveGalleries,
-                          },
-                          {
-                            title: "Abgeschlossen",
-                            items: visibleCompletedGalleries,
-                          },
-                          ].map((section) => {
-                          if (section.items.length === 0) return null;
-
-                          return (
-                            <section key={section.title} className="grid gap-3">
-                              <div className="flex items-center justify-between gap-3 px-1">
-                                <h3 className={`text-sm font-black uppercase tracking-[0.22em] ${softMuted}`}>
-                                  {section.title}
-                                </h3>
-                                <span className={`rounded-full px-3 py-1 text-xs font-black ${dark ? "bg-white/10 text-neutral-300" : "bg-slate-100 text-slate-700"}`}>
-                                  {section.items.length}
-                                </span>
-                              </div>
-
-                              <div className="grid gap-3 md:grid-cols-2">
-                                {section.items.map((gallery) => {
-                                  const status = getGalleryStatus(gallery);
-
-                                  return (
-                                    <article
-                                      key={gallery.id}
-                                      className={`overflow-hidden rounded-[1.35rem] border transition hover:-translate-y-0.5 ${dark ? "border-white/10 bg-white/[0.055] hover:border-white/20 hover:bg-white/[0.085]" : "border-slate-400/45 bg-slate-100/80 hover:bg-white"}`}
-                                    >
-                                      <button
-                                        type="button"
-                                        onClick={() => openGallery(gallery)}
-                                        className="relative block aspect-[16/10] w-full overflow-hidden bg-black/30 text-left"
-                                        aria-label="Galerie öffnen"
-                                      >
-                                        {gallery.cover_url ? (
-                                          <img
-                                            src={gallery.cover_url}
-                                            alt=""
-                                            loading="lazy"
-                                            decoding="async"
-                                            className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]"
-                                          />
-                                        ) : (
-                                          <div className="flex h-full min-h-36 items-center justify-center">
-                                            <ImageIcon className="h-9 w-9 text-neutral-500" />
-                                          </div>
-                                        )}
-                                        <span className="absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-black text-white backdrop-blur">
-                                          {status.label}
-                                        </span>
-                                        <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-black text-white backdrop-blur">
-                                          Code {gallery.access_code}
-                                        </span>
-                                      </button>
-
-                                      <div className="grid gap-3 p-4">
-                                        <div>
-                                          <h4 className={`text-lg font-black ${titleText}`}>{gallery.title}</h4>
-                                          <p className={`mt-1 text-sm ${muted}`}>{gallery.client_name || "Kundengalerie"}</p>
-                                        </div>
-
-                                        {gallery.welcome_message && (
-                                          <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-sm leading-6 text-yellow-50">
-                                            <p className="line-clamp-3">{gallery.welcome_message}</p>
-                                          </div>
-                                        )}
-
-                                        <div className={`flex flex-wrap gap-2 text-xs font-bold ${softMuted}`}>
-                                          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 ${dark ? "bg-black/25" : "bg-white"}`}>
-                                            <ImageIcon className="h-3.5 w-3.5" />
-                                            {gallery.image_count || 0} Bilder
-                                          </span>
-                                          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 ${dark ? "bg-yellow-400/10 text-yellow-100" : "bg-yellow-100 text-yellow-900"}`}>
-                                            <Heart className="h-3.5 w-3.5" />
-                                            {gallery.favorite_count || 0} Favoriten
-                                          </span>
-                                          {gallery.downloads_enabled && (
-                                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-3 py-1 text-emerald-100">
-                                              <Download className="h-3.5 w-3.5" />
-                                              Download
-                                            </span>
-                                          )}
-                                        </div>
-
-                                        <button
-                                          type="button"
-                                          onClick={() => openGallery(gallery)}
-                                          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl"
-                                        >
-                                          <ImageIcon className="h-4 w-4" />
-                                          Galerie öffnen
-                                        </button>
-                                        {gallery.archive_download_url && (
-                                          <a
-                                            href={gallery.archive_download_url}
-                                            download
-                                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-300/25 bg-sky-300/10 px-4 py-3 text-sm font-black text-sky-100 transition hover:-translate-y-0.5 hover:bg-sky-300/15 hover:shadow-xl"
-                                          >
-                                            <Download className="h-4 w-4" />
-                                            ZIP herunterladen
-                                          </a>
-                                        )}
-                                      </div>
-                                    </article>
-                                  );
-                                })}
-                              </div>
-                            </section>
-                          );
-                        })
-                        )}
-                      </div>
-                    )}
-                  </section>
-                </div>
-              ) : mode === "resetConfirm" ? (
-                <form method="post" onSubmit={confirmPasswordReset}>
-                  <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-5">
-                    <p className="text-xs font-black uppercase tracking-[0.25em] text-yellow-100/70">
-                      Passwort zurücksetzen
-                    </p>
-                    <h2 className="mt-3 text-2xl font-black">
-                      Neues Passwort vergeben
-                    </h2>
-                    <p className="mt-2 text-sm leading-6 text-yellow-50/75">
-                      Dein Reset-Link wurde erkannt. Gib jetzt dein neues
-                      Passwort ein.
-                    </p>
-                  </div>
-
-                  <div className="mt-6 grid gap-4">
-                    <label className="block">
-                      <span className="text-sm font-bold text-neutral-200">
-                        Neues Passwort
-                      </span>
-                      <div className="relative mt-2">
-                        <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
-                        <input
-                          key={
-                            showNewPassword
-                              ? "new-password-visible"
-                              : "new-password-hidden"
-                          }
-                          type={showNewPassword ? "text" : "password"}
-                          value={newPassword}
-                          onChange={(event) => {
-                            setNewPassword(event.target.value);
-                            setMessage("");
-                          }}
-                          autoComplete="new-password"
-                          placeholder="Mindestens 8 Zeichen"
-                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-14 text-neutral-950 outline-none focus:border-yellow-400"
-                        />
-                        <button
-                          type="button"
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            setShowNewPassword((current) => !current);
-                          }}
-                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-600 transition hover:bg-neutral-100"
-                          aria-pressed={showNewPassword}
-                          aria-label={
-                            showNewPassword
-                              ? "Passwort ausblenden"
-                              : "Passwort anzeigen"
-                          }
-                        >
-                          {showNewPassword ? (
-                            <EyeOff className="h-5 w-5" />
-                          ) : (
-                            <Eye className="h-5 w-5" />
-                          )}
-                        </button>
-                      </div>
-                    </label>
-
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
-                    >
-                      {submitting ? (
-                        <RefreshCw className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <KeyRound className="h-5 w-5" />
-                      )}
-                      {submitting ? "Bitte warten..." : "Passwort speichern"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={showLoginForm}
-                      className="text-sm font-bold text-neutral-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white"
-                    >
-                      Zurück zum Login
-                    </button>
-                  </div>
-                </form>
-              ) : mode === "resetRequest" ? (
-                <form method="post" onSubmit={requestPasswordReset}>
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-5">
-                    <p className="text-xs font-black uppercase tracking-[0.25em] text-neutral-500">
-                      Passwort vergessen
-                    </p>
-                    <h2 className="mt-3 text-2xl font-black">
-                      Reset-Link per E-Mail
-                    </h2>
-                    <p className="mt-2 text-sm leading-6 text-neutral-300">
-                      Gib die E-Mail-Adresse deines Kundenkontos ein. Du bekommst
-                      dann einen Link, mit dem du ein neues Passwort festlegen
-                      kannst.
-                    </p>
-                  </div>
-
-                  <div className="mt-6 grid gap-4">
-                    <label className="block">
-                      <span className="text-sm font-bold text-neutral-200">
-                        E-Mail
-                      </span>
-                      <div className="relative mt-2">
-                        <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
-                        <input
-                          type="email"
-                          value={resetEmail}
-                          onChange={(event) => {
-                            setResetEmail(event.target.value);
-                            setMessage("");
-                          }}
-                          placeholder="kunde@example.com"
-                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
-                        />
-                      </div>
-                    </label>
-
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
-                    >
-                      {submitting ? (
-                        <RefreshCw className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <Mail className="h-5 w-5" />
-                      )}
-                      {submitting ? "Sende..." : "Passwort zurücksetzen"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={showLoginForm}
-                      className="text-sm font-bold text-neutral-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white"
-                    >
-                      Zurück zum Login
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <form method="post" onSubmit={submitAccount}>
-                  <div className="grid grid-cols-2 rounded-full border border-white/10 bg-white/10 p-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode("login");
-                        accountFormStartedAtRef.current = Date.now();
-                      }}
-                      className={`rounded-full px-4 py-2 text-sm font-black transition ${
-                        mode === "login"
-                          ? "bg-white text-neutral-950"
-                          : "text-neutral-300"
-                      }`}
-                    >
-                      Login
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode("register");
-                        accountFormStartedAtRef.current = Date.now();
-                      }}
-                      className={`rounded-full px-4 py-2 text-sm font-black transition ${
-                        mode === "register"
-                          ? "bg-white text-neutral-950"
-                          : "text-neutral-300"
-                      }`}
-                    >
-                      Konto erstellen
-                    </button>
-                  </div>
-
-                  <div className="mt-6 grid gap-4">
-                    <label className="sr-only" aria-hidden="true">
-                      Website
-                      <input
-                        type="text"
-                        name="website"
-                        tabIndex={-1}
-                        autoComplete="off"
-                      />
-                    </label>
-
-                    {mode === "register" && (
-                      <label className="block">
-                        <span className="text-sm font-bold text-neutral-200">
-                          Benutzername
-                        </span>
-                        <input
-                          value={form.name}
-                          onChange={(event) =>
-                            updateForm("name", event.target.value)
-                          }
-                          required
-                          placeholder="z. B. Felix"
-                          className="mt-2 w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-neutral-950 outline-none focus:border-yellow-400"
-                        />
-                      </label>
-                    )}
-
-                    <label className="block">
-                      <span className="text-sm font-bold text-neutral-200">
-                        E-Mail
-                      </span>
-                      <div className="relative mt-2">
-                        <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
-                        <input
-                          type="email"
-                          value={form.email}
-                          onChange={(event) =>
-                            updateForm("email", event.target.value)
-                          }
-                          placeholder="kunde@example.com"
-                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
-                        />
-                      </div>
-                    </label>
-
-                    <label className="block">
-                      <span className="text-sm font-bold text-neutral-200">
-                        Passwort
-                      </span>
-                      <div className="relative mt-2">
-                        <KeyRound className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
-                        <input
-                          key={
-                            showPassword
-                              ? "account-password-visible"
-                              : "account-password-hidden"
-                          }
-                          type={showPassword ? "text" : "password"}
-                          value={form.password}
-                          onChange={(event) =>
-                            updateForm("password", event.target.value)
-                          }
-                          autoComplete={
-                            mode === "register"
-                              ? "new-password"
-                              : "current-password"
-                          }
-                          placeholder="Mindestens 8 Zeichen"
-                          className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-14 text-neutral-950 outline-none focus:border-yellow-400"
-                        />
-                        <button
-                          type="button"
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            setShowPassword((current) => !current);
-                          }}
-                          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-neutral-600 transition hover:bg-neutral-100"
-                          aria-pressed={showPassword}
-                          aria-label={
-                            showPassword
-                              ? "Passwort ausblenden"
-                              : "Passwort anzeigen"
-                          }
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-5 w-5" />
-                          ) : (
-                            <Eye className="h-5 w-5" />
-                          )}
-                        </button>
-                      </div>
-                    </label>
-
-                    {mode === "register" && (
-                      <label className="block">
-                        <span className="text-sm font-bold text-neutral-200">
-                          Telefonnummer optional
-                        </span>
-                        <div className="relative mt-2">
-                          <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-500" />
-                          <input
-                            type="tel"
-                            value={form.phone}
-                            onChange={(event) =>
-                              updateForm("phone", event.target.value)
-                            }
-                            placeholder="+49 ..."
-                            autoComplete="tel"
-                            className="w-full rounded-2xl border border-white/10 bg-white py-3 pl-12 pr-4 text-neutral-950 outline-none focus:border-yellow-400"
-                          />
+                                </div>
+                              </motion.article>
+                            );
+                          })}
                         </div>
-                      </label>
-                    )}
-
-                    {mode === "login" && (
-                      <button
-                        type="button"
-                        onClick={showPasswordResetRequest}
-                        className="w-fit text-sm font-bold text-neutral-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white"
-                      >
-                        Passwort vergessen?
-                      </button>
-                    )}
-
-                    {mode === "register" && (
-                      <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.08] p-4 text-sm leading-6 text-neutral-300">
-                        <input
-                          type="checkbox"
-                          checked={form.privacyAccepted}
-                          onChange={(event) =>
-                            updateForm("privacyAccepted", event.target.checked)
-                          }
-                          className="mt-1 h-4 w-4 rounded border-white/20 accent-yellow-400"
-                        />
-                        <span>
-                          Ich habe die{" "}
-                          <Link
-                            href="/datenschutz"
-                            className="font-bold text-white underline decoration-white/40 underline-offset-4 transition hover:decoration-white"
-                          >
-                            Datenschutzhinweise
-                          </Link>{" "}
-                          zur Kenntnis genommen.
-                        </span>
-                      </label>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
-                    >
-                      {submitting ? (
-                        <RefreshCw className="h-5 w-5 animate-spin" />
-                      ) : mode === "register" ? (
-                        <UserPlus className="h-5 w-5" />
-                      ) : (
-                        <Lock className="h-5 w-5" />
                       )}
-                      {submitting
-                        ? "Bitte warten..."
-                        : mode === "register"
-                          ? "Konto erstellen"
-                          : "Einloggen"}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </section>
+
+                      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                        <Link
+                          href="/#kontakt"
+                          className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] p-4 text-sm font-bold text-neutral-300 transition hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-yellow-300/60"
+                        >
+                          Neues Shooting anfragen
+                        </Link>
+                        <Link
+                          href="/#bewertung"
+                          className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] p-4 text-sm font-bold text-neutral-300 transition hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-yellow-300/60"
+                        >
+                          Erfahrung bewerten
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="mt-7 flex flex-1 flex-col justify-center">
+                <div className="mx-auto w-full max-w-md">
+                  {mode === "resetConfirm" ? (
+                    renderResetConfirm()
+                  ) : mode === "resetRequest" ? (
+                    renderResetRequest()
+                  ) : (
+                    <>
+                      <div className="relative mb-6 grid grid-cols-2 rounded-full border border-white/10 bg-white/[0.055] p-1">
+                        <motion.div
+                          layout
+                          className={`absolute bottom-1 top-1 rounded-full bg-yellow-400 ${
+                            mode === "galleryCode" ? "left-1/2 right-1" : "left-1 right-1/2"
+                          }`}
+                          transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMode("login");
+                            setMessage("");
+                            accountFormStartedAtRef.current = Date.now();
+                          }}
+                          className={`relative z-10 h-11 rounded-full text-sm font-black transition ${
+                            mode === "login" || mode === "register"
+                              ? "text-black"
+                              : "text-neutral-300"
+                          }`}
+                        >
+                          Anmelden
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMode("galleryCode");
+                            setMessage("");
+                          }}
+                          className={`relative z-10 h-11 rounded-full text-sm font-black transition ${
+                            mode === "galleryCode" ? "text-black" : "text-neutral-300"
+                          }`}
+                        >
+                          Galeriecode
+                        </button>
+                      </div>
+
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={mode}
+                          initial={{ opacity: 0, x: 18 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -18 }}
+                          transition={{ duration: 0.24 }}
+                        >
+                          {mode === "galleryCode"
+                            ? renderCodeForm("public")
+                            : mode === "register"
+                              ? renderRegisterForm()
+                              : renderLoginForm()}
+                        </motion.div>
+                      </AnimatePresence>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+        </motion.section>
       </div>
     </main>
   );

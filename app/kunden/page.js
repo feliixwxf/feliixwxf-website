@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -34,6 +35,30 @@ function normalizeCode(value) {
     .toUpperCase()
     .replace(/[^A-Z0-9-]/g, "")
     .slice(0, 32);
+}
+
+function ClientImage({ src, alt = "", className = "", sizes = "100vw", priority = false }) {
+  if (!src) {
+    return (
+      <div
+        className={`flex items-center justify-center bg-neutral-900 text-neutral-600 ${className}`}
+      >
+        <ImageIcon className="h-7 w-7" />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      priority={priority}
+      sizes={sizes}
+      unoptimized={String(src).startsWith("http")}
+      className={className}
+    />
+  );
 }
 
 function getGalleryStatus(gallery) {
@@ -137,6 +162,7 @@ function GalleryNotice({ message, type = "info" }) {
 }
 
 export default function CustomerGalleryPage() {
+  const prefersReducedMotion = useReducedMotion();
   const [accessCode, setAccessCode] = useState("");
   const [gallery, setGallery] = useState(null);
   const [images, setImages] = useState([]);
@@ -228,12 +254,14 @@ export default function CustomerGalleryPage() {
 
     if (!initialCode) return;
 
-    setAccessCode(initialCode);
+    queueMicrotask(() => {
+      setAccessCode(initialCode);
 
-    if (urlCode) {
-      window.history.replaceState(null, "", "/kunden");
-      loadGalleryByCode(initialCode);
-    }
+      if (urlCode) {
+        window.history.replaceState(null, "", "/kunden");
+        loadGalleryByCode(initialCode);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -271,17 +299,17 @@ export default function CustomerGalleryPage() {
     setMessage("");
   };
 
-  const showPreviousImage = () => {
+  function showPreviousImage() {
     if (!images.length || selectedImageIndex < 0) return;
     const nextIndex = selectedImageIndex === 0 ? images.length - 1 : selectedImageIndex - 1;
     setSelectedImage(images[nextIndex]);
-  };
+  }
 
-  const showNextImage = () => {
+  function showNextImage() {
     if (!images.length || selectedImageIndex < 0) return;
     const nextIndex = selectedImageIndex === images.length - 1 ? 0 : selectedImageIndex + 1;
     setSelectedImage(images[nextIndex]);
-  };
+  }
 
   const toggleFavorite = async (image) => {
     if (!gallery || busyImageId) return;
@@ -321,8 +349,10 @@ export default function CustomerGalleryPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.12),transparent_32%),linear-gradient(135deg,#070707,#151518,#262629)] px-3 py-4 text-white sm:px-5 sm:py-8">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-screen overflow-x-hidden bg-[#080808] px-4 py-5 text-white sm:px-6 sm:py-8">
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_8%,rgba(250,204,21,0.14),transparent_30%),radial-gradient(circle_at_86%_20%,rgba(255,255,255,0.09),transparent_26%),linear-gradient(135deg,rgba(255,255,255,0.03),transparent)]" />
+
+      <div className="mx-auto max-w-[1200px]">
         <div className="grid gap-3 sm:flex sm:flex-row sm:items-center sm:justify-between">
           <Link
             href="/"
@@ -354,52 +384,87 @@ export default function CustomerGalleryPage() {
           </div>
         </div>
 
-        <section className="mt-4 overflow-hidden rounded-[1.3rem] border border-white/10 bg-white/[0.08] shadow-2xl backdrop-blur-xl sm:mt-8 sm:rounded-[2rem]">
+        <section className="mt-4 overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#151515]/92 shadow-[0_30px_120px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:mt-8 sm:rounded-[2rem]">
           {!gallery ? (
-            <div className="grid gap-6 p-4 sm:p-6 md:p-10 lg:grid-cols-[0.85fr_1.15fr]">
-              <div>
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
-                  <Lock className="h-6 w-6" />
-                </div>
-                <p className="mt-6 text-xs uppercase tracking-[0.26em] text-neutral-400 sm:mt-8 sm:text-sm sm:tracking-[0.3em]">
-                  Kundengalerie
-                </p>
-                <h1 className="mt-3 text-3xl font-black leading-tight sm:text-4xl md:text-6xl">
-                  Bilder ansehen.
-                  <br />
-                  Favoriten markieren.
-                </h1>
-                <p className="mt-5 max-w-xl text-base leading-7 text-neutral-300 sm:text-lg sm:leading-8">
-                  Gib den Code ein, den du von feliix.wxf bekommen hast. Danach
-                  siehst du deine private Auswahl.
-                </p>
+            <div className="grid overflow-hidden lg:grid-cols-[0.54fr_0.46fr]">
+              <div className="relative min-h-[210px] overflow-hidden lg:min-h-[620px]">
+                <motion.div
+                  className="absolute inset-0"
+                  animate={
+                    prefersReducedMotion
+                      ? undefined
+                      : { scale: [1, 1.045, 1.02], x: [0, -8, 0] }
+                  }
+                  transition={
+                    prefersReducedMotion
+                      ? undefined
+                      : {
+                          duration: 18,
+                          repeat: Infinity,
+                          repeatType: "mirror",
+                          ease: "easeInOut",
+                        }
+                  }
+                >
+                  <Image
+                    src="/images/abititel.jpg"
+                    alt="Private Kundengalerie von feliix.wxf"
+                    fill
+                    priority
+                    sizes="(max-width: 768px) 100vw, 648px"
+                    className="object-cover"
+                  />
+                </motion.div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/58 to-black/18 lg:bg-gradient-to-br lg:from-black/92 lg:via-black/45 lg:to-black/18" />
+                <div className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:18px_18px]" />
 
-                <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                  {[
-                    ["Privat", "Nur mit deinem Code sichtbar."],
-                    ["Auswahl", "Favoriten werden gespeichert."],
-                    ["Download", "Sobald Downloads freigegeben sind."],
-                  ].map(([title, text]) => (
-                    <div
-                      key={title}
-                      className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
-                    >
-                      <p className="text-sm font-black">{title}</p>
-                      <p className="mt-2 text-xs leading-5 text-neutral-400">
-                        {text}
-                      </p>
-                    </div>
-                  ))}
+                <div className="relative flex h-full min-h-[210px] flex-col justify-end p-5 sm:p-8 lg:min-h-[620px] lg:p-10">
+                  <p className="text-xs font-black uppercase tracking-[0.32em] text-yellow-200/90">
+                    Private Client Lounge
+                  </p>
+                  <h1 className="mt-4 text-3xl font-black leading-tight text-white md:text-5xl">
+                    Deine private Galerie.
+                  </h1>
+                  <p className="mt-4 max-w-sm text-sm leading-7 text-neutral-200 md:text-base">
+                    Öffne deine Bilder, speichere Favoriten und lade sie herunter,
+                    sobald der Download freigegeben ist.
+                  </p>
+                  <div className="mt-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                    {[
+                      [ShieldCheck, "Privat geschützt"],
+                      [Heart, "Favoriten speichern"],
+                      [Download, "Bilder herunterladen"],
+                    ].map(([Icon, label]) => (
+                      <div
+                        key={label}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-white/10 px-3 text-xs font-bold text-white/90 backdrop-blur"
+                      >
+                        <Icon className="h-4 w-4 text-yellow-300" />
+                        {label}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               <form
                 method="post"
                 onSubmit={loadGallery}
-                className="self-center rounded-[1.3rem] border border-white/10 bg-black/25 p-4 sm:rounded-[1.5rem] sm:p-6"
+                className="flex flex-col justify-center bg-[#111]/95 p-5 sm:p-8 lg:p-10"
               >
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-neutral-500">
+                  Galeriecode
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-white md:text-3xl">
+                  Schön, dass du da bist.
+                </h2>
+                <p className="mt-4 max-w-md text-sm leading-7 text-neutral-400">
+                  Gib deinen persönlichen Code ein, um direkt in deine private
+                  Galerie zu kommen.
+                </p>
+
                 <label className="block">
-                  <span className="text-sm font-bold text-neutral-200">
+                  <span className="mt-7 block text-sm font-semibold text-neutral-300">
                     Galerie-Code
                   </span>
                   <input
@@ -409,9 +474,12 @@ export default function CustomerGalleryPage() {
                       setMessage("");
                     }}
                     placeholder="z. B. GAL-ABC123"
-                    className="mt-3 w-full rounded-2xl border border-white/10 bg-white px-4 py-4 text-base font-black tracking-[0.08em] text-neutral-950 outline-none focus:border-yellow-400 sm:text-lg sm:tracking-[0.12em]"
+                    className="mt-2 h-14 w-full rounded-2xl border border-white/10 bg-[#202020] px-4 text-base font-black tracking-[0.08em] text-white outline-none transition placeholder:text-neutral-600 focus:border-yellow-400 focus:bg-[#242424] focus:ring-2 focus:ring-yellow-400/15 sm:tracking-[0.12em]"
                   />
                 </label>
+                <p className="mt-3 text-sm leading-6 text-neutral-500">
+                  Den Code findest du in deiner persönlichen Nachricht.
+                </p>
 
                 <div className="mt-5">
                   <GalleryNotice message={message} type={messageType} />
@@ -420,25 +488,35 @@ export default function CustomerGalleryPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 font-black text-neutral-950 transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-60"
+                  className="mt-5 inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-yellow-400 px-5 text-sm font-black text-black shadow-[0_18px_60px_rgba(250,204,21,0.16)] transition hover:-translate-y-0.5 hover:bg-yellow-300 disabled:opacity-60"
                 >
                   {loading ? (
                     <RefreshCw className="h-5 w-5 animate-spin" />
                   ) : (
                     <ImageIcon className="h-5 w-5" />
                   )}
-                  {loading ? "Lädt..." : "Galerie öffnen"}
+                  {loading ? "Lädt..." : "Private Galerie öffnen"}
                 </button>
+
+                <Link
+                  href="/konto"
+                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-bold text-neutral-200 transition hover:bg-white/[0.1]"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  Zum Kundenkonto
+                </Link>
               </form>
             </div>
           ) : (
             <div>
               <header className="relative overflow-hidden border-b border-white/10">
                 {coverImage && (
-                  <img
+                  <ClientImage
                     src={coverImage.url}
                     alt=""
-                    className="absolute inset-0 h-full w-full scale-105 object-cover opacity-20 blur-sm"
+                    priority
+                    sizes="100vw"
+                    className="scale-105 object-cover opacity-20 blur-sm"
                   />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-br from-black via-black/75 to-black/35" />
@@ -648,13 +726,11 @@ export default function CustomerGalleryPage() {
                           className="relative block aspect-[4/3] w-full overflow-hidden bg-black/30"
                         >
                           {image.url ? (
-                            <img
+                            <ClientImage
                               src={image.url}
                               alt=""
-                              loading="lazy"
-                              decoding="async"
-                              draggable="false"
-                              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                              sizes="(max-width: 768px) 100vw, 360px"
+                              className="object-cover transition duration-500 group-hover:scale-[1.03]"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center px-4 text-center text-sm font-bold text-neutral-500">
