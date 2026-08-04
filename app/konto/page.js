@@ -1313,7 +1313,7 @@ export default function AccountPage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.25 }}
-                      className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.78fr)]"
+                      className="mt-6 grid min-w-0 gap-4"
                     >
                       <section className="min-w-0 rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4 sm:p-5">
                         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">

@@ -674,6 +674,11 @@ export default function FeliixWxfPhotography() {
     });
   };
 
+  const useLocalHeroFallback = (event, fallbackSrc) => {
+    event.currentTarget.removeAttribute("srcset");
+    event.currentTarget.src = fallbackSrc;
+  };
+
   const portfolioItems = [
     {
       title: "Car",
@@ -1411,6 +1416,7 @@ export default function FeliixWxfPhotography() {
                   fetchPriority="high"
                   width="1200"
                   height="1500"
+                  onError={(event) => useLocalHeroFallback(event, "/images/nacher.jpg")}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
 
@@ -1430,6 +1436,7 @@ export default function FeliixWxfPhotography() {
                     fetchPriority="auto"
                     width="1200"
                     height="1500"
+                    onError={(event) => useLocalHeroFallback(event, "/images/vorher.jpg")}
                     className="h-full w-full object-cover"
                   />
                 </div>
