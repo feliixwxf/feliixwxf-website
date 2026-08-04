@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -162,7 +162,6 @@ function GalleryNotice({ message, type = "info" }) {
 }
 
 export default function CustomerGalleryPage() {
-  const prefersReducedMotion = useReducedMotion();
   const [accessCode, setAccessCode] = useState("");
   const [gallery, setGallery] = useState(null);
   const [images, setImages] = useState([]);
@@ -384,28 +383,11 @@ export default function CustomerGalleryPage() {
           </div>
         </div>
 
-        <section className="mt-4 overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#151515]/92 shadow-[0_30px_120px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:mt-8 sm:rounded-[2rem]">
+        <section className="mt-4 overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#151515] shadow-[0_24px_80px_rgba(0,0,0,0.36)] sm:mt-8 sm:rounded-[2rem]">
           {!gallery ? (
             <div className="grid overflow-hidden lg:grid-cols-[0.54fr_0.46fr]">
               <div className="relative min-h-[210px] overflow-hidden lg:min-h-[620px]">
-                <motion.div
-                  className="absolute inset-0"
-                  animate={
-                    prefersReducedMotion
-                      ? undefined
-                      : { scale: [1, 1.045, 1.02], x: [0, -8, 0] }
-                  }
-                  transition={
-                    prefersReducedMotion
-                      ? undefined
-                      : {
-                          duration: 18,
-                          repeat: Infinity,
-                          repeatType: "mirror",
-                          ease: "easeInOut",
-                        }
-                  }
-                >
+                <div className="absolute inset-0">
                   <Image
                     src="/images/abititel.jpg"
                     alt="Private Kundengalerie von feliix.wxf"
@@ -414,9 +396,9 @@ export default function CustomerGalleryPage() {
                     sizes="(max-width: 768px) 100vw, 648px"
                     className="object-cover"
                   />
-                </motion.div>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/58 to-black/18 lg:bg-gradient-to-br lg:from-black/92 lg:via-black/45 lg:to-black/18" />
-                <div className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:18px_18px]" />
+                <div className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:18px_18px]" />
 
                 <div className="relative flex h-full min-h-[210px] flex-col justify-end p-5 sm:p-8 lg:min-h-[620px] lg:p-10">
                   <p className="text-xs font-black uppercase tracking-[0.32em] text-yellow-200/90">
@@ -437,7 +419,7 @@ export default function CustomerGalleryPage() {
                     ].map(([Icon, label]) => (
                       <div
                         key={label}
-                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-white/10 px-3 text-xs font-bold text-white/90 backdrop-blur"
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-black/35 px-3 text-xs font-bold text-white/90"
                       >
                         <Icon className="h-4 w-4 text-yellow-300" />
                         {label}

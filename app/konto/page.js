@@ -717,8 +717,6 @@ export default function AccountPage() {
     },
     { key: "downloads", label: "Downloads", count: downloadableGalleries.length },
   ];
-  const accountHeroGallery =
-    galleries.find((gallery) => gallery.cover_url) || galleries[0];
   const accountDisplayName =
     String(user?.name || "").trim() ||
     String(galleries.find((gallery) => gallery.client_name)?.client_name || "").trim() ||
@@ -737,13 +735,6 @@ export default function AccountPage() {
     "inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-yellow-400 px-5 text-sm font-black text-black shadow-[0_18px_60px_rgba(250,204,21,0.16)] transition hover:-translate-y-0.5 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-black disabled:cursor-not-allowed disabled:opacity-60";
   const secondaryButtonClass =
     "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-bold text-neutral-200 transition hover:border-white/18 hover:bg-white/[0.1] focus:outline-none focus:ring-2 focus:ring-yellow-300/60 disabled:cursor-not-allowed disabled:opacity-60";
-  const mediaMotion = prefersReducedMotion
-    ? {}
-    : {
-        scale: [1, 1.045, 1.02],
-        x: [0, -8, 0],
-        y: [0, 6, 0],
-      };
 
   const renderLoginForm = () => (
     <form method="post" onSubmit={submitAccount} className="grid gap-4">
@@ -1112,44 +1103,26 @@ export default function AccountPage() {
           initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
           animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: "easeOut" }}
-          className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#151515]/92 shadow-[0_30px_120px_rgba(0,0,0,0.42)] backdrop-blur-2xl md:rounded-[2rem] lg:grid lg:min-h-[720px] lg:grid-cols-[0.54fr_0.46fr]"
+          className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#151515] shadow-[0_24px_80px_rgba(0,0,0,0.36)] md:rounded-[2rem] lg:grid lg:min-h-[720px] lg:grid-cols-[0.54fr_0.46fr]"
         >
           <aside className="relative min-h-[190px] overflow-hidden md:min-h-[230px] lg:min-h-full">
-            <motion.div
-              className="absolute inset-0"
-              animate={mediaMotion}
-              transition={{
-                duration: 18,
-                repeat: Infinity,
-                repeatType: "mirror",
-                ease: "easeInOut",
-              }}
-            >
+            <div className="absolute inset-0">
               <Image
-                src={accountHeroGallery?.cover_url || LOUNGE_IMAGE}
+                src={LOUNGE_IMAGE}
                 alt="Private Kundengalerie von feliix.wxf"
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 648px"
-                unoptimized={Boolean(accountHeroGallery?.cover_url)}
                 className="object-cover"
               />
-            </motion.div>
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/20 lg:bg-gradient-to-br lg:from-black/92 lg:via-black/38 lg:to-black/12" />
-            <div className="absolute inset-0 opacity-[0.16] [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:18px_18px]" />
-            {!prefersReducedMotion && (
-              <motion.div
-                aria-hidden="true"
-                className="absolute -left-1/3 top-0 h-full w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/12 to-transparent blur-2xl"
-                animate={{ x: ["0%", "260%"] }}
-                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              />
-            )}
+            <div className="absolute inset-0 opacity-[0.10] [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:18px_18px]" />
 
             <div className="relative flex h-full min-h-[190px] flex-col justify-end p-5 md:min-h-[230px] md:p-8 lg:min-h-full lg:p-10">
               <Link
                 href="/"
-                className="absolute left-5 top-5 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-black/25 px-4 text-sm font-bold text-white backdrop-blur transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-yellow-300/70"
+                className="absolute left-5 top-5 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-black/45 px-4 text-sm font-bold text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-yellow-300/70"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Website
@@ -1175,7 +1148,7 @@ export default function AccountPage() {
                   ].map(([Icon, label]) => (
                     <div
                       key={label}
-                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-white/10 px-3 text-xs font-bold text-white/90 backdrop-blur"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/12 bg-black/35 px-3 text-xs font-bold text-white/90"
                     >
                       <Icon className="h-4 w-4 text-yellow-300" />
                       {label}
