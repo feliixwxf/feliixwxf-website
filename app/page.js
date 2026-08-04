@@ -63,6 +63,66 @@ function optimizedSiteAssetSrcSet(key, format = "webp") {
     .join(", ");
 }
 
+function handleLocalHeroFallback(event, fallbackSrc) {
+  event.currentTarget.removeAttribute("srcset");
+  event.currentTarget.src = fallbackSrc;
+}
+
+function ReviewAvatar({ review, className = "h-11 w-11" }) {
+  return (
+    <div
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10 ${className}`}
+    >
+      {review?.avatar_url ? (
+        <img src={review.avatar_url} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <UserRound className="h-5 w-5 text-neutral-400" />
+      )}
+    </div>
+  );
+}
+
+function ThemeToggle({ dark, buttonHover, onToggle }) {
+  return (
+    <button
+      onClick={onToggle}
+      className={`relative flex h-10 w-[92px] items-center justify-between rounded-full border px-3 ${buttonHover} ${
+        dark ? "border-white/25 bg-white/10" : "border-black/20 bg-white/80"
+      }`}
+      aria-label="Dark Light Mode wechseln"
+    >
+      <Sun className="z-10 h-4 w-4 text-yellow-400" />
+      <Moon className="z-10 h-4 w-4 text-blue-200" />
+      <motion.div
+        layout
+        transition={{ type: "spring", stiffness: 450, damping: 30 }}
+        className="absolute top-1 h-8 w-8 rounded-full bg-white shadow-lg"
+        style={{ left: dark ? "52px" : "4px" }}
+      />
+    </button>
+  );
+}
+
+function AccountButton({ dark, accountLabel, className = "" }) {
+  return (
+    <a
+      href="/konto"
+      aria-label="Kundenkonto öffnen"
+      title="Kundenkonto"
+      className={`inline-flex items-center justify-center rounded-full border font-semibold transition duration-200 hover:-translate-y-0.5 hover:scale-[1.03] ${
+        "max-w-[118px] gap-1.5 px-3 py-2 text-xs sm:max-w-[160px] sm:gap-2 sm:px-4 sm:text-sm md:max-w-[190px]"
+      } ${
+        dark
+          ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
+          : "border-black/10 bg-white/80 text-neutral-950 shadow-sm hover:bg-white"
+      } ${className}`}
+    >
+      <UserRound className="h-4 w-4 shrink-0" />
+      <span className="truncate">{accountLabel}</span>
+    </a>
+  );
+}
+
 const DEFAULT_ARCHIVED_PORTFOLIO_KEYS = "nature";
 const PORTFOLIO_GALLERY_KEYS = new Set(["car", "portrait", "nature", "event"]);
 
@@ -371,8 +431,8 @@ export default function FeliixWxfPhotography() {
   const beforeRef = useRef(null);
   const lineRef = useRef(null);
   const handleRef = useRef(null);
-  const reviewFormStartedAtRef = useRef(Date.now());
-  const contactFormStartedAtRef = useRef(Date.now());
+  const reviewFormStartedAtRef = useRef(null);
+  const contactFormStartedAtRef = useRef(null);
   const sliderFrameRef = useRef(null);
   const sliderPercentRef = useRef(50);
 
@@ -406,6 +466,10 @@ export default function FeliixWxfPhotography() {
   const [showDatenschutz, setShowDatenschutz] = useState(false);
 
   useEffect(() => {
+    const now = Date.now();
+    reviewFormStartedAtRef.current = now;
+    contactFormStartedAtRef.current = now;
+
     if (
       window.location.pathname === "/" &&
       window.location.hash === "#portfolio" &&
@@ -417,13 +481,13 @@ export default function FeliixWxfPhotography() {
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("datenschutz") === "1") {
-      setShowDatenschutz(true);
+      window.setTimeout(() => setShowDatenschutz(true), 0);
       window.history.replaceState(null, "", "/");
     }
 
     const requestedGallery = params.get("galerie");
     if (PORTFOLIO_GALLERY_KEYS.has(requestedGallery)) {
-      setActiveGallery(requestedGallery);
+      window.setTimeout(() => setActiveGallery(requestedGallery), 0);
       if (params.has("bild")) {
         window.history.replaceState(
           null,
@@ -435,7 +499,9 @@ export default function FeliixWxfPhotography() {
 
     const savedTheme = localStorage.getItem("feliix-theme");
 
-    if (savedTheme) setTheme(savedTheme);
+    if (savedTheme) {
+      window.setTimeout(() => setTheme(savedTheme), 0);
+    }
 
     const loadReviews = () => {
       fetch("/api/reviews")
@@ -674,11 +740,6 @@ export default function FeliixWxfPhotography() {
     });
   };
 
-  const useLocalHeroFallback = (event, fallbackSrc) => {
-    event.currentTarget.removeAttribute("srcset");
-    event.currentTarget.src = fallbackSrc;
-  };
-
   const portfolioItems = [
     {
       title: "Car",
@@ -846,7 +907,7 @@ export default function FeliixWxfPhotography() {
       text: reviewText.trim(),
       stars: rating || 5,
       website: formData.get("website") || "",
-      startedAt: reviewFormStartedAtRef.current,
+      startedAt: reviewFormStartedAtRef.current || Date.now(),
       publicReviewConsent: true,
     };
 
@@ -898,7 +959,8 @@ export default function FeliixWxfPhotography() {
     const formElement = e.currentTarget;
     const formData = new FormData(formElement);
     const honeypotValue = String(formData.get("_gotcha") || "").trim();
-    const sentTooFast = Date.now() - contactFormStartedAtRef.current < 3000;
+    const sentTooFast =
+      Date.now() - (contactFormStartedAtRef.current || Date.now()) < 3000;
 
     setContactSubmitting(true);
     setContactMessage("");
@@ -985,59 +1047,6 @@ export default function FeliixWxfPhotography() {
       );
     });
   };
-
-  const ReviewAvatar = ({ review, className = "h-11 w-11" }) => (
-    <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-white/10 ${className}`}
-    >
-      {review?.avatar_url ? (
-        <img
-          src={review.avatar_url}
-          alt=""
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <UserRound className="h-5 w-5 text-neutral-400" />
-      )}
-    </div>
-  );
-
-  const ThemeToggle = () => (
-    <button
-      onClick={() => setTheme(dark ? "light" : "dark")}
-      className={`relative flex h-10 w-[92px] items-center justify-between rounded-full border px-3 ${buttonHover} ${
-        dark ? "border-white/25 bg-white/10" : "border-black/20 bg-white/80"
-      }`}
-      aria-label="Dark Light Mode wechseln"
-    >
-      <Sun className="z-10 h-4 w-4 text-yellow-400" />
-      <Moon className="z-10 h-4 w-4 text-blue-200" />
-      <motion.div
-        layout
-        transition={{ type: "spring", stiffness: 450, damping: 30 }}
-        className="absolute top-1 h-8 w-8 rounded-full bg-white shadow-lg"
-        style={{ left: dark ? "52px" : "4px" }}
-      />
-    </button>
-  );
-
-  const AccountButton = ({ className = "" }) => (
-    <a
-      href="/konto"
-      aria-label="Kundenkonto öffnen"
-      title="Kundenkonto"
-      className={`inline-flex items-center justify-center rounded-full border font-semibold transition duration-200 hover:-translate-y-0.5 hover:scale-[1.03] ${
-        "max-w-[118px] gap-1.5 px-3 py-2 text-xs sm:max-w-[160px] sm:gap-2 sm:px-4 sm:text-sm md:max-w-[190px]"
-      } ${
-        dark
-          ? "border-white/20 bg-white/10 text-white hover:bg-white/15"
-          : "border-black/10 bg-white/80 text-neutral-950 shadow-sm hover:bg-white"
-      } ${className}`}
-    >
-      <UserRound className="h-4 w-4 shrink-0" />
-      <span className="truncate">{accountLabel}</span>
-    </a>
-  );
 
   if (maintenanceActive) {
     return <MaintenanceView siteSettings={siteSettings} />;
@@ -1270,9 +1279,13 @@ export default function FeliixWxfPhotography() {
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <div className="hidden md:block">
-              <ThemeToggle />
+              <ThemeToggle
+                dark={dark}
+                buttonHover={buttonHover}
+                onToggle={() => setTheme(dark ? "light" : "dark")}
+              />
             </div>
-            <AccountButton />
+            <AccountButton dark={dark} accountLabel={accountLabel} />
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -1308,7 +1321,11 @@ export default function FeliixWxfPhotography() {
                     {dark ? "Dark Mode ist aktiv" : "White Mode ist aktiv"}
                   </p>
                 </div>
-                <ThemeToggle />
+                <ThemeToggle
+                  dark={dark}
+                  buttonHover={buttonHover}
+                  onToggle={() => setTheme(dark ? "light" : "dark")}
+                />
               </div>
 
               {["Startseite", "Portfolio", "Bewertung", "Kontakt"].map((item) => (
@@ -1416,7 +1433,7 @@ export default function FeliixWxfPhotography() {
                   fetchPriority="high"
                   width="1200"
                   height="1500"
-                  onError={(event) => useLocalHeroFallback(event, "/images/nacher.jpg")}
+                  onError={(event) => handleLocalHeroFallback(event, "/images/nacher.jpg")}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
 
@@ -1436,7 +1453,7 @@ export default function FeliixWxfPhotography() {
                     fetchPriority="auto"
                     width="1200"
                     height="1500"
-                    onError={(event) => useLocalHeroFallback(event, "/images/vorher.jpg")}
+                    onError={(event) => handleLocalHeroFallback(event, "/images/vorher.jpg")}
                     className="h-full w-full object-cover"
                   />
                 </div>

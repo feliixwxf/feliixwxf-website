@@ -2130,8 +2130,12 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    setPublicOrigin(window.location.origin);
-    setCompactMode(localStorage.getItem("feliix-admin-compact-mode") === "true");
+    const timer = window.setTimeout(() => {
+      setPublicOrigin(window.location.origin);
+      setCompactMode(localStorage.getItem("feliix-admin-compact-mode") === "true");
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -2169,8 +2173,8 @@ export default function AdminPage() {
     let cancelled = false;
 
     if (!activeClientGalleryUrl) {
-      setActiveClientGalleryQrUrl("");
-      return;
+      const timer = window.setTimeout(() => setActiveClientGalleryQrUrl(""), 0);
+      return () => window.clearTimeout(timer);
     }
 
     QRCode.toDataURL(activeClientGalleryUrl, {
@@ -2225,13 +2229,21 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authenticated || activeTab !== "user-errors") return;
 
-    loadUserErrors();
+    const timer = window.setTimeout(() => {
+      loadUserErrors();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [authenticated, activeTab]);
 
   useEffect(() => {
     if (!authenticated || activeTab !== "inquiries") return;
 
-    loadContactInquiries();
+    const timer = window.setTimeout(() => {
+      loadContactInquiries();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [authenticated, activeTab]);
 
   useEffect(() => {
@@ -2321,14 +2333,19 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!imageFile) {
-      setImagePreview("");
-      setImagePreviewSize(null);
-      return;
+      const timer = window.setTimeout(() => {
+        setImagePreview("");
+        setImagePreviewSize(null);
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
 
     const previewUrl = URL.createObjectURL(imageFile);
-    setImagePreview(previewUrl);
-    setImagePreviewSize(null);
+    const timer = window.setTimeout(() => {
+      setImagePreview(previewUrl);
+      setImagePreviewSize(null);
+    }, 0);
 
     const previewImage = new Image();
     previewImage.onload = () => {
@@ -2339,19 +2356,25 @@ export default function AdminPage() {
     };
     previewImage.src = previewUrl;
 
-    return () => URL.revokeObjectURL(previewUrl);
+    return () => {
+      window.clearTimeout(timer);
+      URL.revokeObjectURL(previewUrl);
+    };
   }, [imageFile]);
 
   useEffect(() => {
     if (!clientGalleryFile) {
-      setClientGalleryPreview("");
-      return;
+      const timer = window.setTimeout(() => setClientGalleryPreview(""), 0);
+      return () => window.clearTimeout(timer);
     }
 
     const previewUrl = URL.createObjectURL(clientGalleryFile);
-    setClientGalleryPreview(previewUrl);
+    const timer = window.setTimeout(() => setClientGalleryPreview(previewUrl), 0);
 
-    return () => URL.revokeObjectURL(previewUrl);
+    return () => {
+      window.clearTimeout(timer);
+      URL.revokeObjectURL(previewUrl);
+    };
   }, [clientGalleryFile]);
 
   useEffect(() => {
@@ -2359,23 +2382,31 @@ export default function AdminPage() {
       .filter(([, file]) => file)
       .map(([key, file]) => [key, URL.createObjectURL(file)]);
 
-    setSiteAssetPreviews(Object.fromEntries(previewEntries));
+    const timer = window.setTimeout(() => {
+      setSiteAssetPreviews(Object.fromEntries(previewEntries));
+    }, 0);
 
     return () => {
+      window.clearTimeout(timer);
       previewEntries.forEach(([, previewUrl]) => URL.revokeObjectURL(previewUrl));
     };
   }, [siteAssetFiles]);
 
   useEffect(() => {
     if (!activeCropFile) {
-      setCropPreview("");
-      setCropImageSize(null);
-      return;
+      const timer = window.setTimeout(() => {
+        setCropPreview("");
+        setCropImageSize(null);
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
 
     const previewUrl = URL.createObjectURL(activeCropFile);
-    setCropPreview(previewUrl);
-    setCropImageSize(null);
+    const timer = window.setTimeout(() => {
+      setCropPreview(previewUrl);
+      setCropImageSize(null);
+    }, 0);
 
     const previewImage = new Image();
     previewImage.onload = () => {
@@ -2386,7 +2417,10 @@ export default function AdminPage() {
     };
     previewImage.src = previewUrl;
 
-    return () => URL.revokeObjectURL(previewUrl);
+    return () => {
+      window.clearTimeout(timer);
+      URL.revokeObjectURL(previewUrl);
+    };
   }, [activeCropFile]);
 
   useEffect(() => {
@@ -7691,7 +7725,7 @@ export default function AdminPage() {
                             </h3>
                           </div>
                           <p className={`${compactMode ? "mt-2 line-clamp-2 text-sm leading-6" : "mt-3 leading-7"} break-words text-neutral-300`}>
-                            "{review.text}"
+                            &ldquo;{review.text}&rdquo;
                           </p>
                           {!compactMode && (
                           <div className="mt-5 rounded-2xl border border-white/10 bg-black/15 p-3">

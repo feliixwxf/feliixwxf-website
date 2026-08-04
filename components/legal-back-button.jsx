@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, Camera } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LegalBackButton() {
@@ -26,13 +27,13 @@ export default function LegalBackButton() {
           <ArrowLeft className="h-4 w-4" />
           Zurück
         </button>
-        <a
+        <Link
           href="/"
           className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-neutral-300 transition hover:bg-white/10 hover:text-white"
         >
           <Camera className="h-4 w-4" />
           Startseite
-        </a>
+        </Link>
       </div>
     </div>
   );
