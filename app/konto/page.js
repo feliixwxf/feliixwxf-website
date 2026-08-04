@@ -1159,7 +1159,7 @@ export default function AccountPage() {
             </div>
           </aside>
 
-          <section className="flex min-h-[560px] flex-col bg-[#111]/95 p-5 sm:p-8 lg:p-10">
+          <section className="flex min-h-0 min-w-0 flex-col bg-[#111]/95 p-5 sm:p-8 lg:min-h-[720px] lg:p-10">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.28em] text-neutral-500">
@@ -1207,8 +1207,8 @@ export default function AccountPage() {
               </div>
             ) : user ? (
               <div className="mt-7 flex flex-1 flex-col">
-                <header className="flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3">
+                <header className="flex min-w-0 flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/[0.07]">
                       {avatarPreview ? (
                         <img
@@ -1226,8 +1226,8 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                    <Link href="/" className={secondaryButtonClass}>
+                  <div className="grid w-full grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:w-auto sm:flex sm:flex-wrap">
+                    <Link href="/" className={`${secondaryButtonClass} w-full sm:w-auto`}>
                       Zur Website
                     </Link>
                     <div className="relative">
@@ -1246,7 +1246,7 @@ export default function AccountPage() {
                             initial={{ opacity: 0, y: 8, scale: 0.98 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                            className="absolute right-0 z-20 mt-2 w-52 rounded-2xl border border-white/10 bg-[#1b1b1b] p-2 shadow-2xl"
+                            className="absolute right-0 z-20 mt-2 w-[min(13rem,calc(100vw-2rem))] rounded-2xl border border-white/10 bg-[#1b1b1b] p-2 shadow-2xl"
                           >
                             <button
                               type="button"
@@ -1274,8 +1274,8 @@ export default function AccountPage() {
                   </div>
                 </header>
 
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
+                <div className="mt-6 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="min-w-0">
                     <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                       {galleries.length} Galerie{galleries.length === 1 ? "" : "n"}
                     </p>
@@ -1283,11 +1283,11 @@ export default function AccountPage() {
                       Deine Galerien
                     </h2>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex sm:flex-wrap">
                     <button
                       type="button"
                       onClick={() => setAccountSection("galleries")}
-                      className={`${secondaryButtonClass} ${
+                      className={`${secondaryButtonClass} w-full sm:w-auto ${
                         accountSection === "galleries" ? "border-yellow-300/40 text-yellow-100" : ""
                       }`}
                     >
@@ -1296,7 +1296,7 @@ export default function AccountPage() {
                     <button
                       type="button"
                       onClick={() => setAccountSection("profile")}
-                      className={`${secondaryButtonClass} ${
+                      className={`${secondaryButtonClass} w-full sm:w-auto ${
                         accountSection === "profile" ? "border-yellow-300/40 text-yellow-100" : ""
                       }`}
                     >
@@ -1313,11 +1313,11 @@ export default function AccountPage() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.25 }}
-                      className="mt-6 grid gap-4 xl:grid-cols-[1fr_0.78fr]"
+                      className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.78fr)]"
                     >
-                      <section className="rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4 sm:p-5">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
+                      <section className="min-w-0 rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4 sm:p-5">
+                        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                          <div className="min-w-0">
                             <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                               Profil
                             </p>
@@ -1325,7 +1325,7 @@ export default function AccountPage() {
                               Deine Angaben
                             </h3>
                           </div>
-                          <label className={`${secondaryButtonClass} cursor-pointer`}>
+                          <label className={`${secondaryButtonClass} w-full cursor-pointer sm:w-auto`}>
                             {avatarUploading ? (
                               <RefreshCw className="h-4 w-4 animate-spin" />
                             ) : (
@@ -1342,8 +1342,8 @@ export default function AccountPage() {
                           </label>
                         </div>
 
-                        <div className="mt-5 grid gap-5 sm:grid-cols-[116px_1fr]">
-                          <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-[1.4rem] border border-white/10 bg-white/[0.06]">
+                        <div className="mt-5 grid min-w-0 gap-5 md:grid-cols-[112px_minmax(0,1fr)]">
+                          <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-[1.4rem] border border-white/10 bg-white/[0.06] md:mx-0">
                             {avatarPreview ? (
                               <img
                                 src={avatarPreview}
@@ -1354,7 +1354,7 @@ export default function AccountPage() {
                               <UserRound className="h-10 w-10 text-neutral-500" />
                             )}
                           </div>
-                          <div className="grid gap-4">
+                          <div className="grid min-w-0 gap-4">
                             <label className="block">
                               <span className="text-sm font-semibold text-neutral-300">
                                 Benutzername
@@ -1399,7 +1399,7 @@ export default function AccountPage() {
                         </div>
                       </section>
 
-                      <section className="rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4 sm:p-5">
+                      <section className="min-w-0 rounded-[1.4rem] border border-white/10 bg-white/[0.045] p-4 sm:p-5">
                         <p className="text-xs font-black uppercase tracking-[0.22em] text-neutral-500">
                           Sicherheit
                         </p>
